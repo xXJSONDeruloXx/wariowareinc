@@ -9,12 +9,12 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1116 / 5961` = **18.721691%**
-- **Matched code percent:** **5.980525%**
-- **C units in linker graph:** `664 / 6687`
-- **ASM-only units in linker graph:** `6023`
+- **Matched functions:** `1121 / 5961` = **18.805569%**
+- **Matched code percent:** **5.986366%**
+- **C units in linker graph:** `669 / 6687`
+- **ASM-only units in linker graph:** `6018`
 - **ROM status:** `wariowareinc.gba: OK`
-- **Accepted delta vs prior verified baseline:** `+5 matched functions`, `+5 C units`, `-5 asm-only units`
+- **Accepted delta vs prior verified baseline:** `+10 matched functions`, `+10 C units` (two 5-function batches this iteration)
 
 ## Current Working State
 - HEAD is matching after a clean Docker build and includes two verified batches since loop reactivation: 5 small-body functions (iteration 21: bitfield-extract, bit-clear, struct-add, zero-init) and 5 more small-body functions (iteration 22: byte-extract, byte-combine, dual-zero-word, struct-inits).
@@ -465,4 +465,17 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
     - `asm_080cd564` (struct copy via ADDS R3) and `asm_0800c610` (load ptr, store -1 via ADDS copy) were NOT matched — the C form loses the extra ADDS instruction the original asm has
   - Next action: continue mining small-body functions, skip ones with extra ADDS register-copy instructions that agbcc doesn't emit
 
-- **Running total**: 17 iterations × 5 functions = ~85 functions decompiled since iteration 12 baseline of 1061, now at 1116. Need 4768 target → still 3652 to go
+- **Iteration 23** (third batch after loop reactivation)
+  - Candidate set: 5 small-body functions — `asm_080039b4` (dec-counter, load byte), `asm_0800397c` (store byte, advance pointer), `asm_08062f00` (field[0x2C]+=0x40, field[0xC]+=tmp), `asm_080f2774` (struct init: byte[6]=1, word[8]=0, byte[7]=0), `asm_080bb344` (mul-acc: field[4]*R2>>8+R3 -> field[8])
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1116 -> 1121 matched functions` (**+5**), `matched_code_percent 5.980525% -> 5.986366%`, linker/unit coverage `664 C / 6023 asm-only -> 669 C / 6018 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `669 C / 6018 asm-only units`
+  - Learnings:
+    - `*counter -= 1; return *(u8 *)(*counter)` matches for dec-pointer-then-load-byte patterns
+    - `u8 *p = *pp; *p = val; *pp = p + 1` matches for store-advance (avoids reload from memory)
+    - `fields[N] += imm; fields[M] += fields[N]` matches for field arithmetic with reuse of loaded value
+    - `u32 zero = 0; p[N] = imm; *(u32*)(p+M) = zero; p[K] = 0` with shared `u32 zero` matches mixed-width struct init
+    - `(s32)val * (s32)mul) >> 8` matches MULS + ASRS pattern (signed int arithmetic shift)
+  - Next action: continue mining self-contained small-body functions from the remaining ~90+ candidates
+
+- **Running total**: 18 iterations × 5 functions = ~90 functions decompiled since iteration 12 baseline of 1061, now at 1121. Need 4768 target → still 3647 to go
