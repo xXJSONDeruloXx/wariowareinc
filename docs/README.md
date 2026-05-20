@@ -11,11 +11,11 @@ This docs set records a real tooling pass over `wariowareinc`, focused on:
 ## Latest verified scale-up checkpoint (2026-05-20)
 
 - Clean Docker build: `wariowareinc.gba: OK`
-- `make report`: **1116 / 5961 matched functions = 18.721691%**
-- `matched_code_percent`: **5.980525%**
-- `tools/gen_objdiff.py`: **664 C / 6023 asm-only units**
-- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1111 -> 1116`, `659 -> 664`)
-- Latest successful pattern: small-body functions (byte-extract, byte-combine, dual-zero-word, struct-inits) with zero globals
+- `make report`: **1121 / 5961 matched functions = 18.805569%**
+- `matched_code_percent`: **5.986366%**
+- `tools/gen_objdiff.py`: **669 C / 6018 asm-only units**
+- Accepted batch result: **+10 matched functions** and **+10 C units** versus the previous verified baseline (two 5-function batches: `1111 -> 1116 -> 1121`, `659 -> 664 -> 669`)
+- Latest successful pattern: self-contained small-body functions (dec-counter, store-advance, struct-field-arithmetic, mul-acc) with zero extern references
 
 ## Main takeaways
 

@@ -13,15 +13,15 @@ This audit was done against:
 
 ## 0. Latest verified checkpoint (2026-05-20)
 
-A small-body function batch (byte-extract, byte-combine, dual-zero-word, struct-inits) was verified successfully.
+A small-body function batch (dec-counter, store-advance, struct-field-arithmetic, mul-acc) was verified successfully, following a batch of byte-extract/combine/struct-init functions.
 
 ### Latest verified metrics
 
-- `matched_functions`: **1116 / 5961** = **18.721691%**
-- `matched_code_percent`: **5.980525%**
-- `tools/gen_objdiff.py`: **664 C / 6023 asm-only units**
+- `matched_functions`: **1121 / 5961** = **18.805569%**
+- `matched_code_percent`: **5.986366%**
+- `tools/gen_objdiff.py`: **669 C / 6018 asm-only units**
 - previous verified baseline: **1111 / 5961**, **659 C / 6028 asm-only units**
-- accepted delta: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
+- accepted delta: **+10 matched functions** (two 5-function batches), **+10 C units**, **-10 asm-only units**
 
 ### Files accepted
 
@@ -30,10 +30,20 @@ A small-body function batch (byte-extract, byte-combine, dual-zero-word, struct-
 - `src/decomp/asm_080cd708.c` (dual-zero-word: MOVS#0, STR offset 0x28, STR offset 0x2C)
 - `src/decomp/asm_080f2780.c` (struct init: byte[6], word[8], byte[7] zeroed)
 - `src/decomp/asm_08002fb4.c` (struct init: word[0], byte[5], byte[4] zeroed)
+- `src/decomp/asm_080039b4.c` (dec-counter: LDR, SUBS#1, STR, LDRB)
+- `src/decomp/asm_0800397c.c` (store-advance: LDR, STRB, ADDS#1, STR)
+- `src/decomp/asm_08062f00.c` (field-arithmetic: LDR, ADDS#0x40, STR, LDR, ADDS, STR)
+- `src/decomp/asm_080f2774.c` (struct init: MOVS R2=0, MOVS R1=1, STRB word[6]=1, STR word[8]=0, STRB byte[7]=0)
+- `src/decomp/asm_080bb344.c` (mul-acc: LDR, MULS, ASRS, ADDS, STR)
 
 ### What worked
 
-Small-body functions with no extern references (no `=D_` literals, no BL calls) are the easiest target class. The `u32 zero = 0;` variable trick avoids redundant `MOVS #0` between mixed-width stores. The bitfield/extract family (`return (u16)(((u32)val << N) >> M)`) continues to match consistently.
+Self-contained small-body functions (3-7 instructions, no extern references) remain the highest-yield target class. Key C spellings validated:
+- `*counter -= 1; return *(u8 *)(*counter)` for dec-pointer patterns
+- `u8 *p = *pp; *p = val; *pp = p + 1` for store-advance (avoids reload from memory)
+- `fields[N] += imm; fields[M] += fields[N]` for field arithmetic
+- `(s32)val * (s32)mul) >> 8` for MULS + ASRS signed multiply-shift
+- `u32 zero = 0;` shared variable avoids redundant MOVS between mixed-width zero stores
 
 ## 1. Real build baseline
 
