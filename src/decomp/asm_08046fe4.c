@@ -1,0 +1,3 @@
+#include "global.h"
+#include "types.h"
+void func_08046FE4(void) { func_080021C8(gCurrentSceneVariable); }
