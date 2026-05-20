@@ -34,62 +34,42 @@ python3 tools/gen_objdiff.py
 
 ### Latest verified metrics
 
-- `matched_functions`: **1076 / 5961**
-- `matched_functions_percent`: **18.050663%**
-- `matched_code_percent`: **5.9476986%**
-- `tools/gen_objdiff.py`: **624 C / 6063 asm-only units**
-- previous verified baseline used by this checkpoint: **1071 / 5961**, **619 C / 6068 asm-only units**
+- `matched_functions`: **1081 / 5961**
+- `matched_functions_percent`: **18.134542%**
+- `matched_code_percent`: **5.960588%**
+- `tools/gen_objdiff.py`: **629 C / 6058 asm-only units**
+- previous verified baseline used by this checkpoint: **1076 / 5961**, **624 C / 6063 asm-only units**
 - accepted delta for this batch: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_0801d2f0.c`
-- `src/decomp/asm_0801eca0.c`
-- `src/decomp/asm_08020968.c`
-- `src/decomp/asm_08022090.c`
-- `src/decomp/asm_08022938.c`
+- `src/decomp/asm_0802295c.c`
+- `src/decomp/asm_08022980.c`
+- `src/decomp/asm_08024208.c`
+- `src/decomp/asm_080233b8.c`
+- `src/decomp/asm_08021748.c`
 
 Original asm files were moved to `asm/converted/`:
 
-- `asm/converted/asm_0801d2f0.s`
-- `asm/converted/asm_0801eca0.s`
-- `asm/converted/asm_08020968.s`
-- `asm/converted/asm_08022090.s`
-- `asm/converted/asm_08022938.s`
+- `asm/converted/asm_0802295c.s`
+- `asm/converted/asm_08022980.s`
+- `asm/converted/asm_08024208.s`
+- `asm/converted/asm_080233b8.s`
+- `asm/converted/asm_08021748.s`
 
 ### What worked
 
-- Continuing the `D_03006520` compare-and-call wrapper family converted cleanly and again moved both major metric families.
-- The accepted shape was:
-
-```c
-#include "src/beatscript.h"
-
-extern void func_0801D2E0(void);
-
-void func_0801D2F0(void) {
-    if (D_03006520 == 0x6E)
-        func_0801D2E0();
-}
-```
-
-and the same spelling pattern matched across four more siblings that differed only by the compare immediate and callee.
+- Three more simple `D_03006520` single-BL compare-and-call wrappers matched cleanly
+- The two-call variant `if (D_03006520 == IMM) { func1(); func2(); }` matched cleanly — this extends the family to wrappers that call two functions sequentially inside the guard
+- The large-immediate variant `if (D_03006520 == 500) func();` matched cleanly — agbcc correctly emits the `MOVS R0, #0xFA; LSLS R0, R0, #1; CMP R1, R0` sequence since 500 exceeds the Thumb `CMP #imm8` range
 
 ### Durable workflow lesson reinforced
 
-Object-level preflight remains the right gate, but the final linked ROM is the real acceptance gate.
-
-For this batch, the clean linked ROM verified the pattern as solid even though the ad hoc object-level compare step was not completed in that manual shell. The accepted C spelling family is still the same `LDRH D_03006520; CMP #imm; BL func` wrapper shape.
-
-### Strategy update from this batch
-
-The `D_03006520` compare-and-call family continues to be highly productive. All five siblings in this batch matched cleanly with the same C spelling pattern.
-
-### Nearly-failed / avoid next time
-
-When doing ad hoc object preflight outside the normal build flow, use the repo's expected include/build environment rather than assuming a bare toolchain invocation will see the same header layout.
+The `D_03006520` family continues to be productive. The proven `if (D_03006520 == IMM)` pattern extends naturally to:
+- Two-call guards: `if (D_03006520 == IMM) { func1(); func2(); }`
+- Large-immediate guards: `if (D_03006520 == 500) func();` (agbcc handles the Thumb immediate encoding)
 
 ### Prior traps carried forward
 
@@ -98,6 +78,10 @@ The earlier repair lessons still matter:
 - direct `((u8 *)&gBeatscriptScene)[N]` expressions can compile as symbol-plus-offset literal relocations instead of base-plus-immediate accesses
 - for large byte offsets, direct total-offset spelling can alter Thumb address splitting (`+0x26` / `[+0]` instead of `+8` / `[+0x1E]`)
 - when a small conversion unexpectedly breaks the ROM, compare both disassembly and TU `.text` size before deciding it is "close enough"
+
+### Nearly-failed / avoid next time
+
+None in this batch — all five conversions matched on the first attempt.
 
 ## 1. Real build baseline
 

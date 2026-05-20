@@ -11,20 +11,21 @@ This docs set records a real tooling pass over `wariowareinc`, focused on:
 ## Latest verified scale-up checkpoint (2026-05-20)
 
 - Clean Docker build: `wariowareinc.gba: OK`
-- `make report`: **1076 / 5961 matched functions = 18.050663%**
-- `matched_code_percent`: **5.9476986%**
-- `tools/gen_objdiff.py`: **624 C / 6063 asm-only units**
-- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1071 -> 1076`, `619 -> 624`)
-- Latest successful pattern: continuing the `D_03006520` compare-and-call wrapper family with five more siblings: `asm_0801d2f0`, `asm_0801eca0`, `asm_08020968`, `asm_08022090`, `asm_08022938`
-- Proven workflow detail: preflighting candidate C spellings by compiling just the object files and diffing their instruction flow/section sizes against the original asm objects continues to de-risk standalone TU batches before linker edits
-- The `if (D_03006520 == IMM) func_target();` pattern matched cleanly across all five siblings when `D_03006520` came from `src/beatscript.h`
-- Important trap from prior batches still applies: for large byte offsets, writing the total offset directly can change Thumb addressing shape. `*(u8 *)((u8 *)gCurrentSceneVariable + 0x26) = N;` compiled as `adds #0x26; strb #0`, but the target required `adds #8; strb #0x1e`. Using an intermediate pointer (`u8 *p = (u8 *)gCurrentSceneVariable + 8; p[0x1E] = N;`) restored the original codegen.
-- Important metric note still applies: in this repo, some standalone conversions improve explicit C coverage without changing `matched_functions`, so both objdiff match metrics and linker/unit coverage must be tracked together.
+- `make report`: **1081 / 5961 matched functions = 18.134542%**
+- `matched_code_percent`: **5.960588%**
+- `tools/gen_objdiff.py`: **629 C / 6058 asm-only units**
+- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1076 -> 1081`, `624 -> 629`)
+- Latest successful pattern: continuing the `D_03006520` compare-and-call wrapper family, including the two-call variant `if (D_03006520 == IMM) { func1(); func2(); }` and the large-immediate variant `if (D_03006520 == 500) func();` which uses `MOVS R0, #0xFA; LSLS R0, #1` to construct 0x1F4
+- The `if (D_03006520 == IMM) func_target();` pattern matched cleanly for three more single-BL siblings
+- The two-call variant `if (D_03006520 == IMM) { func1(); func2(); }` also matched cleanly
+- The large-immediate `== 500` variant matched with `if (D_03006520 == 500) func();` — agbcc correctly emits the `MOVS R0, #0xFA; LSLS R0, R0, #1; CMP R1, R0` sequence since 500 doesn't fit in Thumb's CMP #imm8
+- Important trap from prior batches still applies: for large byte offsets, writing the total offset directly can change Thumb addressing shape
+- Important metric note still applies: in this repo, some standalone conversions improve explicit C coverage without changing `matched_functions`, so both objdiff match metrics and linker/unit coverage must be tracked together
 
 ## Main takeaways
 
 1. **The repo builds cleanly and matches the USA ROM today** using a Dockerized `devkitpro/devkitarm` flow plus `pret/agbcc`.
-2. **The latest verified checkpoint says 5.9476986% matched code**, which is close to the user estimate, but that is **not the same thing as decompiled C coverage**.
+2. **The latest verified checkpoint says 5.960588% matched code**, which is close to the user estimate, but that is **not the same thing as decompiled C coverage**.
 3. A rough, repo-local heuristic based on current C definitions puts **explicit C function coverage closer to ~2.768% by function count** (`165 / 5961`).
 4. **Mizuchi is the better fit for pi** because it has a real CLI/server workflow.
 5. **Kappa is still useful**, but mostly as:
