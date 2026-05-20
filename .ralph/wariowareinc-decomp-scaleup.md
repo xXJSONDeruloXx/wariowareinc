@@ -9,16 +9,16 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1026 / 5961` = **17.211876%**
-- **Matched code percent:** **5.850829%**
-- **C units in linker graph:** `579 / 6687`
-- **ASM-only units in linker graph:** `6108`
+- **Matched functions:** `1031 / 5961` = **17.295755%**
+- **Matched code percent:** **5.858079%**
+- **C units in linker graph:** `584 / 6687`
+- **ASM-only units in linker graph:** `6103`
 - **ROM status:** `wariowareinc.gba: OK`
 - **Accepted delta vs prior verified baseline:** `+5 matched functions`, `+5 C units`, `-5 asm-only units`
 
 ## Current Working State
-- HEAD is matching after a clean Docker build and includes a verified 5-function `gCurrentSceneVariable` setter batch.
-- The latest accepted files are `asm_0801ae64`, `asm_080a7c5c`, `asm_080c4a5c`, `asm_080d6f4c`, and `asm_080d6fe4`.
+- HEAD is matching after a clean Docker build and includes a verified 5-function mixed `gCurrentSceneVariable` helper batch.
+- The latest accepted files are `asm_0801ec38`, `asm_080208cc`, `asm_080258dc`, `asm_080258ec`, and `asm_080258fc`.
 - `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
 - `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
@@ -193,6 +193,8 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - zero-init
 - repeated standalone `BX LR` batches can improve linker/unit C coverage even when `matched_functions` stays flat
 - short direct `gCurrentSceneVariable` setters can move both matched-function totals and linker/unit coverage
+- short `gCurrentSceneVariable` pointer-deref helpers like `u8 *p = *(u8 **)((u8 *)gCurrentSceneVariable + off); *p = 1;` can also match cleanly
+- preflighting candidate C spellings as object files before linker edits is effective for short standalone TU batches
 
 ## Current Known Traps / Non-Matching Patterns
 - grouping multiple functions in one C file breaks ROM matching
@@ -204,7 +206,7 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - for large byte offsets, writing the full offset directly can change Thumb address splitting (`+0x26` / `[+0]` instead of `+8` / `[+0x1E]`); shape the pointer expression to preserve the original immediate split
 
 ## Next Candidate Queue
-1. continue mining short direct `gCurrentSceneVariable` setters/getters with already-matched siblings
+1. continue mining short `gCurrentSceneVariable` helper families where one validated spelling can fan out to multiple siblings
 2. mine short `LDR global; STR/STRB/STRH` setters that do not use risky symbol+offset forms
 3. mine short `LDR global; LDR/LDRB/LDRH` getters and bitfield extracts that already have matched siblings
 4. selectively harvest more `BX LR` leaves only when we want cheap C-unit coverage gains
@@ -245,3 +247,10 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
   - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `579 C / 6108 asm-only units`
   - Learnings: direct `gCurrentSceneVariable` setter families are good targets, but large byte offsets may need pointer shaping to preserve the original Thumb immediate split (`+8` then `[+0x1E]` instead of `+0x26` then `[+0]`)
   - Next action: commit code + docs together, push immediately, then continue mining short direct `gCurrentSceneVariable` setters/getters with matched siblings
+- **Iteration 6**
+  - Candidate set: a mixed 5-function `gCurrentSceneVariable` helper family — `asm_0801ec38`, `asm_080208cc`, `asm_080258dc`, `asm_080258ec`, `asm_080258fc`
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1026 -> 1031 matched functions` (**+5**), `matched_code_percent 5.850829% -> 5.858079%`, linker/unit coverage `579 C / 6108 asm-only -> 584 C / 6103 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `584 C / 6103 asm-only units`
+  - Learnings: once a candidate spelling is preflighted successfully at the object-file level, near-identical siblings become cheap verified wins; both pointer-deref stores (`*(u8 **)(base + off)`) and repeated direct byte-flag initializers matched cleanly in this batch
+  - Next action: commit code + docs together, push immediately, then continue mining sibling-rich `gCurrentSceneVariable` helper families

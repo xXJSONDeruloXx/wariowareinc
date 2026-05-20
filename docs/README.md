@@ -11,13 +11,14 @@ This docs set records a real tooling pass over `wariowareinc`, focused on:
 ## Latest verified scale-up checkpoint (2026-05-20)
 
 - Clean Docker build: `wariowareinc.gba: OK`
-- `make report`: **1026 / 5961 matched functions = 17.211876%**
-- `matched_code_percent`: **5.850829%**
-- `tools/gen_objdiff.py`: **579 C / 6108 asm-only units**
-- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1021 -> 1026`, `574 -> 579`)
-- Latest successful pattern: five short direct `gCurrentSceneVariable` setters converted in `src/decomp/` and kept byte-identical after moving their original asm to `asm/converted/`
-- New trap from this batch: for large byte offsets, writing the total offset directly can change Thumb addressing shape. `*(u8 *)((u8 *)gCurrentSceneVariable + 0x26) = N;` compiled as `adds #0x26; strb #0`, but the target required `adds #8; strb #0x1e`. Using an intermediate pointer (`u8 *p = (u8 *)gCurrentSceneVariable + 8; p[0x1E] = N;`) restored the original codegen.
-- Important metric note from the prior batch still applies: in this repo, some standalone conversions improve explicit C coverage without changing `matched_functions`, so both objdiff match metrics and linker/unit coverage must be tracked together.
+- `make report`: **1031 / 5961 matched functions = 17.295755%**
+- `matched_code_percent`: **5.858079%**
+- `tools/gen_objdiff.py`: **584 C / 6103 asm-only units**
+- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1026 -> 1031`, `579 -> 584`)
+- Latest successful pattern: five short `gCurrentSceneVariable` helper/setter functions converted in `src/decomp/`, including two pointer-deref stores and a repeated triple of identical byte-flag initializers
+- New proven workflow detail: preflighting candidate C spellings by compiling just the object files and diffing their disassembly/section sizes against the original asm objects is an effective way to de-risk standalone TU batches before linker edits
+- Important trap from the prior batch still applies: for large byte offsets, writing the total offset directly can change Thumb addressing shape. `*(u8 *)((u8 *)gCurrentSceneVariable + 0x26) = N;` compiled as `adds #0x26; strb #0`, but the target required `adds #8; strb #0x1e`. Using an intermediate pointer (`u8 *p = (u8 *)gCurrentSceneVariable + 8; p[0x1E] = N;`) restored the original codegen.
+- Important metric note still applies: in this repo, some standalone conversions improve explicit C coverage without changing `matched_functions`, so both objdiff match metrics and linker/unit coverage must be tracked together.
 
 ## Main takeaways
 
