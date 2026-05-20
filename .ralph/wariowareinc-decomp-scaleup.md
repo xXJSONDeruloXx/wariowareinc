@@ -9,16 +9,16 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1061 / 5961` = **17.799026%**
-- **Matched code percent:** **5.915476%**
-- **C units in linker graph:** `614 / 6687`
-- **ASM-only units in linker graph:** `6073`
+- **Matched functions:** `1076 / 5961` = **18.050663%**
+- **Matched code percent:** **5.9476986%**
+- **C units in linker graph:** `624 / 6687`
+- **ASM-only units in linker graph:** `6063`
 - **ROM status:** `wariowareinc.gba: OK`
 - **Accepted delta vs prior verified baseline:** `+5 matched functions`, `+5 C units`, `-5 asm-only units`
 
 ## Current Working State
-- HEAD is matching after a clean Docker build and includes a verified 5-function tiny sound-wrapper batch.
-- The latest accepted files are `asm_080c6940`, `asm_080d8e8c`, `asm_080d8e9c`, `asm_080eac04`, and `asm_080eac14`.
+- HEAD is matching after a clean Docker build and includes a verified 5-function `D_03006520` compare-and-call wrapper batch.
+- The latest accepted files are `asm_0801d2f0`, `asm_0801eca0`, `asm_08020968`, `asm_08022090`, and `asm_08022938`.
 - `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
 - `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
@@ -92,7 +92,7 @@ For every iteration, follow this exact loop:
 5. If mismatch:
    - binary-search the batch
    - identify the failing pattern or function
-   - revert/fix
+   - revert or fix them
    - record the trap
 6. If the ROM matches:
    - run `make report`
@@ -202,6 +202,8 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - raw-pointer entry setters with `*(u16 *)&... = arg2 << 8;` can also match cleanly for halfword fields in the same family
 - pair-add helpers of the form `u32 *arg0; arg0[1] += arg0[a]; arg0[2] += arg0[b];` can match cleanly across sibling families with different source indices
 - tiny sound wrappers can match cleanly with absolute-address spellings like `stop_sound((struct SongHeader *)0x083FF348);` and `func_0800C7CC((void *)0x083FDB88);` when those ROM data symbols are not exported as normal C symbols
+- `if (D_03006520 == IMM) func_target();` wrappers can match cleanly across sibling families when `D_03006520` comes from `src/beatscript.h`
+- `LDRH`-based compare-and-call wrappers around `D_03006520` continue to be a strong sibling family when the compare immediate and callee are the only differences
 - preflighting candidate C spellings as object files before linker edits is effective for short standalone TU batches
 
 ## Current Known Traps / Non-Matching Patterns
@@ -211,13 +213,14 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - `POP {R1}; BX R1` wrappers are not safe under agbcc’s normal output
 - `((u8 *)&gBeatscriptScene)[N]` may compile as a **symbol+offset literal relocation** instead of loading the base symbol and using `[base, #N]`
 - even when function bytes look close, TU-level padding/alignment can still break the final ROM; compare `.text` section sizes when a full-ROM mismatch survives seemingly matched code
+- raw `.text` bytes from relocatable C-vs-asm object preflights can differ for extern-backed address loads because the C object may keep an `R_ARM_ABS32` relocation where the hand asm already bakes the literal; use instruction flow, `.text` size, and final linked-ROM verification as the real gate
 - for large byte offsets, writing the full offset directly can change Thumb address splitting (`+0x26` / `[+0]` instead of `+8` / `[+0x1E]`); shape the pointer expression to preserve the original immediate split
 
 ## Next Candidate Queue
-1. continue mining sibling-rich families where one validated spelling can fan out to multiple siblings, including pair-add helpers, raw-pointer entry setters, and tiny sound wrappers
-2. continue mining sibling-rich one-call wrapper families, especially `scene_set_current_thread` groups that differ only by store offset/value or object-field offset
-3. continue mining short `gCurrentSceneVariable` sibling families where one validated spelling can fan out to multiple siblings
-4. mine short `LDR global; STR/STRB/STRH` setters that do not use risky symbol+offset forms
+1. continue the newly validated `D_03006520` compare-and-call family, especially the remaining siblings like `asm_0802295c`, `asm_08022980`, and `asm_08024208`
+2. continue mining sibling-rich families where one validated spelling can fan out to multiple siblings, including pair-add helpers, raw-pointer entry setters, and tiny sound wrappers
+3. continue mining sibling-rich one-call wrapper families, especially `scene_set_current_thread` groups that differ only by store offset/value or object-field offset
+4. continue mining short `gCurrentSceneVariable` sibling families where one validated spelling can fan out to multiple siblings
 5. mine short `LDR global; LDR/LDRB/LDRH` getters and bitfield extracts that already have matched siblings
 
 ## Reflection Checkpoint (Iteration 6)
@@ -325,3 +328,21 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
   - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `614 C / 6073 asm-only units`
   - Learnings: when ROM-resident `D_083...` song data is not exported as a normal C symbol, direct absolute-address casts like `(struct SongHeader *)0x083FF348` and `(void *)0x083FDB88` can preserve the exact literal-pool behavior and still match cleanly after object preflight
   - Next action: commit code + docs together, push immediately, then continue mining small sibling-rich wrapper and helper families
+
+- **Iteration 13**
+  - Candidate set: a 5-function `D_03006520` compare-and-call wrapper family — `asm_08016a9c`, `asm_08016b34`, `asm_0801badc`, `asm_0801c368`, `asm_0801cfd8`
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1061 -> 1071 matched functions` (**+10**), `matched_code_percent 5.915476% -> 5.935615%`, linker/unit coverage `614 C / 6073 asm-only -> 619 C / 6068 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `619 C / 6068 asm-only units`
+  - Accepted commit: `0acf010e` (`feat: add D_03006520 wrapper batch`), pushed to `origin/docs/macabeus-tooling-assessment`
+  - Learnings: small state-guard wrappers of the form `if (D_03006520 == IMM) func_target();` are a productive sibling family; object preflight still worked here, but the source-built objects kept an `R_ARM_ABS32` relocation for `D_03006520` while the original asm already contained the fixed literal, so instruction flow + `.text` size + final linked-ROM verification were the right acceptance checks
+  - Next action: continue the remaining `D_03006520` compare-wrapper siblings before pivoting back to lower-yield one-offs
+
+- **Iteration 14**
+  - Candidate set: a 5-function `D_03006520` compare-and-call wrapper family — `asm_0801d2f0`, `asm_0801eca0`, `asm_08020968`, `asm_08022090`, `asm_08022938`
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1071 -> 1076 matched functions` (**+5**), `matched_code_percent 5.935615% -> 5.9476986%`, linker/unit coverage `619 C / 6068 asm-only -> 624 C / 6063 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `624 C / 6063 asm-only units`
+  - Accepted commit: `d4aaeb5f` (`feat: add D_03006520 wrapper siblings`), pushed to `origin/docs/macabeus-tooling-assessment`
+  - Learnings: the same `LDRH D_03006520; CMP #imm; BL func` spelling remains reusable across more siblings when only the compare constant and callee change, so the family is still a strong target class
+  - Next action: continue mining the remaining `D_03006520` siblings (`asm_0802295c`, `asm_08022980`, `asm_08024208`) and then pivot to the next best wrapper/helper family
