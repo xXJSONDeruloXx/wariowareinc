@@ -33,6 +33,13 @@ Target: **4768 / 5961 matched functions**
 - **Commit:** `9796ba11`, pushed
 - **Learnings:** (1) D_ absolute address stores work when the offset is 0 (direct STRB/STRH/STR) — C and asm both load the final address (2) D_ with non-zero offsets (e.g., STR R0,[R1,#4]) produce different machine code than C with *(type *)(base+4) because agbcc loads the computed address while asm loads the base and uses an offset instruction (3) gCurrentSceneVariable simple deref + store patterns match well when C uses `(u8 *)gCurrentSceneVariable` pointer arithmetic
 
+## Iteration 26 — accepted
+- **Candidate set:** 5-function batch — `asm_080623fc` (gCSV shift-offset word clear), `asm_080266f0` (offset tail-call), `asm_0801bd30` (two-call wrapper: scene_set_current_thread + func), `asm_080c4368` (one-call+store wrapper), `asm_080c4a48` (gCSV s16 add — REVERTED)
+- **Result:** match after reverting asm_080c4a48 (missing sign-extension LSLS/ASRS pair)
+- **Metric delta:** matched_functions 1137→1141 (+4), matched_code_percent 6.013328%→6.020377%, C units 685→689, asm-only 6002→5998
+- **Commit:** `ceba332e`, pushed
+- **Learnings:** (1) gCSV shift-computed offsets like `(0xBD << 4)` can match when agbcc emits the same MOVS+LSLS pair (2) `scene_set_current_thread` wrappers with one-BL calls still match cleanly (3) `(s16)arg0` doesn't produce LSLS/ASRS sign-extension in agbcc — need explicit sign extension C spelling
+
 ## Checklist (next batch priorities)
 - [ ] Select next 5-function candidate batch from proven sibling families
 - [ ] Preflight candidates at object-file level
