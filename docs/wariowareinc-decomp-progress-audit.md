@@ -13,66 +13,23 @@ This audit was done against:
 
 ## 0. Latest verified checkpoint (2026-05-20)
 
-A mixed `D_03006520` two-call guard + BX LR empty-stub batch was verified successfully on `docs/macabeus-tooling-assessment`.
-
-### Verification commands
-
-```bash
-docker run --rm -v "$PWD:/workspace" -w /workspace devkitpro/devkitarm:latest \
-  bash -lc 'set -euo pipefail; make clean >/dev/null 2>&1; make -j4 2>&1 | tail -n 5'
-```
-
-Success signal:
-
-- `wariowareinc.gba: OK`
+A BX LR empty-stub batch was verified successfully.
 
 ### Latest verified metrics
 
-- `matched_functions`: **1086 / 5961**
-- `matched_functions_percent`: **18.21842%**
-- `matched_code_percent`: **5.9668307%**
-- `tools/gen_objdiff.py`: **634 C / 6053 asm-only units**
-- previous verified baseline used by this checkpoint: **1081 / 5961**, **629 C / 6058 asm-only units**
-- accepted delta for this batch: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
+- `matched_functions`: **1091 / 5961** = **18.302298%**
+- `matched_code_percent`: **5.967838%**
+- `tools/gen_objdiff.py`: **639 C / 6048 asm-only units**
+- previous verified baseline: **1086 / 5961**, **634 C / 6053 asm-only units**
+- accepted delta: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
-### Files accepted in this batch
+### Files accepted
 
-Verified C conversions kept:
-
-- `src/decomp/asm_08021338.c` (two-call D_03006520 guard, CMP #0x0A)
-- `src/decomp/asm_08021540.c` (two-call D_03006520 guard, CMP #0x14)
-- `src/decomp/asm_08016f58.c` (BX LR empty stub)
-- `src/decomp/asm_0801749c.c` (BX LR empty stub)
-- `src/decomp/asm_080179dc.c` (BX LR empty stub)
-
-Original asm files were moved to `asm/converted/`:
-
-- `asm/converted/asm_08021338.s`
-- `asm/converted/asm_08021540.s`
-- `asm/converted/asm_08016f58.s`
-- `asm/converted/asm_0801749c.s`
-- `asm/converted/asm_080179dc.s`
+- `src/decomp/asm_08008130.c`, `src/decomp/asm_0801684c.c`, `src/decomp/asm_08016f5c.c`, `src/decomp/asm_080174a0.c`, `src/decomp/asm_080179e0.c`
 
 ### What worked
 
-- The two-call `D_03006520` guard family continues to match cleanly: `if (D_03006520 == IMM) { func1(); func2(); }`
-- BX LR empty stubs (`void func(void) {}`) remain a reliable filler pattern for linker/unit coverage
-
-### Durable workflow lesson reinforced
-
-Mixing two pattern families in one batch (two-call guards + BX LR stubs) works fine when both patterns are independently proven. This allows filling small batches when one family doesn't have enough remaining siblings.
-
-### Prior traps carried forward
-
-The earlier repair lessons still matter:
-
-- direct `((u8 *)&gBeatscriptScene)[N]` expressions can compile as symbol-plus-offset literal relocations
-- for large byte offsets, direct total-offset spelling can alter Thumb address splitting
-- when a small conversion unexpectedly breaks the ROM, compare both disassembly and TU `.text` size
-
-### Nearly-failed / avoid next time
-
-None in this batch — all five conversions matched on the first attempt.
+BX LR empty stubs (`void func(void) {}`) continue as reliable filler. ROM matched on first attempt.
 
 ## 1. Real build baseline
 

@@ -269,7 +269,7 @@ SECTIONS {
         build/asm/asm_08008038.s.o(.text*);
         build/asm/asm_08008058.s.o(.text*);
         build/asm/asm_0800806c.s.o(.text*);
-        build/asm/asm_08008130.s.o(.text*);
+        build/src/decomp/asm_08008130.c.o(.text*);
         build/src/scenes/gameplay.c.o(.text);
         build/src/beatscript.c.o(.text);
         build/src/bitmap_font.c.o(.text);
@@ -459,7 +459,7 @@ SECTIONS {
         build/asm/asm_08016798.s.o(.text*);
         build/asm/asm_080167d4.s.o(.text*);
         build/asm/asm_08016808.s.o(.text*);
-        build/asm/asm_0801684c.s.o(.text*);
+        build/src/decomp/asm_0801684c.c.o(.text*);
         build/asm/asm_08016850.s.o(.text*);
         build/src/decomp/asm_08016884.c.o(.text*);
         build/asm/asm_08016894.s.o(.text*);
@@ -490,7 +490,7 @@ SECTIONS {
         build/asm/asm_08016ef8.s.o(.text*);
         build/asm/asm_08016f14.s.o(.text*);
         build/src/decomp/asm_08016f58.c.o(.text*);
-        build/asm/asm_08016f5c.s.o(.text*);
+        build/src/decomp/asm_08016f5c.c.o(.text*);
         build/asm/asm_08016f60.s.o(.text*);
         build/src/decomp/asm_08016f7c.c.o(.text*);
         build/src/decomp/asm_08016f8c.c.o(.text*);
@@ -515,7 +515,7 @@ SECTIONS {
         build/asm/asm_080172a8.s.o(.text*);
         build/asm/asm_0801743c.s.o(.text*);
         build/src/decomp/asm_0801749c.c.o(.text*);
-        build/asm/asm_080174a0.s.o(.text*);
+        build/src/decomp/asm_080174a0.c.o(.text*);
         build/asm/asm_080174a4.s.o(.text*);
         build/asm/asm_080174c8.s.o(.text*);
         build/asm/asm_08017604.s.o(.text*);
@@ -532,7 +532,7 @@ SECTIONS {
         build/asm/asm_08017930.s.o(.text*);
         build/asm/asm_080179a8.s.o(.text*);
         build/src/decomp/asm_080179dc.c.o(.text*);
-        build/asm/asm_080179e0.s.o(.text*);
+        build/src/decomp/asm_080179e0.c.o(.text*);
         build/asm/asm_080179e4.s.o(.text*);
         build/asm/asm_08017a2c.s.o(.text*);
         build/src/decomp/asm_08017a30.c.o(.text*);
