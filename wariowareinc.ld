@@ -997,7 +997,7 @@ SECTIONS {
         build/asm/asm_08022818.s.o(.text*);
         build/asm/asm_08022850.s.o(.text*);
         build/asm/asm_08022898.s.o(.text*);
-        build/asm/asm_0802292c.s.o(.text*);
+        build/src/decomp/asm_0802292c.c.o(.text*);
         build/asm/asm_08022938.s.o(.text*);
         build/src/decomp/asm_08022950.c.o(.text*);
         build/asm/asm_0802295c.s.o(.text*);
