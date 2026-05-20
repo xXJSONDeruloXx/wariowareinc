@@ -1,423 +1,198 @@
-# `wariowareinc` decomp progress audit and smoke-test log
+# WarioWare Inc. Decompilation Scale-Up
 
-## Scope
+## Goal
+Reach **80% matched/decompiled-function progress** on the `docs/macabeus-tooling-assessment` branch in `/Users/kurt/Developer/wariowareinc`, while preserving a **byte-identical ROM match** at every accepted milestone.
 
-This audit was done against:
+Target function count:
+- **4768 / 5961 matched functions**
 
-- repo: `xXJSONDeruloXx/wariowareinc`
-- branch: `docs/macabeus-tooling-assessment`
-- ROM: `WarioWare, Inc. - Mega Microgame$! (USA).gba`
-- verified SHA1: `3f556448d290fa5406d6ed367fee16cc02387ad3`
+## Latest Verified Baseline
+Use this as the starting point until a newer verified `make report` run replaces it.
 
----
+- **Matched functions:** `1111 / 5961` = **18.637812%**
+- **Matched code percent:** **5.976095%**
+- **C units in linker graph:** `659 / 6687`
+- **ASM-only units in linker graph:** `6028`
+- **ROM status:** `wariowareinc.gba: OK`
+- **Accepted delta vs prior verified baseline:** `+5 matched functions`, `+5 C units`, `-5 asm-only units`
 
-## 0. Latest verified checkpoint (2026-05-20)
+## Current Working State
+- HEAD is matching after a clean Docker build and includes a verified batch of 5 BX LR empty stubs.
+- The latest accepted files are `asm_08008130`, `asm_0801684c`, `asm_08016f5c`, `asm_080174a0`, and `asm_080179e0`.
+- `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
+- `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
-A small-body function batch (dec-counter, store-advance, struct-field-arithmetic, mul-acc) was verified successfully, following a batch of byte-extract/combine/struct-init functions.
+## Success Criteria For Any Accepted Progress
+A batch only counts as real progress if all of the following are true:
+1. The ROM still matches exactly.
+2. `make report` has been rerun.
+3. At least one measurable metric improved versus the previously documented verified baseline.
+4. The improvement, learnings, traps, and next actions were documented in `/docs`.
+5. The code changes **and** the documentation updates were committed and pushed together.
 
-### Latest verified metrics
+## Primary Measurable Metrics
+Track these explicitly after each successful batch:
+- `build/report.json`:
+  - `matched_functions`
+  - `matched_functions_percent`
+  - `matched_code_percent`
+- `wariowareinc.ld` / objdiff-style unit coverage:
+  - number of `build/src/...` units
+  - number of asm-only units
 
-- `matched_functions`: **1121 / 5961** = **18.805569%**
-- `matched_code_percent`: **5.986366%**
-- `tools/gen_objdiff.py`: **669 C / 6018 asm-only units**
-- previous verified baseline: **1111 / 5961**, **659 C / 6028 asm-only units**
-- accepted delta: **+10 matched functions** (two 5-function batches), **+10 C units**, **-10 asm-only units**
+## Hard Rules
+1. **One function per C file** in `src/decomp/` — grouping breaks ROM match.
+2. **Move converted `.s` files to `asm/converted/`** — prevents wildcard collision and linker errors.
+3. **Update `wariowareinc.ld`** for every standalone TU conversion:
+   - swap `build/asm/X.s.o(.text*);`
+   - to `build/src/decomp/X.c.o(.text*);`
+4. **Every accepted batch must pass a clean Docker build** and report `wariowareinc.gba: OK`.
+5. **Every accepted batch must rerun `make report`** and refresh the documented baseline.
+6. **Any measurable improvement must be committed and pushed immediately** — do not leave verified progress sitting locally.
+7. **Documentation is mandatory for every measurable improvement**:
+   - update `docs/README.md` if the headline metrics changed
+   - update `docs/wariowareinc-decomp-progress-audit.md` with new metrics and what changed
+   - update any other relevant `/docs` file with tooling/workflow learnings, traps, or pattern notes
+8. `#include "global.h"` at the top of every C file; add `#include "types.h"` when referencing g-symbols from `types.h`.
+9. **g-symbol references**: prefer `#include "types.h"` over bare `extern` declarations — bare `extern u32 gSym;` can cause type conflicts.
+10. **D_ symbols**: use `*(volatile u8/u16/u32 *)0xNNNNNNNN` syntax with `u32` arg type; only offset `0` is known-good here.
+11. **Function pointer + 1 syntax**: use `(void *)(funcptr + 1)` cast or a symbol form proven to preserve literal-pool behavior.
+12. **If a build mismatches**: binary-search the new conversions, isolate the bad function(s), revert or fix them, and document the trap.
+13. **POP {R0}/BX R0 vs POP {R1}/BX R1**: agbcc emits `POP {R0}; BX R0`. Functions whose original ROM uses `POP {R1}; BX R1` are not safe matches for the simple wrapper strategy.
 
-### Files accepted
-
-- `src/decomp/asm_080c4794.c` (byte-extract: LSLS#16, LSRS#24)
-- `src/decomp/asm_080f2c44.c` (byte-combine: LDRB, LSLS#8, LDRB, ORRS)
-- `src/decomp/asm_080cd708.c` (dual-zero-word: MOVS#0, STR offset 0x28, STR offset 0x2C)
-- `src/decomp/asm_080f2780.c` (struct init: byte[6], word[8], byte[7] zeroed)
-- `src/decomp/asm_08002fb4.c` (struct init: word[0], byte[5], byte[4] zeroed)
-- `src/decomp/asm_080039b4.c` (dec-counter: LDR, SUBS#1, STR, LDRB)
-- `src/decomp/asm_0800397c.c` (store-advance: LDR, STRB, ADDS#1, STR)
-- `src/decomp/asm_08062f00.c` (field-arithmetic: LDR, ADDS#0x40, STR, LDR, ADDS, STR)
-- `src/decomp/asm_080f2774.c` (struct init: MOVS R2=0, MOVS R1=1, STRB word[6]=1, STR word[8]=0, STRB byte[7]=0)
-- `src/decomp/asm_080bb344.c` (mul-acc: LDR, MULS, ASRS, ADDS, STR)
-
-### What worked
-
-Self-contained small-body functions (3-7 instructions, no extern references) remain the highest-yield target class. Key C spellings validated:
-- `*counter -= 1; return *(u8 *)(*counter)` for dec-pointer patterns
-- `u8 *p = *pp; *p = val; *pp = p + 1` for store-advance (avoids reload from memory)
-- `fields[N] += imm; fields[M] += fields[N]` for field arithmetic
-- `(s32)val * (s32)mul) >> 8` for MULS + ASRS signed multiply-shift
-- `u32 zero = 0;` shared variable avoids redundant MOVS between mixed-width zero stores
-
-## 1. Real build baseline
-
-A real build baseline was established with Docker, following the repo’s CI shape rather than guessing at a host-native setup.
-
-### Container path used
-
-- image: `devkitpro/devkitarm:latest`
-- repo-local `tools/agbcc` installed from `pret/agbcc`
-- `baserom.gba` copied into repo root
-
-### Result
-
-The repo built successfully and produced a matching ROM:
-
+## Required Commands
+### Clean Docker build
+```bash
+docker run --rm -v "$PWD:/workspace" -w /workspace devkitpro/devkitarm:latest \
+  bash -lc 'set -euo pipefail; make clean >/dev/null 2>&1; make -j4 2>&1 | tail -n 3'
+```
+Required success signal:
 - `wariowareinc.gba: OK`
 
-That matters because every later assessment is grounded in a **known-good, reproducible, matching baseline**.
+### Refresh report
+```bash
+docker run --rm -v "$PWD:/workspace" -w /workspace devkitpro/devkitarm:latest \
+  bash -lc 'set -euo pipefail; make report 2>&1 | tail -n 3'
+```
+Then parse:
+- `build/report.json`
 
----
+### Refresh linker / unit coverage snapshot
+```bash
+python3 tools/gen_objdiff.py
+```
+Use its totals or recompute directly from `wariowareinc.ld`.
 
-## 2. Progress numbers: what they mean and what they do not mean
+## How to Call `ralph_done` (CRITICAL - Read Before Every Iteration)
 
-## `make report` result
+`ralph_done` is a **tool call** — not text output. You must invoke it as a tool with an empty arguments object `{}`.
 
-Running `make report` produced:
+**When to call it:**
+- After completing work in the current iteration
+- After updating this task file with your progress
+- **Never** output the word "ralph_done" as text in your response
+- **Never** wrap it in code blocks or quotes
 
-- `matched_code_percent`: **5.4086823%**
-- `matched_functions`: **471**
-- `total_functions`: **5961**
-- `matched_functions_percent`: **7.901359%**
+**Correct usage:**
+```
+ralph_done({})
+```
 
-### Important interpretation
+**What happens next:**
+1. Pi receives the tool call and advances the loop counter
+2. Context is compacted (if `compactEachRound: true`)
+3. You receive the next iteration's task prompt
 
-This is **not** a pure “how much source is now decompiled into C” number.
+**Common mistakes to avoid:**
+- ❌ Writing "I'll call ralph_done now" as text (invoke the tool instead)
+- ❌ Outputting `ralph_done()` or `ralph_done({})` as text/code (these are tool invocations)
+- ❌ Confusing `ralph_done` with `<promise>COMPLETE</promise>`:
+  - `ralph_done({})` tool call = advance to next iteration (loop continues)
+  - `<promise>COMPLETE</promise>` text = end the entire loop (all done)
 
-Why:
+### Tool Call Format Reference
 
-- this repo still contains many asm stubs included from C translation units
-- matched code in objdiff-style reporting can still come from inline asm, not from newly written C
+When calling `ralph_done`, your response content array must include a `toolCall` item with these exact fields:
 
-So `~5.41%` is a good **matched-code** number, but it should **not** be read as “5.41% of the game is already decompiled into handwritten C”.
+| Field | Value | Notes |
+|-------|-------|-------|
+| `type` | `"toolCall"` | Required |
+| `id` | Any non-empty string | e.g., `"call_1"`, `"ralph_abc123"` |
+| `name` | `"ralph_done"` | Must match exactly |
+| `arguments` | `{}` | Empty object, no fields |
 
----
+Your response must also have `stopReason: "toolUse"` to signal Pi to execute the tool.
 
-## 3. Heuristic decomp estimate from current source layout
-
-A rough repo-local heuristic after the smoke-test replacements:
-
-- C function definitions found in `src/**/*.c`: **165**
-- inline asm stub includes still present in `src/**/*.c`: **306**
-- total functions from report: **5961**
-
-### Heuristic ratio
-
-- `165 / 5961 = 2.7680%`
-
-### My read
-
-That puts the repo’s current **explicit C-defined function coverage** closer to:
-
-- **~2.77% by function count**
-
-while the objdiff matched-code report sits around:
-
-- **~5.41% by matched code bytes**
-
-### Best practical summary
-
-If someone says:
-
-- “the repo is around 5% decomped”
-
-my answer would be:
-
-- **that is fair if they mean matched-code progress**
-- **it is optimistic if they mean pure C replacement coverage**
-
----
-
-## 4. Real asm→C smoke tests completed
-
-Two real asm stubs were replaced with C in the repo, rebuilt, and verified against the matching baseline.
-
-## Smoke test 1: `mem_heap_alloc`
-
-### File
-
-- `src/memory_heap.c`
-
-### Original state
-
-- inline asm include stub:
-  - `#include "asm/memory_heap/asm_08006174.s"`
-
-### Replacement
-
-```c
-void *func_08006184(u16 heapId, u32 size);
-
-void *mem_heap_alloc(u32 size) {
-    return func_08006184(0, size);
+**Example structure:**
+```json
+{
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "toolCall",
+      "id": "call_abc123",
+      "name": "ralph_done",
+      "arguments": {}
+    }
+  ],
+  "stopReason": "toolUse"
 }
 ```
 
-### Verification
-
-- full Docker build still matched the ROM
-- symbol disassembly matched the saved target object for the function body:
-
-```asm
-00000000 <mem_heap_alloc>:
-   0:    b500        push    {lr}
-   2:    1c01        adds    r1, r0, #0
-   4:    2000        movs    r0, #0
-   6:    f7ff fffe   bl      10 <func_08006184>
-   a:    bc02        pop     {r1}
-   c:    4708        bx      r1
-```
-
-## Smoke test 2: `func_0800A270`
-
-### File
-
-- `src/beatscript.c`
-
-### Original state
-
-- inline asm include stub:
-  - `#include "asm/beatscript/asm_0800a270.s"`
-
-### Replacement
-
-```c
-void write_save_main(void);
-
-void func_0800A270(void) {
-    write_save_main();
-}
-```
-
-### Verification
-
-- full Docker build still matched the ROM
-- symbol disassembly matched the saved target object for the function body:
-
-```asm
-00000a9c <func_0800A270>:
- a9c:    b500        push    {lr}
- a9e:    f7ff fffe   bl      0 <write_save_main>
- aa2:    bc01        pop     {r0}
- aa4:    4700        bx      r0
-```
+**Warning:** Some providers (e.g., NVIDIA/z-ai/glm-5.1) have been observed emitting empty `id` and `name` fields. If you see "Tool not found" errors, verify your tool call has non-empty `id` and the exact `name: "ralph_done"`.
 
 ---
 
-## 5. Important finding about what does and does not move `make report`
-
-After replacing the first two included asm stubs with matching C, `make report` stayed effectively unchanged.
-
-That is not a contradiction.
-
-It means the report is primarily capturing **matched binary/code status**, not “this used to be inline asm inside a C unit and is now a real C function”.
-
-However, converting a **standalone asm-only leaf function** outside the existing C scaffold did move the official report slightly:
-
-- `matched_code_percent`: `5.4082794%` -> `5.4086823%`
-- `matched_functions`: `470` -> `471`
-- `tools/gen_objdiff.py`: `18 C / 6669 asm-only stubs` -> `19 C / 6668 asm-only stubs`
-
-That is a useful warning for future progress tracking:
-
-- **binary match metrics** and **decomped-C metrics** are not the same metric in this repo
-- but **standalone asm-only conversions do show up in the official report**
-
----
-
-## 5.1 Standalone asm-only proof point: `func_080F26D0`
-
-A tiny standalone asm file outside the pre-existing C translation units was converted successfully.
-
-### Original state
-
-- file: `asm/asm_080f26d0.s`
-- body:
-
-```asm
-STRB R1, [R0, #1]
-BX LR
-```
-
-### Replacement
-
-- new file: `src/asm_080f26d0.c`
-
-```c
-#include "global.h"
-
-void func_080F26D0(u8 *arg0, u8 arg1) {
-    arg0[1] = arg1;
-}
-```
-
-### Build-system changes needed
-
-Because this function was not an inline include stub, replacing it required:
-
-- filtering `asm/asm_080f26d0.s` out of `SFILES` in `Makefile`
-- swapping the linker-script entry in `wariowareinc.ld` from:
-  - `build/asm/asm_080f26d0.s.o(.text*);`
-  - to `build/src/asm_080f26d0.c.o(.text*);`
-
-### Result
-
-- full Docker build still matched the ROM
-- this did move the official report slightly
-
-This is the clearest proof so far that **progress outside the currently-C-scaffolded portion of the repo is absolutely achievable**, just a bit more invasive per function.
-
----
-
-## 6. Mizuchi smoke tests
-
-## 6.1 Built and launched successfully
-
-Completed:
-
-- `mizuchi` install/build
-- Decomp Atlas UI build
-- Atlas server launch on `http://localhost:3000`
-
-## 6.2 First problem found: inline asm wrapper format polluted prompts
-
-Before adding normalization, Atlas prompt output for inline asm stubs contained C-string wrapper artifacts such as:
-
-- escaped `\n\\`
-- trailing `");`
-
-That was a real repo-compatibility issue.
-
-## 6.3 Fix applied: normalized asm export mirror
-
-Added:
-
-- `tools/mizuchi/export-asm.py`
-
-This generates:
-
-- `.mizuchi-asm/asm/...`
-
-and converts inline wrapper files like:
-
-```c
-asm(".syntax unified \n\
-thumb_func_start func_0800A038 \n\
-...");
-```
-
-into clean raw asm text like:
-
-```asm
-.syntax unified
-
-thumb_func_start func_0800A038
-/* 0800A038 */ LDR R0, =gBeatscriptScene
-/* 0800A03A */ LDRH R0, [R0, #0XC]
-/* 0800A03C */ BX LR
-```
-
-After that change, Atlas prompts became substantially cleaner.
-
-## 6.4 Indexing result
-
-After normalization and re-indexing with:
-
-- `mizuchi index-codebase --skip-embeddings`
-
-result was:
-
-- total indexed by Mizuchi DB: **679**
-- matched: **164**
-- unmatched: **515**
-
-### Interpretation
-
-This is useful, but it is **not** the same total as objdiff’s `5961` function count.
-
-So today I would treat Mizuchi’s DB for this repo as:
-
-- a useful working subset for prompting and browsing
-- not yet a perfect whole-project accounting layer
-
-## 6.5 Isolated compile smoke test result
-
-The added helper path for isolated compilation is promising but not perfect yet.
-
-For a tiny empty function candidate (`func_0800BC0C`), isolated compilation produced:
-
-```asm
-00000000 <func_0800BC0C>:
-   0:    4770        bx      lr
-   2:    46c0        nop
-```
-
-while the current target object shows:
-
-```asm
-00000490 <func_0800BC0C>:
- 490:    4770        bx      lr
- 492:    0000        .short  0x0000
-```
-
-Likewise, an isolated compile of the simple `func_0800A270` wrapper produced a trailing `nop` where the target object shows trailing `0x0000` padding.
-
-### What that means
-
-- the **Dockerized isolated compile path works**, in the sense that it produces near-target code and can assemble objects successfully
-- but there is still a **tiny padding/alignment mismatch** at the function tail for some small functions
-
-That makes Mizuchi **usable but not fully dialed in** for this repo today.
-
----
-
-## 7. Shortlist of good next targets
-
-Based on current stub size and likely ease, these are strong early candidates:
-
-### Best first-tier candidates
-
-- `src/graphics_table.c`
-  - `func_08002468`
-  - `func_080025F8`
-  - `func_0800260C`
-- `src/bitmap_font.c`
-  - `func_0800BC0C`
-  - `func_0800BF34`
-- `src/beatscript.c`
-  - `func_0800A038`
-  - `func_0800A044`
-  - `func_0800A050`
-  - `func_0800A128`
-  - `func_0800A218`
-- `src/scenes/main_menu.c`
-  - many tiny wrappers exist, but that file is crowded, so it is a slightly messier editing surface
-
-### Why these are good
-
-They are small enough that:
-
-- you can hand-audit the asm quickly
-- you can validate exact output rapidly
-- they give fast confidence that the workflow is sound
-
----
-
-## 8. Bottom line
-
-### Proven today
-
-- the repo builds and matches
-- small asm→C replacements are easy wins here
-- the user’s “~5%” intuition is reasonable for matched-code framing
-- actual C replacement coverage is probably lower than that
-- Mizuchi can be made meaningfully useful with repo-local glue
-- Kappa is more useful as a manual/human VS Code companion than as a pi-native automation path
-
-### My current practical estimate
-
-- **matched-code progress:** ~5.40868%
-- **explicit C-defined function progress (heuristic):** ~2.77%
-
-That is the clearest honest summary I can give after real builds and real smoke tests.
-
-
+## Iteration Workflow
+For every iteration, follow this exact loop:
+1. Select a narrow candidate set.
+2. State why those candidates were chosen.
+3. Convert the smallest safe batch first.
+4. Build in Docker.
+5. If mismatch:
+   - binary-search the batch
+   - identify the failing pattern or function
+   - revert or fix them
+   - record the trap
+6. If the ROM matches:
+   - run `make report`
+   - refresh unit coverage
+   - compare against the previous verified baseline
+7. If there is **measurable improvement**:
+   - update `/docs`
+   - commit code + docs together
+   - push immediately
+   - update the verified baseline in this task file
+8. If there is **no measurable improvement** but useful knowledge was gained:
+   - keep only changes that are still strategically useful and safe
+   - document the learning/trap if it affects future work
+   - do **not** claim progress that did not move a tracked metric
+9. Queue the next candidate batch based on what was learned.
+
+## Self-Correction Rules
+This loop must adapt, not just repeat.
+
+Trigger a strategy adjustment when any of these happen:
+- **2 consecutive iterations** with no measurable metric improvement
+- **2 consecutive mismatch batches** from the same pattern family
+- a supposedly safe pattern stops matching reliably
+- a documentation gap caused repeated confusion
+
+When triggered, do all of the following before continuing:
+1. Write down what was attempted.
+2. State exactly what failed or stagnated.
+3. Identify whether the issue was:
+   - candidate selection
+   - codegen pattern choice
+   - repo integration mechanics
+   - linker/script handling
+   - documentation gap
+4. Change the approach explicitly.
+5. Record the new rule or trap in `/docs` and in this task file.
+
+## Required Per-Iteration Record
+Keep this task file updated with a concise running record. After each completed iteration, update these sections.
 
 ### Iteration Log
 - iteration number
