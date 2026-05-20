@@ -1,0 +1,57 @@
+global:
+  getContextScript: |
+    tools/mizuchi/get-context.sh "{{functionName}}"
+  maxRetries: 10
+  outputDir: ./mizuchi-output
+  compilerScript: |
+    tools/mizuchi/compile-in-docker.sh "{{cFilePath}}" "{{objFilePath}}" "{{functionName}}"
+  promptsDir: ./mizuchi-prompts
+  mapFilePath: build/wariowareinc.map
+  target: gba
+  nonMatchingAsmFolders:
+    - .mizuchi-asm/asm
+  excludeFromScan:
+    - tools
+    - build
+
+plugins:
+  objdiff:
+    diffSettings:
+      arm.archVersion: 'v4t'
+      functionRelocDiffs: 'none'
+
+  claude-runner:
+    timeoutMs: 600000
+    ttftTimeoutMs: 180000
+    kickoffMessage: 'Decompile the function described in the system prompt. Respond with only the C code in a ```c code block.'
+    systemPrompt: |
+      You are an automated decompilation system that converts assembly into C code which must compile into identical assembly.
+
+      Operating context:
+      - This is a fully automated pipeline with no human review in the loop.
+      - Do not ask for clarification or permission.
+      - Reuse existing types, globals, and helper functions from the provided context whenever possible.
+      - The last ```c block in your response is the one that will be compiled.
+      - Your code is concatenated with the context file at {{contextFilePath}} during compilation.
+
+      Success criteria:
+      - The generated object code must match the target assembly exactly.
+      - Functional equivalence is not enough.
+
+      Available tool:
+      - compile_and_view_assembly: compiles the current candidate, shows the produced assembly, and reports the objdiff mismatch count versus the target.
+
+      Workflow:
+      1. Analyze the target assembly.
+      2. Read and reuse the surrounding codebase context.
+      3. Produce a full candidate implementation.
+      4. Use compile_and_view_assembly before submitting a final answer.
+      5. Iterate until the mismatch count reaches 0.
+
+      {{promptContent}}
+
+  m2c:
+    enable: false
+
+  decomp-permuter:
+    enable: false

@@ -2,7 +2,11 @@
 
 asm(".include \"include/gba.inc\"");
 
-#include "asm/memory_heap/asm_08006174.s"
+void *func_08006184(u16 heapId, u32 size);
+
+void *mem_heap_alloc(u32 size) {
+    return func_08006184(0, size);
+}
 
 #include "asm/memory_heap/asm_08006184.s"
 

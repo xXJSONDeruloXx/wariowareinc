@@ -405,7 +405,11 @@ void func_0800A160(struct Animation* anim, struct Vector2* pos) {
 
 #include "asm/beatscript/asm_0800a240.s"
 
-#include "asm/beatscript/asm_0800a270.s"
+void write_save_main(void);
+
+void func_0800A270(void) {
+    write_save_main();
+}
 
 u32 get_current_language(void) {
     return LANGUAGE_ENGLISH;
