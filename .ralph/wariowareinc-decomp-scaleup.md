@@ -10,7 +10,14 @@ Target: **4768 / 5961 matched functions**
 - **C units in linker graph:** 669 / 6687
 - **ASM-only units in linker graph:** 6018
 - **ROM status:** `wariowareinc.gba: OK`
-- **Gap to target:** +3647 more matched functions needed
+- **Gap to target:** 1126 → 4768 = need +3642 more matched functions
+
+## Iteration 23 — accepted
+- **Candidate set:** 5-function batch — `asm_0801e914` (BX LR stub), `asm_08005570` (D_03003FE8 byte setter), `asm_080656e4` (gCurrentSceneVariable decrement), `asm_080da190` (pair-add), `asm_080e5514` (pair-add sibling)
+- **Result:** match (after fixing `asm_08005570` — `u8` param caused unwanted truncation; switched to `u32`)
+- **Metric delta:** matched_functions 1121→1126 (+5), matched_code_percent 5.986366%→5.993805%, C units 669→674, asm-only 6018→6013
+- **Commit:** `234220c1`, pushed
+- **Learnings:** `u8` function params cause agbcc to emit `lsls/lsrs` truncation before `STRB`; use `u32` arg type when the original asm just does `STRB R0` without truncating
 
 ## Checklist (next batch priorities)
 - [ ] Select next 5-function candidate batch from proven sibling families
