@@ -13,7 +13,7 @@ This audit was done against:
 
 ## 0. Latest verified checkpoint (2026-05-20)
 
-A new `D_03006520` wrapper batch was verified successfully on `docs/macabeus-tooling-assessment`.
+A mixed `D_03006520` two-call guard + BX LR empty-stub batch was verified successfully on `docs/macabeus-tooling-assessment`.
 
 ### Verification commands
 
@@ -26,58 +26,49 @@ Success signal:
 
 - `wariowareinc.gba: OK`
 
-```bash
-docker run --rm -v "$PWD:/workspace" -w /workspace devkitpro/devkitarm:latest \
-  bash -lc 'set -euo pipefail; make report 2>&1 | tail -n 5'
-python3 tools/gen_objdiff.py
-```
-
 ### Latest verified metrics
 
-- `matched_functions`: **1081 / 5961**
-- `matched_functions_percent`: **18.134542%**
-- `matched_code_percent`: **5.960588%**
-- `tools/gen_objdiff.py`: **629 C / 6058 asm-only units**
-- previous verified baseline used by this checkpoint: **1076 / 5961**, **624 C / 6063 asm-only units**
+- `matched_functions`: **1086 / 5961**
+- `matched_functions_percent`: **18.21842%**
+- `matched_code_percent`: **5.9668307%**
+- `tools/gen_objdiff.py`: **634 C / 6053 asm-only units**
+- previous verified baseline used by this checkpoint: **1081 / 5961**, **629 C / 6058 asm-only units**
 - accepted delta for this batch: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_0802295c.c`
-- `src/decomp/asm_08022980.c`
-- `src/decomp/asm_08024208.c`
-- `src/decomp/asm_080233b8.c`
-- `src/decomp/asm_08021748.c`
+- `src/decomp/asm_08021338.c` (two-call D_03006520 guard, CMP #0x0A)
+- `src/decomp/asm_08021540.c` (two-call D_03006520 guard, CMP #0x14)
+- `src/decomp/asm_08016f58.c` (BX LR empty stub)
+- `src/decomp/asm_0801749c.c` (BX LR empty stub)
+- `src/decomp/asm_080179dc.c` (BX LR empty stub)
 
 Original asm files were moved to `asm/converted/`:
 
-- `asm/converted/asm_0802295c.s`
-- `asm/converted/asm_08022980.s`
-- `asm/converted/asm_08024208.s`
-- `asm/converted/asm_080233b8.s`
-- `asm/converted/asm_08021748.s`
+- `asm/converted/asm_08021338.s`
+- `asm/converted/asm_08021540.s`
+- `asm/converted/asm_08016f58.s`
+- `asm/converted/asm_0801749c.s`
+- `asm/converted/asm_080179dc.s`
 
 ### What worked
 
-- Three more simple `D_03006520` single-BL compare-and-call wrappers matched cleanly
-- The two-call variant `if (D_03006520 == IMM) { func1(); func2(); }` matched cleanly — this extends the family to wrappers that call two functions sequentially inside the guard
-- The large-immediate variant `if (D_03006520 == 500) func();` matched cleanly — agbcc correctly emits the `MOVS R0, #0xFA; LSLS R0, R0, #1; CMP R1, R0` sequence since 500 exceeds the Thumb `CMP #imm8` range
+- The two-call `D_03006520` guard family continues to match cleanly: `if (D_03006520 == IMM) { func1(); func2(); }`
+- BX LR empty stubs (`void func(void) {}`) remain a reliable filler pattern for linker/unit coverage
 
 ### Durable workflow lesson reinforced
 
-The `D_03006520` family continues to be productive. The proven `if (D_03006520 == IMM)` pattern extends naturally to:
-- Two-call guards: `if (D_03006520 == IMM) { func1(); func2(); }`
-- Large-immediate guards: `if (D_03006520 == 500) func();` (agbcc handles the Thumb immediate encoding)
+Mixing two pattern families in one batch (two-call guards + BX LR stubs) works fine when both patterns are independently proven. This allows filling small batches when one family doesn't have enough remaining siblings.
 
 ### Prior traps carried forward
 
 The earlier repair lessons still matter:
 
-- direct `((u8 *)&gBeatscriptScene)[N]` expressions can compile as symbol-plus-offset literal relocations instead of base-plus-immediate accesses
-- for large byte offsets, direct total-offset spelling can alter Thumb address splitting (`+0x26` / `[+0]` instead of `+8` / `[+0x1E]`)
-- when a small conversion unexpectedly breaks the ROM, compare both disassembly and TU `.text` size before deciding it is "close enough"
+- direct `((u8 *)&gBeatscriptScene)[N]` expressions can compile as symbol-plus-offset literal relocations
+- for large byte offsets, direct total-offset spelling can alter Thumb address splitting
+- when a small conversion unexpectedly breaks the ROM, compare both disassembly and TU `.text` size
 
 ### Nearly-failed / avoid next time
 
