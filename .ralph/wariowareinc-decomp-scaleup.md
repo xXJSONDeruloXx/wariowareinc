@@ -9,16 +9,16 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1041 / 5961` = **17.463512%**
-- **Matched code percent:** **5.876205%**
-- **C units in linker graph:** `594 / 6687`
-- **ASM-only units in linker graph:** `6093`
+- **Matched functions:** `1046 / 5961` = **17.547392%**
+- **Matched code percent:** **5.890302%**
+- **C units in linker graph:** `599 / 6687`
+- **ASM-only units in linker graph:** `6088`
 - **ROM status:** `wariowareinc.gba: OK`
 - **Accepted delta vs prior verified baseline:** `+5 matched functions`, `+5 C units`, `-5 asm-only units`
 
 ## Current Working State
-- HEAD is matching after a clean Docker build and includes a verified 5-function `scene_set_current_thread(1)` + `gCurrentSceneVariable` byte-setter wrapper batch.
-- The latest accepted files are `asm_08043cc4`, `asm_080b1254`, `asm_080b12c0`, `asm_080b134c`, and `asm_080b13d8`.
+- HEAD is matching after a clean Docker build and includes a verified mixed wrapper batch combining object-field stores and `gCurrentSceneVariable` word clears after `scene_set_current_thread(1)`.
+- The latest accepted files are `asm_0808bae0`, `asm_080afb98`, `asm_080d330c`, `asm_080b9a98`, and `asm_080c0718`.
 - `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
 - `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
@@ -196,6 +196,8 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - short `gCurrentSceneVariable` pointer-deref helpers like `u8 *p = *(u8 **)((u8 *)gCurrentSceneVariable + off); *p = 1;` can also match cleanly
 - shift-based `gCurrentSceneVariable` byte setters like `u8 *p = (u8 *)gCurrentSceneVariable; p[(IMM << SHIFT)] = VALUE;` can fan out across many siblings
 - one-call wrappers of the form `scene_set_current_thread(1); *(u8 *)((u8 *)gCurrentSceneVariable + off) = val;` can also match cleanly across sibling groups
+- `PUSH {R4, LR}` wrappers that preserve the incoming object pointer and then store a byte field after `scene_set_current_thread(1)` can match cleanly
+- one-call wrappers that clear a `gCurrentSceneVariable` word slot after `scene_set_current_thread(1)` can also match cleanly
 - preflighting candidate C spellings as object files before linker edits is effective for short standalone TU batches
 
 ## Current Known Traps / Non-Matching Patterns
@@ -208,8 +210,8 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - for large byte offsets, writing the full offset directly can change Thumb address splitting (`+0x26` / `[+0]` instead of `+8` / `[+0x1E]`); shape the pointer expression to preserve the original immediate split
 
 ## Next Candidate Queue
-1. continue mining short `gCurrentSceneVariable` sibling families where one validated spelling can fan out to multiple siblings
-2. prioritize families that differ only by immediates or by one fixed call plus one store (`scene_set_current_thread` wrappers, shift-based setters, repeated flag initializers, pointer-deref stores)
+1. continue mining sibling-rich one-call wrapper families, especially `scene_set_current_thread` groups that differ only by store offset/value or object-field offset
+2. continue mining short `gCurrentSceneVariable` sibling families where one validated spelling can fan out to multiple siblings
 3. mine short `LDR global; STR/STRB/STRH` setters that do not use risky symbol+offset forms
 4. mine short `LDR global; LDR/LDRB/LDRH` getters and bitfield extracts that already have matched siblings
 5. selectively harvest more `BX LR` leaves only when we want cheap C-unit coverage gains
@@ -291,3 +293,10 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
   - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `594 C / 6093 asm-only units`
   - Learnings: the one-call wrapper form `scene_set_current_thread(1); *(u8 *)((u8 *)gCurrentSceneVariable + off) = val;` matched cleanly across a sibling group once object-preflight confirmed the exact push/pop/literal-pool shape
   - Next action: commit code + docs together, push immediately, then continue mining sibling-rich families that combine one fixed call with one simple store
+- **Iteration 9**
+  - Candidate set: a mixed 5-function one-call wrapper batch combining three `PUSH {R4, LR}` object-field byte stores (`asm_0808bae0`, `asm_080afb98`, `asm_080d330c`) with two `gCurrentSceneVariable` word clears (`asm_080b9a98`, `asm_080c0718`) after `scene_set_current_thread(1)`
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1041 -> 1046 matched functions` (**+5**), `matched_code_percent 5.876205% -> 5.890302%`, linker/unit coverage `594 C / 6093 asm-only -> 599 C / 6088 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `599 C / 6088 asm-only units`
+  - Learnings: one-call wrapper families can safely mix `R4`-preserving object-field stores and `gCurrentSceneVariable` word clears when object-preflight confirms exact wrapper shape, field offsets, and section sizes first
+  - Next action: commit code + docs together, push immediately, then keep mining sibling-rich one-call wrapper families before returning to lower-yield one-offs

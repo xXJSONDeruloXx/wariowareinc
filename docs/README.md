@@ -11,13 +11,13 @@ This docs set records a real tooling pass over `wariowareinc`, focused on:
 ## Latest verified scale-up checkpoint (2026-05-20)
 
 - Clean Docker build: `wariowareinc.gba: OK`
-- `make report`: **1041 / 5961 matched functions = 17.463512%**
-- `matched_code_percent`: **5.876205%**
-- `tools/gen_objdiff.py`: **594 C / 6093 asm-only units**
-- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1036 -> 1041`, `589 -> 594`)
-- Latest successful pattern: five short `scene_set_current_thread(1)` + `gCurrentSceneVariable` byte-setter wrappers converted in `src/decomp/`
+- `make report`: **1046 / 5961 matched functions = 17.547392%**
+- `matched_code_percent`: **5.890302%**
+- `tools/gen_objdiff.py`: **599 C / 6088 asm-only units**
+- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1041 -> 1046`, `594 -> 599`)
+- Latest successful pattern: a mixed one-call wrapper batch combining `PUSH {R4, LR}` object-field stores and `gCurrentSceneVariable` word clears after `scene_set_current_thread(1)`
 - Proven workflow detail: preflighting candidate C spellings by compiling just the object files and diffing their disassembly/section sizes against the original asm objects continues to de-risk standalone TU batches before linker edits
-- New successful spelling from this batch: `scene_set_current_thread(1); *(u8 *)((u8 *)gCurrentSceneVariable + off) = val;` matched cleanly across a sibling group once object preflight confirmed the exact push/pop and literal-pool shape
+- New successful spellings from this batch: `scene_set_current_thread(1); a0[field] = value;` for `R4`-preserving object wrappers, and `scene_set_current_thread(1); *(u32 *)((u8 *)gCurrentSceneVariable + off) = 0;` for the paired word-clear wrappers
 - Important trap from the prior batch still applies: for large byte offsets, writing the total offset directly can change Thumb addressing shape. `*(u8 *)((u8 *)gCurrentSceneVariable + 0x26) = N;` compiled as `adds #0x26; strb #0`, but the target required `adds #8; strb #0x1e`. Using an intermediate pointer (`u8 *p = (u8 *)gCurrentSceneVariable + 8; p[0x1E] = N;`) restored the original codegen.
 - Important metric note still applies: in this repo, some standalone conversions improve explicit C coverage without changing `matched_functions`, so both objdiff match metrics and linker/unit coverage must be tracked together.
 

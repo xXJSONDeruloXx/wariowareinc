@@ -34,71 +34,68 @@ python3 tools/gen_objdiff.py
 
 ### Latest verified metrics
 
-- `matched_functions`: **1041 / 5961**
-- `matched_functions_percent`: **17.463512%**
-- `matched_code_percent`: **5.876205%**
-- `tools/gen_objdiff.py`: **594 C / 6093 asm-only units**
-- previous verified baseline used by this checkpoint: **1036 / 5961**, **589 C / 6098 asm-only units**
+- `matched_functions`: **1046 / 5961**
+- `matched_functions_percent`: **17.547392%**
+- `matched_code_percent`: **5.890302%**
+- `tools/gen_objdiff.py`: **599 C / 6088 asm-only units**
+- previous verified baseline used by this checkpoint: **1041 / 5961**, **594 C / 6093 asm-only units**
 - accepted delta for this batch: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_08043cc4.c`
-- `src/decomp/asm_080b1254.c`
-- `src/decomp/asm_080b12c0.c`
-- `src/decomp/asm_080b134c.c`
-- `src/decomp/asm_080b13d8.c`
+- `src/decomp/asm_0808bae0.c`
+- `src/decomp/asm_080afb98.c`
+- `src/decomp/asm_080d330c.c`
+- `src/decomp/asm_080b9a98.c`
+- `src/decomp/asm_080c0718.c`
 
 Original asm files were moved to `asm/converted/`:
 
-- `asm/converted/asm_08043cc4.s`
-- `asm/converted/asm_080b1254.s`
-- `asm/converted/asm_080b12c0.s`
-- `asm/converted/asm_080b134c.s`
-- `asm/converted/asm_080b13d8.s`
+- `asm/converted/asm_0808bae0.s`
+- `asm/converted/asm_080afb98.s`
+- `asm/converted/asm_080d330c.s`
+- `asm/converted/asm_080b9a98.s`
+- `asm/converted/asm_080c0718.s`
 
 ### What worked
 
-- A sibling-rich family of one-call wrappers converted cleanly and again moved both major metric families.
-- All five functions shared the same core shape:
+- A mixed one-call wrapper batch converted cleanly and again moved both major metric families.
+- Two useful shapes were confirmed:
 
 ```c
-void func_xxx(void) {
-    scene_set_current_thread(1);
-    *(u8 *)((u8 *)gCurrentSceneVariable + OFF) = VALUE;
-}
+void func_0808BAE0(u8 *a0) { scene_set_current_thread(1); a0[0x1A] = 1; }
+void func_080AFB98(u8 *a0) { scene_set_current_thread(1); a0[0xC] = 1; }
+void func_080D330C(u8 *a0) { scene_set_current_thread(1); a0[0x1E] = 0; }
 ```
 
-Examples from the accepted batch:
+and the paired `gCurrentSceneVariable` word-clear shape:
 
 ```c
-void func_08043CC4(void) { scene_set_current_thread(1); *(u8 *)((u8 *)gCurrentSceneVariable + 0x68) = 3; }
-void func_080B1254(void) { scene_set_current_thread(1); *(u8 *)((u8 *)gCurrentSceneVariable + 0x24) = 0; }
-void func_080B12C0(void) { scene_set_current_thread(1); *(u8 *)((u8 *)gCurrentSceneVariable + 0x25) = 0; }
+void func_080B9A98(void) { scene_set_current_thread(1); *(u32 *)((u8 *)gCurrentSceneVariable + 0x10) = 0; }
+void func_080C0718(void) { scene_set_current_thread(1); *(u32 *)((u8 *)gCurrentSceneVariable + 0x4C) = 0; }
 ```
 
 ### Durable workflow lesson reinforced
 
-Object-level preflight is still paying off.
+Object-level preflight remains the right gate.
 
-For this batch, compiling just the candidate objects before touching the linker confirmed:
+For this batch, it confirmed:
 
 - identical instruction sequences
 - identical `.text` sizes
-- preserved `PUSH {LR}` / `POP {R0}` / `BX R0` wrapper shape around the single `BL`
+- preserved `PUSH {R4, LR}` / `POP {R4}` / `POP {R0}` / `BX R0` shape for the object-field wrappers
+- preserved `PUSH {LR}` / `POP {R0}` / `BX R0` shape for the `gCurrentSceneVariable` word clears
 
-across the whole sibling group.
+before linker edits were made.
 
 ### Strategy update from this batch
 
-This extends the currently productive target class:
+This widens the productive search space again:
 
-- short sibling families where the asm differs only by immediates
-- even when they include one fixed call before a simple store
-
-So the search space can safely expand from pure leaf setters into tightly clustered one-BL wrappers, as long as object preflight passes first.
+- sibling families can be mixed within one batch when each subgroup has already been object-preflighted cleanly
+- short one-call wrappers that only differ by field offsets or zeroed slots remain high-value targets
 
 ### Prior traps carried forward
 
