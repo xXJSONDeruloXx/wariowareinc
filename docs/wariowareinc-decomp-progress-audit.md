@@ -34,73 +34,56 @@ python3 tools/gen_objdiff.py
 
 ### Latest verified metrics
 
-- `matched_functions`: **1016 / 5961**
-- `matched_functions_percent`: **17.044119%**
-- `matched_code_percent`: **5.848815%**
-- `tools/gen_objdiff.py`: **564 C / 6123 asm-only units**
-- previous verified baseline used by the Ralph loop: **1004 / 5961 (16.84%)**
-- accepted delta for this batch: **+12 matched functions**
+- `matched_functions`: **1021 / 5961**
+- `matched_functions_percent`: **17.127998%**
+- `matched_code_percent`: **5.849822%**
+- `tools/gen_objdiff.py`: **569 C / 6118 asm-only units**
+- previous verified baseline used by this checkpoint: **1016 / 5961 (17.044119%)**
+- accepted delta for this batch: **+5 matched functions**
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_08006f68.c`
-- `src/decomp/asm_0800cba4.c`
-- `src/decomp/asm_0800ce90.c`
-- `src/decomp/asm_08016f8c.c`
-- `src/decomp/asm_08016f98.c`
-- `src/decomp/asm_08017914.c`
-- `src/decomp/asm_08017a30.c`
-- `src/decomp/asm_0801a0b4.c`
-- `src/decomp/asm_080202e0.c`
-- `src/decomp/asm_08023244.c`
-- `src/decomp/asm_08023ca4.c`
-- `src/decomp/asm_0802645c.c`
+- `src/decomp/asm_080202dc.c`
+- `src/decomp/asm_080202f8.c`
+- `src/decomp/asm_08023240.c`
+- `src/decomp/asm_08023ca0.c`
+- `src/decomp/asm_08026458.c`
 
-One candidate was **not** kept in C:
+Original asm files were moved to `asm/converted/`:
 
-- `asm_0800ccb4`
-
-That TU was reverted to standalone asm after investigation.
+- `asm/converted/asm_080202dc.s`
+- `asm/converted/asm_080202f8.s`
+- `asm/converted/asm_08023240.s`
+- `asm/converted/asm_08023ca0.s`
+- `asm/converted/asm_08026458.s`
 
 ### What worked
 
-- Simple wrapper/getter/setter conversions in standalone `src/decomp/` TUs continued to scale.
-- The repeated `func_08009EE4((gCurrentKeys >> 8) & 1)` family matched cleanly across multiple addresses.
-- `gCurrentSceneData` and `gSpriteHandler` references were safe once the correct headers / declarations were used.
-
-### New trap from this batch
-
-For `gBeatscriptScene` byte-offset accesses, source spelling matters:
-
-- `((u8 *)&gBeatscriptScene)[1] &= 0x7F;`
-
-compiled to a **literal relocation of `gBeatscriptScene + 1`**, yielding:
-
-- `LDR base_plus_1`
-- `LDRB/STRB [base, #0]`
-
-instead of the target sequence:
-
-- `LDR base`
-- `LDRB/STRB [base, #1]`
-
-Using a local pointer variable fixed `asm_0800cba4`:
+- A narrow batch of pure `BX LR` standalone leaves matched immediately again.
+- Choosing addresses adjacent to already-verified decomp units kept linker edits easy to audit.
+- The simplest spelling remained valid for this family:
 
 ```c
-void func_0800CBA4(void) {
-    u8 *p = (u8 *)&gBeatscriptScene;
-    p[1] &= 0x7F;
-}
+#include "global.h"
+void func_XXXXXXXX(void) {}
 ```
 
-`asm_0800ccb4` exposed a second trap:
+### Relevant trap carried forward
 
-- the initial C spelling used the wrong mask (`0xFD` instead of the asm's effective `0xFE`), and
-- even after fixing the semantics, the C variants either changed register allocation / immediate formation or shrank `.text` from `0x14` to `0x10`
+The prior `gBeatscriptScene` byte-offset trap still matters for future nontrivial setters/getters:
 
-That 4-byte shrink was enough to break the final ROM despite superficially similar codegen. The safe decision for this batch was to restore `asm_0800ccb4` as asm and keep the other 12 verified wins.
+- direct expressions like `((u8 *)&gBeatscriptScene)[N]` can compile as a symbol-plus-offset literal relocation
+- when that happens, the function may still look close in isolation but fail full-ROM identity
+- compare both disassembly and TU `.text` size when a small leaf unexpectedly breaks the final ROM
+
+### Prior repair batch summary retained for context
+
+The earlier repair batch established that:
+
+- `asm_0800cba4` only matched once it used a local pointer variable to force `[base, #1]` codegen
+- `asm_0800ccb4` had to stay in asm because the safe-looking C forms either changed semantics / immediates or shrank `.text` enough to break the ROM
 
 ## 1. Real build baseline
 

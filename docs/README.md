@@ -11,11 +11,12 @@ This docs set records a real tooling pass over `wariowareinc`, focused on:
 ## Latest verified scale-up checkpoint (2026-05-20)
 
 - Clean Docker build: `wariowareinc.gba: OK`
-- `make report`: **1016 / 5961 matched functions = 17.044119%**
-- `matched_code_percent`: **5.848815%**
-- `tools/gen_objdiff.py`: **564 C / 6123 asm-only units**
-- Accepted batch result: **+12 matched functions** versus the previous verified baseline (`1004 -> 1016`)
-- Important trap from this batch: for `gBeatscriptScene` byte-offset writes, direct expressions like `((u8 *)&gBeatscriptScene)[1]` may compile as a **symbol+offset literal relocation** instead of `LDR base; LDRB/STRB #offset`. Using a local pointer variable (`u8 *p = (u8 *)&gBeatscriptScene; p[1] ...`) fixed `asm_0800cba4`, while `asm_0800ccb4` was safer to keep in asm because the C forms either changed the immediate sequence or shrank the TU by 4 bytes.
+- `make report`: **1021 / 5961 matched functions = 17.127998%**
+- `matched_code_percent`: **5.849822%**
+- `tools/gen_objdiff.py`: **569 C / 6118 asm-only units**
+- Accepted batch result: **+5 matched functions** versus the previous verified baseline (`1016 -> 1021`)
+- Latest successful pattern: five standalone `BX LR` leaf stubs converted in `src/decomp/` and kept byte-identical after moving their original asm to `asm/converted/`
+- Important trap from the prior repair batch still applies: for `gBeatscriptScene` byte-offset writes, direct expressions like `((u8 *)&gBeatscriptScene)[1]` may compile as a **symbol+offset literal relocation** instead of `LDR base; LDRB/STRB #offset`. Using a local pointer variable (`u8 *p = (u8 *)&gBeatscriptScene; p[1] ...`) fixed `asm_0800cba4`, while `asm_0800ccb4` was safer to keep in asm because the C forms either changed the immediate sequence or shrank the TU by 4 bytes.
 
 ## Main takeaways
 

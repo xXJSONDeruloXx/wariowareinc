@@ -9,17 +9,18 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1016 / 5961` = **17.044119%**
-- **Matched code percent:** **5.848815%**
-- **C units in linker graph:** `564 / 6687`
-- **ASM-only units in linker graph:** `6123`
+- **Matched functions:** `1021 / 5961` = **17.127998%**
+- **Matched code percent:** **5.849822%**
+- **C units in linker graph:** `569 / 6687`
+- **ASM-only units in linker graph:** `6118`
 - **ROM status:** `wariowareinc.gba: OK`
-- **Accepted delta vs prior verified baseline:** `+12 matched functions`
+- **Accepted delta vs prior verified baseline:** `+5 matched functions`
 
 ## Current Working State
-- HEAD restores a matching ROM after isolating the bad candidate from the previous batch.
+- HEAD is matching after a clean Docker build and includes a new 5-function empty-leaf batch.
+- The latest accepted files are `asm_080202dc`, `asm_080202f8`, `asm_08023240`, `asm_08023ca0`, and `asm_08026458`.
 - `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
-- `asm_0800ccb4` is restored to asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
+- `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
 ## Success Criteria For Any Accepted Progress
 A batch only counts as real progress if all of the following are true:
@@ -200,10 +201,10 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - even when function bytes look close, TU-level padding/alignment can still break the final ROM; compare `.text` section sizes when a full-ROM mismatch survives seemingly matched code
 
 ## Next Candidate Queue
-1. mine more short standalone asm TUs that reuse already-proven wrapper/getter/setter families
-2. specifically target patterns that avoid literal-pool or symbol+offset codegen traps
-3. safe inline asm stub replacements in existing C translation units
-4. short return-constant or bitfield helpers that can move matched-functions cheaply
+1. continue harvesting nearby standalone `BX LR` leaves and trivial return/setter helpers around already-converted regions
+2. mine short `LDR global; STR/STRB/STRH` setters that do not use risky symbol+offset forms
+3. mine short `LDR global; LDR/LDRB/LDRH` getters and bitfield extracts that already have matched siblings
+4. safe inline asm stub replacements in existing C translation units
 5. reserve branchier multi-call wrappers for later batches unless they already have a proven sibling match
 
 ## Iteration Log
@@ -220,3 +221,10 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
   - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `564 C / 6123 asm-only units`
   - Learnings: `asm_0800cba4` required a local pointer variable to force `[base, #1]` codegen; `asm_0800ccb4` was reverted to asm after revealing both a wrong initial mask and a 4-byte TU-size mismatch risk
   - Next action: commit code + docs together, push immediately, then queue another narrow proven-pattern batch
+- **Iteration 3**
+  - Candidate set: five standalone `BX LR` leaf stubs adjacent to already-accepted decomp units — `asm_080202dc`, `asm_080202f8`, `asm_08023240`, `asm_08023ca0`, `asm_08026458`
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1016 -> 1021 matched functions` (**+5**), `matched_code_percent 5.848815% -> 5.849822%`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `569 C / 6118 asm-only units`
+  - Learnings: the repo’s established `void func(void) {}` spelling still matches pure standalone `BX LR` leaves reliably when each function gets its own TU and the original asm is moved to `asm/converted/`
+  - Next action: commit code + docs together, push immediately, then keep mining nearby empty leaves and trivial setters/getters
