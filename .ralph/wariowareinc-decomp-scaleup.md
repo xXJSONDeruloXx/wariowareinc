@@ -19,6 +19,13 @@ Target: **4768 / 5961 matched functions**
 - **Commit:** `234220c1`, pushed
 - **Learnings:** `u8` function params cause agbcc to emit `lsls/lsrs` truncation before `STRB`; use `u32` arg type when the original asm just does `STRB R0` without truncating
 
+## Iteration 24 — accepted
+- **Candidate set:** 5-function batch — `asm_08025160` (D_03006524 halfword store pair), `asm_080c9eb0` (struct init with zero-fill), `asm_080041a0` (D_ byte setter pair), `asm_080039c0` (load-word-pair from pointer), `asm_080f0e30` (D_030068E8 table byte store)
+- **Result:** match after reverting 3 mismatching candidates (asm_080dd8a4 register alloc diff, asm_080f1574 LSRS vs ASRS, asm_0801f698 extra ADDS)
+- **Metric delta:** matched_functions 1126→1131 (+5), matched_code_percent 5.993805%→6.003258% (**crossed 6%!**), C units 674→679, asm-only 6013→6008
+- **Commit:** `fc4f684b`, pushed
+- **Learnings:** (1) register allocation differences between C and asm still cause ROM mismatch even for semantically identical code (2) `(u32)(b << 31) >> 31` still generates ASRS not LSRS — need unsigned cast pattern (3) `p[0] |= 0x8000` generates extra ADDS — need `p[0] = p[0] | 0x8000` form or verify exact codegen (4) D_ absolute address pointers work for simple byte/halfword stores
+
 ## Checklist (next batch priorities)
 - [ ] Select next 5-function candidate batch from proven sibling families
 - [ ] Preflight candidates at object-file level
