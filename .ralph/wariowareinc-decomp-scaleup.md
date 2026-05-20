@@ -9,16 +9,16 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1021 / 5961` = **17.127998%**
-- **Matched code percent:** **5.849822%**
-- **C units in linker graph:** `574 / 6687`
-- **ASM-only units in linker graph:** `6113`
+- **Matched functions:** `1026 / 5961` = **17.211876%**
+- **Matched code percent:** **5.850829%**
+- **C units in linker graph:** `579 / 6687`
+- **ASM-only units in linker graph:** `6108`
 - **ROM status:** `wariowareinc.gba: OK`
-- **Accepted delta vs prior verified baseline:** `+5 C units` (`569 -> 574`), `-5 asm-only units`, no matched-function delta
+- **Accepted delta vs prior verified baseline:** `+5 matched functions`, `+5 C units`, `-5 asm-only units`
 
 ## Current Working State
-- HEAD is matching after a clean Docker build and includes two recent 5-function empty-leaf batches.
-- The latest accepted files are `asm_080203b8`, `asm_080203bc`, `asm_080203f4`, `asm_08020b60`, and `asm_08020fac`.
+- HEAD is matching after a clean Docker build and includes a verified 5-function `gCurrentSceneVariable` setter batch.
+- The latest accepted files are `asm_0801ae64`, `asm_080a7c5c`, `asm_080c4a5c`, `asm_080d6f4c`, and `asm_080d6fe4`.
 - `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
 - `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
@@ -192,6 +192,7 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - bit-clear
 - zero-init
 - repeated standalone `BX LR` batches can improve linker/unit C coverage even when `matched_functions` stays flat
+- short direct `gCurrentSceneVariable` setters can move both matched-function totals and linker/unit coverage
 
 ## Current Known Traps / Non-Matching Patterns
 - grouping multiple functions in one C file breaks ROM matching
@@ -200,9 +201,10 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - `POP {R1}; BX R1` wrappers are not safe under agbcc’s normal output
 - `((u8 *)&gBeatscriptScene)[N]` may compile as a **symbol+offset literal relocation** instead of loading the base symbol and using `[base, #N]`
 - even when function bytes look close, TU-level padding/alignment can still break the final ROM; compare `.text` section sizes when a full-ROM mismatch survives seemingly matched code
+- for large byte offsets, writing the full offset directly can change Thumb address splitting (`+0x26` / `[+0]` instead of `+8` / `[+0x1E]`); shape the pointer expression to preserve the original immediate split
 
 ## Next Candidate Queue
-1. pivot from pure `BX LR` leaves to short setters/getters or return-constant helpers that are more likely to move both unit coverage and matched-function totals
+1. continue mining short direct `gCurrentSceneVariable` setters/getters with already-matched siblings
 2. mine short `LDR global; STR/STRB/STRH` setters that do not use risky symbol+offset forms
 3. mine short `LDR global; LDR/LDRB/LDRH` getters and bitfield extracts that already have matched siblings
 4. selectively harvest more `BX LR` leaves only when we want cheap C-unit coverage gains
@@ -236,3 +238,10 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
   - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `574 C / 6113 asm-only units`
   - Learnings: accepted standalone asm→C conversions do not always move objdiff match totals in this repo; linker/unit coverage must be tracked as a first-class metric alongside matched-function counts
   - Next action: commit code + docs together, push immediately, then pivot toward short setters/getters or return-constant helpers that are more likely to move both metric families
+- **Iteration 5**
+  - Candidate set: five short direct `gCurrentSceneVariable` setters — `asm_0801ae64`, `asm_080a7c5c`, `asm_080c4a5c`, `asm_080d6f4c`, `asm_080d6fe4`
+  - Result: **match** after one repair pass on the two `0x26` byte-store helpers
+  - Metric delta vs previous verified baseline: `1021 -> 1026 matched functions` (**+5**), `matched_code_percent 5.849822% -> 5.850829%`, linker/unit coverage `574 C / 6113 asm-only -> 579 C / 6108 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `579 C / 6108 asm-only units`
+  - Learnings: direct `gCurrentSceneVariable` setter families are good targets, but large byte offsets may need pointer shaping to preserve the original Thumb immediate split (`+8` then `[+0x1E]` instead of `+0x26` then `[+0]`)
+  - Next action: commit code + docs together, push immediately, then continue mining short direct `gCurrentSceneVariable` setters/getters with matched siblings

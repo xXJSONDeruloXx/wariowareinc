@@ -34,76 +34,98 @@ python3 tools/gen_objdiff.py
 
 ### Latest verified metrics
 
-- `matched_functions`: **1021 / 5961**
-- `matched_functions_percent`: **17.127998%**
-- `matched_code_percent`: **5.849822%**
-- `tools/gen_objdiff.py`: **574 C / 6113 asm-only units**
-- previous verified baseline used by this checkpoint: **569 C / 6118 asm-only units**
-- accepted delta for this batch: **+5 C units**, **-5 asm-only units**, **no change** to matched-function totals
+- `matched_functions`: **1026 / 5961**
+- `matched_functions_percent`: **17.211876%**
+- `matched_code_percent`: **5.850829%**
+- `tools/gen_objdiff.py`: **579 C / 6108 asm-only units**
+- previous verified baseline used by this checkpoint: **1021 / 5961**, **574 C / 6113 asm-only units**
+- accepted delta for this batch: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_080203b8.c`
-- `src/decomp/asm_080203bc.c`
-- `src/decomp/asm_080203f4.c`
-- `src/decomp/asm_08020b60.c`
-- `src/decomp/asm_08020fac.c`
+- `src/decomp/asm_0801ae64.c`
+- `src/decomp/asm_080a7c5c.c`
+- `src/decomp/asm_080c4a5c.c`
+- `src/decomp/asm_080d6f4c.c`
+- `src/decomp/asm_080d6fe4.c`
 
 Original asm files were moved to `asm/converted/`:
 
-- `asm/converted/asm_080203b8.s`
-- `asm/converted/asm_080203bc.s`
-- `asm/converted/asm_080203f4.s`
-- `asm/converted/asm_08020b60.s`
-- `asm/converted/asm_08020fac.s`
+- `asm/converted/asm_0801ae64.s`
+- `asm/converted/asm_080a7c5c.s`
+- `asm/converted/asm_080c4a5c.s`
+- `asm/converted/asm_080d6f4c.s`
+- `asm/converted/asm_080d6fe4.s`
 
 ### What worked
 
-- Another narrow batch of pure `BX LR` standalone leaves matched immediately.
-- Staying in the same neighborhood that had just produced a clean win reduced risk.
-- The simplest spelling remained valid for this family:
+- Short direct `gCurrentSceneVariable` setters converted cleanly and **did** move both major metric families.
+- Existing matched precedents like:
+  - `*(u32 *)((u8 *)gCurrentSceneVariable + 0x14) = a0;`
+  - `*(u16 *)((u8 *)gCurrentSceneVariable + 0x26) = N;`
+  - `*(u8 *)((u8 *)gCurrentSceneVariable + 4) = N;`
+  helped identify a safe family to expand.
+- The accepted files used these forms:
 
 ```c
-#include "global.h"
-void func_XXXXXXXX(void) {}
+void func_0801AE64(u32 a0) { *(u32 *)((u8 *)gCurrentSceneVariable + 0x14) = a0; }
+void func_080C4A5C(u32 a0) { *(u16 *)((u8 *)gCurrentSceneVariable + 8) = a0; }
+void func_080A7C5C(void) { *(u8 *)gCurrentSceneVariable = 2; }
 ```
 
-### Important interpretation from this batch
+### New trap from this batch
 
-This batch is a useful reminder that **matched-function count** and **explicit C coverage** are different metrics in this repo.
+Two initially safe-looking byte setters failed ROM identity because of **addressing-shape drift**:
 
-Even though all five conversions were accepted and improved linker/unit coverage, `make report` stayed flat at:
+```c
+*(u8 *)((u8 *)gCurrentSceneVariable + 0x26) = 1;
+*(u8 *)((u8 *)gCurrentSceneVariable + 0x26) = 0;
+```
 
-- `1021 / 5961 matched functions`
+compiled as:
 
-while unit coverage improved from:
+- `ADDS R0, #0x26`
+- `STRB ..., [R0, #0]`
 
-- `569 C / 6118 asm-only`
-- to `574 C / 6113 asm-only`
+but the original asm required:
 
-So the Ralph loop should continue to track both:
+- `ADDS R0, #8`
+- `STRB ..., [R0, #0x1E]`
 
-- objdiff match metrics, and
-- linker/unit conversion coverage
+The fix was to split the address expression so agbcc reused the original immediate split:
 
-instead of assuming every accepted standalone asm→C replacement will move both at once.
+```c
+void func_080D6F4C(void) {
+    u8 *p = (u8 *)gCurrentSceneVariable + 8;
+    p[0x1E] = 1;
+}
 
-### Relevant trap carried forward
+void func_080D6FE4(void) {
+    u8 *p = (u8 *)gCurrentSceneVariable + 8;
+    p[0x1E] = 0;
+}
+```
 
-The prior `gBeatscriptScene` byte-offset trap still matters for future nontrivial setters/getters:
+### Important interpretation carried forward
 
-- direct expressions like `((u8 *)&gBeatscriptScene)[N]` can compile as a symbol-plus-offset literal relocation
-- when that happens, the function may still look close in isolation but fail full-ROM identity
-- compare both disassembly and TU `.text` size when a small leaf unexpectedly breaks the final ROM
+The prior batch established that accepted standalone asm→C conversions can improve linker/unit coverage without moving objdiff match totals.
 
-### Prior repair batch summary retained for context
+This batch shows the opposite desirable case:
 
-The earlier repair batch established that:
+- a carefully chosen family of short setters can improve **both**:
+  - `matched_functions`
+  - and linker/unit conversion coverage
 
-- `asm_0800cba4` only matched once it used a local pointer variable to force `[base, #1]` codegen
-- `asm_0800ccb4` had to stay in asm because the safe-looking C forms either changed semantics / immediates or shrank `.text` enough to break the ROM
+So future candidate selection should prefer small families with already-matched siblings over arbitrary empty-leaf harvesting.
+
+### Prior trap carried forward
+
+The earlier repair batch still matters:
+
+- direct `((u8 *)&gBeatscriptScene)[N]` expressions can compile as symbol-plus-offset literal relocations instead of base-plus-immediate accesses
+- when a small conversion unexpectedly breaks the ROM, compare both disassembly and TU `.text` size before deciding it is “close enough”
 
 ## 1. Real build baseline
 
