@@ -37,38 +37,58 @@ python3 tools/gen_objdiff.py
 - `matched_functions`: **1021 / 5961**
 - `matched_functions_percent`: **17.127998%**
 - `matched_code_percent`: **5.849822%**
-- `tools/gen_objdiff.py`: **569 C / 6118 asm-only units**
-- previous verified baseline used by this checkpoint: **1016 / 5961 (17.044119%)**
-- accepted delta for this batch: **+5 matched functions**
+- `tools/gen_objdiff.py`: **574 C / 6113 asm-only units**
+- previous verified baseline used by this checkpoint: **569 C / 6118 asm-only units**
+- accepted delta for this batch: **+5 C units**, **-5 asm-only units**, **no change** to matched-function totals
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_080202dc.c`
-- `src/decomp/asm_080202f8.c`
-- `src/decomp/asm_08023240.c`
-- `src/decomp/asm_08023ca0.c`
-- `src/decomp/asm_08026458.c`
+- `src/decomp/asm_080203b8.c`
+- `src/decomp/asm_080203bc.c`
+- `src/decomp/asm_080203f4.c`
+- `src/decomp/asm_08020b60.c`
+- `src/decomp/asm_08020fac.c`
 
 Original asm files were moved to `asm/converted/`:
 
-- `asm/converted/asm_080202dc.s`
-- `asm/converted/asm_080202f8.s`
-- `asm/converted/asm_08023240.s`
-- `asm/converted/asm_08023ca0.s`
-- `asm/converted/asm_08026458.s`
+- `asm/converted/asm_080203b8.s`
+- `asm/converted/asm_080203bc.s`
+- `asm/converted/asm_080203f4.s`
+- `asm/converted/asm_08020b60.s`
+- `asm/converted/asm_08020fac.s`
 
 ### What worked
 
-- A narrow batch of pure `BX LR` standalone leaves matched immediately again.
-- Choosing addresses adjacent to already-verified decomp units kept linker edits easy to audit.
+- Another narrow batch of pure `BX LR` standalone leaves matched immediately.
+- Staying in the same neighborhood that had just produced a clean win reduced risk.
 - The simplest spelling remained valid for this family:
 
 ```c
 #include "global.h"
 void func_XXXXXXXX(void) {}
 ```
+
+### Important interpretation from this batch
+
+This batch is a useful reminder that **matched-function count** and **explicit C coverage** are different metrics in this repo.
+
+Even though all five conversions were accepted and improved linker/unit coverage, `make report` stayed flat at:
+
+- `1021 / 5961 matched functions`
+
+while unit coverage improved from:
+
+- `569 C / 6118 asm-only`
+- to `574 C / 6113 asm-only`
+
+So the Ralph loop should continue to track both:
+
+- objdiff match metrics, and
+- linker/unit conversion coverage
+
+instead of assuming every accepted standalone asm→C replacement will move both at once.
 
 ### Relevant trap carried forward
 

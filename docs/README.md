@@ -13,9 +13,10 @@ This docs set records a real tooling pass over `wariowareinc`, focused on:
 - Clean Docker build: `wariowareinc.gba: OK`
 - `make report`: **1021 / 5961 matched functions = 17.127998%**
 - `matched_code_percent`: **5.849822%**
-- `tools/gen_objdiff.py`: **569 C / 6118 asm-only units**
-- Accepted batch result: **+5 matched functions** versus the previous verified baseline (`1016 -> 1021`)
-- Latest successful pattern: five standalone `BX LR` leaf stubs converted in `src/decomp/` and kept byte-identical after moving their original asm to `asm/converted/`
+- `tools/gen_objdiff.py`: **574 C / 6113 asm-only units**
+- Accepted batch result: **+5 C units** versus the previous verified baseline (`569 -> 574`), with **no change** to matched-function totals
+- Latest successful pattern: another five standalone `BX LR` leaf stubs converted in `src/decomp/` and kept byte-identical after moving their original asm to `asm/converted/`
+- Important metric note: in this repo, some standalone conversions improve explicit C coverage without changing `matched_functions`, so both objdiff match metrics and linker/unit coverage must be tracked together
 - Important trap from the prior repair batch still applies: for `gBeatscriptScene` byte-offset writes, direct expressions like `((u8 *)&gBeatscriptScene)[1]` may compile as a **symbol+offset literal relocation** instead of `LDR base; LDRB/STRB #offset`. Using a local pointer variable (`u8 *p = (u8 *)&gBeatscriptScene; p[1] ...`) fixed `asm_0800cba4`, while `asm_0800ccb4` was safer to keep in asm because the C forms either changed the immediate sequence or shrank the TU by 4 bytes.
 
 ## Main takeaways

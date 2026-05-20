@@ -11,14 +11,14 @@ Use this as the starting point until a newer verified `make report` run replaces
 
 - **Matched functions:** `1021 / 5961` = **17.127998%**
 - **Matched code percent:** **5.849822%**
-- **C units in linker graph:** `569 / 6687`
-- **ASM-only units in linker graph:** `6118`
+- **C units in linker graph:** `574 / 6687`
+- **ASM-only units in linker graph:** `6113`
 - **ROM status:** `wariowareinc.gba: OK`
-- **Accepted delta vs prior verified baseline:** `+5 matched functions`
+- **Accepted delta vs prior verified baseline:** `+5 C units` (`569 -> 574`), `-5 asm-only units`, no matched-function delta
 
 ## Current Working State
-- HEAD is matching after a clean Docker build and includes a new 5-function empty-leaf batch.
-- The latest accepted files are `asm_080202dc`, `asm_080202f8`, `asm_08023240`, `asm_08023ca0`, and `asm_08026458`.
+- HEAD is matching after a clean Docker build and includes two recent 5-function empty-leaf batches.
+- The latest accepted files are `asm_080203b8`, `asm_080203bc`, `asm_080203f4`, `asm_08020b60`, and `asm_08020fac`.
 - `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
 - `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
@@ -191,6 +191,7 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - decrement
 - bit-clear
 - zero-init
+- repeated standalone `BX LR` batches can improve linker/unit C coverage even when `matched_functions` stays flat
 
 ## Current Known Traps / Non-Matching Patterns
 - grouping multiple functions in one C file breaks ROM matching
@@ -201,11 +202,11 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - even when function bytes look close, TU-level padding/alignment can still break the final ROM; compare `.text` section sizes when a full-ROM mismatch survives seemingly matched code
 
 ## Next Candidate Queue
-1. continue harvesting nearby standalone `BX LR` leaves and trivial return/setter helpers around already-converted regions
+1. pivot from pure `BX LR` leaves to short setters/getters or return-constant helpers that are more likely to move both unit coverage and matched-function totals
 2. mine short `LDR global; STR/STRB/STRH` setters that do not use risky symbol+offset forms
 3. mine short `LDR global; LDR/LDRB/LDRH` getters and bitfield extracts that already have matched siblings
-4. safe inline asm stub replacements in existing C translation units
-5. reserve branchier multi-call wrappers for later batches unless they already have a proven sibling match
+4. selectively harvest more `BX LR` leaves only when we want cheap C-unit coverage gains
+5. safe inline asm stub replacements in existing C translation units
 
 ## Iteration Log
 - **Iteration 1**
@@ -228,3 +229,10 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
   - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `569 C / 6118 asm-only units`
   - Learnings: the repo’s established `void func(void) {}` spelling still matches pure standalone `BX LR` leaves reliably when each function gets its own TU and the original asm is moved to `asm/converted/`
   - Next action: commit code + docs together, push immediately, then keep mining nearby empty leaves and trivial setters/getters
+- **Iteration 4**
+  - Candidate set: another five standalone `BX LR` leaf stubs in the same successful neighborhood — `asm_080203b8`, `asm_080203bc`, `asm_080203f4`, `asm_08020b60`, `asm_08020fac`
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `matched_functions` stayed flat at `1021 / 5961`, `matched_code_percent` stayed flat at `5.849822%`, but linker/unit coverage improved from `569 C / 6118 asm-only` to `574 C / 6113 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `574 C / 6113 asm-only units`
+  - Learnings: accepted standalone asm→C conversions do not always move objdiff match totals in this repo; linker/unit coverage must be tracked as a first-class metric alongside matched-function counts
+  - Next action: commit code + docs together, push immediately, then pivot toward short setters/getters or return-constant helpers that are more likely to move both metric families
