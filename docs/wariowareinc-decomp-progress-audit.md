@@ -34,81 +34,72 @@ python3 tools/gen_objdiff.py
 
 ### Latest verified metrics
 
-- `matched_functions`: **1031 / 5961**
-- `matched_functions_percent`: **17.295755%**
-- `matched_code_percent`: **5.858079%**
-- `tools/gen_objdiff.py`: **584 C / 6103 asm-only units**
-- previous verified baseline used by this checkpoint: **1026 / 5961**, **579 C / 6108 asm-only units**
+- `matched_functions`: **1036 / 5961**
+- `matched_functions_percent`: **17.379635%**
+- `matched_code_percent`: **5.866135%**
+- `tools/gen_objdiff.py`: **589 C / 6098 asm-only units**
+- previous verified baseline used by this checkpoint: **1031 / 5961**, **584 C / 6103 asm-only units**
 - accepted delta for this batch: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_0801ec38.c`
-- `src/decomp/asm_080208cc.c`
-- `src/decomp/asm_080258dc.c`
-- `src/decomp/asm_080258ec.c`
-- `src/decomp/asm_080258fc.c`
+- `src/decomp/asm_08053264.c`
+- `src/decomp/asm_080c61d0.c`
+- `src/decomp/asm_080d24a8.c`
+- `src/decomp/asm_080d2890.c`
+- `src/decomp/asm_080d7738.c`
 
 Original asm files were moved to `asm/converted/`:
 
-- `asm/converted/asm_0801ec38.s`
-- `asm/converted/asm_080208cc.s`
-- `asm/converted/asm_080258dc.s`
-- `asm/converted/asm_080258ec.s`
-- `asm/converted/asm_080258fc.s`
+- `asm/converted/asm_08053264.s`
+- `asm/converted/asm_080c61d0.s`
+- `asm/converted/asm_080d24a8.s`
+- `asm/converted/asm_080d2890.s`
+- `asm/converted/asm_080d7738.s`
 
 ### What worked
 
-- A mixed family of short `gCurrentSceneVariable` helpers converted cleanly and again moved both major metric families.
-- Two useful shapes were confirmed:
+- A sibling-rich family of shift-based byte setters converted cleanly and again moved both major metric families.
+- All five functions shared the same core shape:
 
 ```c
-void func_0801EC38(void) {
-    u8 *p = *(u8 **)((u8 *)gCurrentSceneVariable + 4);
-    *p = 1;
-}
-
-void func_080208CC(void) {
-    u8 *p = *(u8 **)((u8 *)gCurrentSceneVariable + 0x40);
-    *p = 1;
-}
-```
-
-and the repeated direct-flag initializer shape:
-
-```c
-void func_080258DC(void) {
+void func_xxx(void) {
     u8 *p = (u8 *)gCurrentSceneVariable;
-    p[0xE] = 1;
-    p[0xD] = 1;
+    p[(IMM << SHIFT)] = VALUE;
 }
 ```
 
-- Three identical siblings (`asm_080258dc`, `asm_080258ec`, `asm_080258fc`) were cheap wins once one good spelling was identified.
+Examples from the accepted batch:
 
-### New durable workflow lesson
+```c
+void func_08053264(void) { u8 *p = (u8 *)gCurrentSceneVariable; p[(0xAA << 1)] = 5; }
+void func_080C61D0(void) { u8 *p = (u8 *)gCurrentSceneVariable; p[(0x92 << 1)] = 0; }
+void func_080D24A8(void) { u8 *p = (u8 *)gCurrentSceneVariable; p[(0xF7 << 2)] = 0; }
+```
 
-Preflighting standalone TU candidates by compiling **only the object files first** and comparing them to freshly assembled original asm objects was worth the extra step.
+### Durable workflow lesson reinforced
 
-For this batch, the preflight confirmed:
+Object-level preflight is paying off.
+
+For this batch, compiling just the candidate objects before touching the linker confirmed:
 
 - identical instruction sequences
 - identical `.text` sizes
 
-before any linker-script edits or asm moves were made.
+across all five siblings.
 
-That reduced the risk of another full-ROM mismatch iteration and should be reused for future short-function batches.
+That let the whole batch be promoted at once with high confidence.
 
-### Important interpretation carried forward
+### Strategy update from this batch
 
-This batch reinforces the emerging strategy:
+This is now a clearly productive class of targets:
 
-- prefer small families with already-matched siblings
-- especially when one validated spelling can be copied across multiple near-identical asm files
+- short sibling families where the asm differs only by immediates
+- especially when the same C spelling pattern can be copied across every sibling
 
-That is yielding more reliable progress than blind empty-leaf harvesting alone.
+These are currently better value than exploratory one-off functions.
 
 ### Prior traps carried forward
 
