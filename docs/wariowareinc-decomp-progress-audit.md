@@ -34,49 +34,47 @@ python3 tools/gen_objdiff.py
 
 ### Latest verified metrics
 
-- `matched_functions`: **1056 / 5961**
-- `matched_functions_percent`: **17.715149%**
-- `matched_code_percent`: **5.906414%**
-- `tools/gen_objdiff.py`: **609 C / 6078 asm-only units**
-- previous verified baseline used by this checkpoint: **1051 / 5961**, **604 C / 6083 asm-only units**
+- `matched_functions`: **1061 / 5961**
+- `matched_functions_percent`: **17.799026%**
+- `matched_code_percent`: **5.915476%**
+- `tools/gen_objdiff.py`: **614 C / 6073 asm-only units**
+- previous verified baseline used by this checkpoint: **1056 / 5961**, **609 C / 6078 asm-only units**
 - accepted delta for this batch: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_0804ef64.c`
-- `src/decomp/asm_08089668.c`
-- `src/decomp/asm_080b3328.c`
-- `src/decomp/asm_080c950c.c`
-- `src/decomp/asm_080cd710.c`
+- `src/decomp/asm_080c6940.c`
+- `src/decomp/asm_080d8e8c.c`
+- `src/decomp/asm_080d8e9c.c`
+- `src/decomp/asm_080eac04.c`
+- `src/decomp/asm_080eac14.c`
 
 Original asm files were moved to `asm/converted/`:
 
-- `asm/converted/asm_0804ef64.s`
-- `asm/converted/asm_08089668.s`
-- `asm/converted/asm_080b3328.s`
-- `asm/converted/asm_080c950c.s`
-- `asm/converted/asm_080cd710.s`
+- `asm/converted/asm_080c6940.s`
+- `asm/converted/asm_080d8e8c.s`
+- `asm/converted/asm_080d8e9c.s`
+- `asm/converted/asm_080eac04.s`
+- `asm/converted/asm_080eac14.s`
 
 ### What worked
 
-- A sibling-rich arithmetic helper family converted cleanly and again moved both major metric families.
-- All five functions shared the same core spelling:
+- A tiny sibling-rich sound-wrapper batch converted cleanly and again moved both major metric families.
+- The accepted family used two closely related shapes:
 
 ```c
-void func_xxx(u32 *arg0) {
-    arg0[1] += arg0[a];
-    arg0[2] += arg0[b];
-}
+void func_080C6940(void) { stop_sound((struct SongHeader *)0x083FF348); }
+void func_080D8E9C(void) { stop_sound((struct SongHeader *)0x083FDB88); }
+void func_080EAC14(void) { stop_sound((struct SongHeader *)0x083FDB88); }
 ```
 
-Examples from the accepted batch:
+and the paired sound-start wrappers:
 
 ```c
-void func_0804EF64(u32 *arg0) { arg0[1] += arg0[4]; arg0[2] += arg0[5]; }
-void func_08089668(u32 *arg0) { arg0[1] += arg0[9]; arg0[2] += arg0[10]; }
-void func_080CD710(u32 *arg0) { arg0[1] += arg0[10]; arg0[2] += arg0[11]; }
+void func_080D8E8C(void) { func_0800C7CC((void *)0x083FDB88); }
+void func_080EAC04(void) { func_0800C7CC((void *)0x083FDB88); }
 ```
 
 ### Durable workflow lesson reinforced
@@ -87,7 +85,7 @@ For this batch, it confirmed:
 
 - identical instruction sequences
 - identical `.text` sizes
-- that simple typed pointer arithmetic on `u32 *` can be just as safe as raw byte-pointer expressions when the asm is already operating on fixed word slots
+- that absolute-address casts can preserve the original literal-pool behavior when ROM data symbols are not exported as usable C symbols
 
 before linker edits were made.
 
@@ -95,8 +93,8 @@ before linker edits were made.
 
 This adds another productive target class:
 
-- sibling arithmetic helpers whose asm differs only by source-slot offsets
-- especially when the same typed-pointer spelling can be reused across every sibling in the family
+- tiny wrapper families around ROM-resident song data
+- especially when the same absolute-address spelling can be reused across multiple siblings
 
 ### Prior traps carried forward
 
