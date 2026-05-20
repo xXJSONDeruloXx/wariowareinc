@@ -11,20 +11,21 @@ This docs set records a real tooling pass over `wariowareinc`, focused on:
 ## Latest verified scale-up checkpoint (2026-05-20)
 
 - Clean Docker build: `wariowareinc.gba: OK`
-- `make report`: **1061 / 5961 matched functions = 17.799026%**
-- `matched_code_percent`: **5.915476%**
-- `tools/gen_objdiff.py`: **614 C / 6073 asm-only units**
-- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1056 -> 1061`, `609 -> 614`)
-- Latest successful pattern: a 5-function tiny sound-wrapper family using absolute ROM addresses for song data
-- Proven workflow detail: preflighting candidate C spellings by compiling just the object files and diffing their disassembly/section sizes against the original asm objects continues to de-risk standalone TU batches before linker edits
-- New successful spellings from this batch: `stop_sound((struct SongHeader *)0x083FF348);` and `func_0800C7CC((void *)0x083FDB88);` matched cleanly once the undefined named `D_083...` symbols were replaced with absolute-address casts
-- Important trap from the prior batch still applies: for large byte offsets, writing the total offset directly can change Thumb addressing shape. `*(u8 *)((u8 *)gCurrentSceneVariable + 0x26) = N;` compiled as `adds #0x26; strb #0`, but the target required `adds #8; strb #0x1e`. Using an intermediate pointer (`u8 *p = (u8 *)gCurrentSceneVariable + 8; p[0x1E] = N;`) restored the original codegen.
+- `make report`: **1071 / 5961 matched functions = 17.966785%**
+- `matched_code_percent`: **5.935615%**
+- `tools/gen_objdiff.py`: **619 C / 6068 asm-only units**
+- Accepted batch result: **+10 matched functions** and **+5 C units** versus the previous verified baseline (`1061 -> 1071`, `614 -> 619`)
+- Latest successful pattern: a 5-function `D_03006520` compare-and-call wrapper family using the existing `src/beatscript.h` extern
+- Proven workflow detail: preflighting candidate C spellings by compiling just the object files and diffing their instruction flow/section sizes against the original asm objects continues to de-risk standalone TU batches before linker edits
+- New successful spelling from this batch: `if (D_03006520 == IMM) func_target();` matched cleanly across five siblings when `D_03006520` came from `src/beatscript.h`
+- Important preflight nuance from this batch: source-built objects may retain an `R_ARM_ABS32` relocation for `D_03006520` where the original hand asm already has the fixed literal, so final linked-ROM verification remains the acceptance gate even when object-level raw bytes differ
+- Important trap from prior batches still applies: for large byte offsets, writing the total offset directly can change Thumb addressing shape. `*(u8 *)((u8 *)gCurrentSceneVariable + 0x26) = N;` compiled as `adds #0x26; strb #0`, but the target required `adds #8; strb #0x1e`. Using an intermediate pointer (`u8 *p = (u8 *)gCurrentSceneVariable + 8; p[0x1E] = N;`) restored the original codegen.
 - Important metric note still applies: in this repo, some standalone conversions improve explicit C coverage without changing `matched_functions`, so both objdiff match metrics and linker/unit coverage must be tracked together.
 
 ## Main takeaways
 
 1. **The repo builds cleanly and matches the USA ROM today** using a Dockerized `devkitpro/devkitarm` flow plus `pret/agbcc`.
-2. **`make report` now says ~5.40868% matched code**, which is close to the user estimate, but that is **not the same thing as decompiled C coverage**.
+2. **The latest verified checkpoint says 5.935615% matched code**, which is close to the user estimate, but that is **not the same thing as decompiled C coverage**.
 3. A rough, repo-local heuristic based on current C definitions puts **explicit C function coverage closer to ~2.768% by function count** (`165 / 5961`).
 4. **Mizuchi is the better fit for pi** because it has a real CLI/server workflow.
 5. **Kappa is still useful**, but mostly as:

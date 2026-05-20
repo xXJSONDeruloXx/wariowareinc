@@ -34,67 +34,65 @@ python3 tools/gen_objdiff.py
 
 ### Latest verified metrics
 
-- `matched_functions`: **1061 / 5961**
-- `matched_functions_percent`: **17.799026%**
-- `matched_code_percent`: **5.915476%**
-- `tools/gen_objdiff.py`: **614 C / 6073 asm-only units**
-- previous verified baseline used by this checkpoint: **1056 / 5961**, **609 C / 6078 asm-only units**
-- accepted delta for this batch: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
+- `matched_functions`: **1071 / 5961**
+- `matched_functions_percent`: **17.966785%**
+- `matched_code_percent`: **5.935615%**
+- `tools/gen_objdiff.py`: **619 C / 6068 asm-only units**
+- previous verified baseline used by this checkpoint: **1061 / 5961**, **614 C / 6073 asm-only units**
+- accepted delta for this batch: **+10 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_080c6940.c`
-- `src/decomp/asm_080d8e8c.c`
-- `src/decomp/asm_080d8e9c.c`
-- `src/decomp/asm_080eac04.c`
-- `src/decomp/asm_080eac14.c`
+- `src/decomp/asm_08016a9c.c`
+- `src/decomp/asm_08016b34.c`
+- `src/decomp/asm_0801badc.c`
+- `src/decomp/asm_0801c368.c`
+- `src/decomp/asm_0801cfd8.c`
 
 Original asm files were moved to `asm/converted/`:
 
-- `asm/converted/asm_080c6940.s`
-- `asm/converted/asm_080d8e8c.s`
-- `asm/converted/asm_080d8e9c.s`
-- `asm/converted/asm_080eac04.s`
-- `asm/converted/asm_080eac14.s`
+- `asm/converted/asm_08016a9c.s`
+- `asm/converted/asm_08016b34.s`
+- `asm/converted/asm_0801badc.s`
+- `asm/converted/asm_0801c368.s`
+- `asm/converted/asm_0801cfd8.s`
 
 ### What worked
 
-- A tiny sibling-rich sound-wrapper batch converted cleanly and again moved both major metric families.
-- The accepted family used two closely related shapes:
+- A sibling-rich `D_03006520` compare-and-call wrapper batch converted cleanly and again moved both major metric families.
+- The accepted shape was:
 
 ```c
-void func_080C6940(void) { stop_sound((struct SongHeader *)0x083FF348); }
-void func_080D8E9C(void) { stop_sound((struct SongHeader *)0x083FDB88); }
-void func_080EAC14(void) { stop_sound((struct SongHeader *)0x083FDB88); }
+#include "src/beatscript.h"
+
+void func_08016A9C(void) {
+    if (D_03006520 == 0x1E)
+        func_0801694C();
+}
 ```
 
-and the paired sound-start wrappers:
-
-```c
-void func_080D8E8C(void) { func_0800C7CC((void *)0x083FDB88); }
-void func_080EAC04(void) { func_0800C7CC((void *)0x083FDB88); }
-```
+and the same spelling pattern matched across four more siblings that differed only by the compare immediate and callee.
 
 ### Durable workflow lesson reinforced
 
-Object-level preflight remains the right gate.
+Object-level preflight remains the right gate, but extern-backed address loads need one extra bit of interpretation.
 
-For this batch, it confirmed:
+For this batch, preflight confirmed:
 
-- identical instruction sequences
+- identical instruction flow
 - identical `.text` sizes
-- that absolute-address casts can preserve the original literal-pool behavior when ROM data symbols are not exported as usable C symbols
+- that source-built objects may keep an `R_ARM_ABS32` relocation for `D_03006520` even when the original hand asm already bakes the literal address
 
-before linker edits were made.
+before linker edits were made. The final linked ROM is still the real acceptance gate for this pattern family.
 
 ### Strategy update from this batch
 
 This adds another productive target class:
 
-- tiny wrapper families around ROM-resident song data
-- especially when the same absolute-address spelling can be reused across multiple siblings
+- tiny state-guard wrappers of the form `if (GLOBAL == IMM) call();`
+- especially when many siblings share the same global read and differ only by compare immediate or callee
 
 ### Prior traps carried forward
 
