@@ -26,6 +26,13 @@ Target: **4768 / 5961 matched functions**
 - **Commit:** `fc4f684b`, pushed
 - **Learnings:** (1) register allocation differences between C and asm still cause ROM mismatch even for semantically identical code (2) `(u32)(b << 31) >> 31` still generates ASRS not LSRS — need unsigned cast pattern (3) `p[0] |= 0x8000` generates extra ADDS — need `p[0] = p[0] | 0x8000` form or verify exact codegen (4) D_ absolute address pointers work for simple byte/halfword stores
 
+## Iteration 25 — accepted
+- **Candidate set:** 6-function batch — `asm_0801d2d0` (gCSV pointer-deref byte store), `asm_08040a2c` (gCSV word add), `asm_08052538` (gCSV word increment by 0x50), `asm_08076378` (gCSV word clear + byte set), `asm_080f1588` (D_03006570 word setter), `asm_080f1594` (D_03006888 byte setter)
+- **Result:** match after reverting asm_08005914 (addressing mode diff) and asm_0801d4a0 (register alloc diff)
+- **Metric delta:** matched_functions 1131→1137 (+6), matched_code_percent 6.003258%→6.013328%, C units 679→685, asm-only 6008→6002
+- **Commit:** `9796ba11`, pushed
+- **Learnings:** (1) D_ absolute address stores work when the offset is 0 (direct STRB/STRH/STR) — C and asm both load the final address (2) D_ with non-zero offsets (e.g., STR R0,[R1,#4]) produce different machine code than C with *(type *)(base+4) because agbcc loads the computed address while asm loads the base and uses an offset instruction (3) gCurrentSceneVariable simple deref + store patterns match well when C uses `(u8 *)gCurrentSceneVariable` pointer arithmetic
+
 ## Checklist (next batch priorities)
 - [ ] Select next 5-function candidate batch from proven sibling families
 - [ ] Preflight candidates at object-file level
