@@ -91,6 +91,7 @@ export OUTPUT := $(BUILD)/$(TARGET)
 
 CFILES   := $(foreach dir,$(C_DIRS),$(wildcard $(dir)/*.c))
 SFILES   := $(foreach dir,$(ASM_DIRS),$(wildcard $(dir)/*.s)) $(foreach dir,$(BS_DIRS),$(wildcard $(dir)/*.bs))
+SFILES   := $(filter-out asm/asm_080f26d0.s,$(SFILES))
 BINFILES := $(foreach dir,$(BIN),$(wildcard $(dir)/*.bin)) \
 			$(foreach dir,$(MUSIC),$(wildcard $(dir)/*.mid)) 
 WAVFILES    :=  $(foreach dir,$(SFX),$(wildcard $(dir)/*.wav))

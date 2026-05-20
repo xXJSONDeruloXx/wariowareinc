@@ -37,10 +37,10 @@ That matters because every later assessment is grounded in a **known-good, repro
 
 Running `make report` produced:
 
-- `matched_code_percent`: **5.4082794%**
-- `matched_functions`: **470**
+- `matched_code_percent`: **5.4086823%**
+- `matched_functions`: **471**
 - `total_functions`: **5961**
-- `matched_functions_percent`: **7.884583%**
+- `matched_functions_percent`: **7.901359%**
 
 ### Important interpretation
 
@@ -59,19 +59,19 @@ So `~5.41%` is a good **matched-code** number, but it should **not** be read as 
 
 A rough repo-local heuristic after the smoke-test replacements:
 
-- C function definitions found in `src/**/*.c`: **164**
+- C function definitions found in `src/**/*.c`: **165**
 - inline asm stub includes still present in `src/**/*.c`: **306**
 - total functions from report: **5961**
 
 ### Heuristic ratio
 
-- `164 / 5961 = 2.7512%`
+- `165 / 5961 = 2.7680%`
 
 ### My read
 
 That puts the repo’s current **explicit C-defined function coverage** closer to:
 
-- **~2.75% by function count**
+- **~2.77% by function count**
 
 while the objdiff matched-code report sits around:
 
@@ -166,17 +166,68 @@ void func_0800A270(void) {
 
 ---
 
-## 5. Important finding: `make report` did not move after those wins
+## 5. Important finding about what does and does not move `make report`
 
-After replacing those two stubs with matching C, `make report` stayed effectively unchanged.
+After replacing the first two included asm stubs with matching C, `make report` stayed effectively unchanged.
 
 That is not a contradiction.
 
 It means the report is primarily capturing **matched binary/code status**, not “this used to be inline asm inside a C unit and is now a real C function”.
 
+However, converting a **standalone asm-only leaf function** outside the existing C scaffold did move the official report slightly:
+
+- `matched_code_percent`: `5.4082794%` -> `5.4086823%`
+- `matched_functions`: `470` -> `471`
+- `tools/gen_objdiff.py`: `18 C / 6669 asm-only stubs` -> `19 C / 6668 asm-only stubs`
+
 That is a useful warning for future progress tracking:
 
 - **binary match metrics** and **decomped-C metrics** are not the same metric in this repo
+- but **standalone asm-only conversions do show up in the official report**
+
+---
+
+## 5.1 Standalone asm-only proof point: `func_080F26D0`
+
+A tiny standalone asm file outside the pre-existing C translation units was converted successfully.
+
+### Original state
+
+- file: `asm/asm_080f26d0.s`
+- body:
+
+```asm
+STRB R1, [R0, #1]
+BX LR
+```
+
+### Replacement
+
+- new file: `src/asm_080f26d0.c`
+
+```c
+#include "global.h"
+
+void func_080F26D0(u8 *arg0, u8 arg1) {
+    arg0[1] = arg1;
+}
+```
+
+### Build-system changes needed
+
+Because this function was not an inline include stub, replacing it required:
+
+- filtering `asm/asm_080f26d0.s` out of `SFILES` in `Makefile`
+- swapping the linker-script entry in `wariowareinc.ld` from:
+  - `build/asm/asm_080f26d0.s.o(.text*);`
+  - to `build/src/asm_080f26d0.c.o(.text*);`
+
+### Result
+
+- full Docker build still matched the ROM
+- this did move the official report slightly
+
+This is the clearest proof so far that **progress outside the currently-C-scaffolded portion of the repo is absolutely achievable**, just a bit more invasive per function.
 
 ---
 
@@ -327,7 +378,7 @@ They are small enough that:
 
 ### My current practical estimate
 
-- **matched-code progress:** ~5.41%
-- **explicit C-defined function progress (heuristic):** ~2.75%
+- **matched-code progress:** ~5.40868%
+- **explicit C-defined function progress (heuristic):** ~2.77%
 
 That is the clearest honest summary I can give after real builds and real smoke tests.
