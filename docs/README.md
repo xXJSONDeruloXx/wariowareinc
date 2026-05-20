@@ -8,6 +8,15 @@ This docs set records a real tooling pass over `wariowareinc`, focused on:
 - what is and is not practical inside the **pi coding agent harness**
 - real smoke-test results, not just theory
 
+## Latest verified scale-up checkpoint (2026-05-20)
+
+- Clean Docker build: `wariowareinc.gba: OK`
+- `make report`: **1016 / 5961 matched functions = 17.044119%**
+- `matched_code_percent`: **5.848815%**
+- `tools/gen_objdiff.py`: **564 C / 6123 asm-only units**
+- Accepted batch result: **+12 matched functions** versus the previous verified baseline (`1004 -> 1016`)
+- Important trap from this batch: for `gBeatscriptScene` byte-offset writes, direct expressions like `((u8 *)&gBeatscriptScene)[1]` may compile as a **symbol+offset literal relocation** instead of `LDR base; LDRB/STRB #offset`. Using a local pointer variable (`u8 *p = (u8 *)&gBeatscriptScene; p[1] ...`) fixed `asm_0800cba4`, while `asm_0800ccb4` was safer to keep in asm because the C forms either changed the immediate sequence or shrank the TU by 4 bytes.
+
 ## Main takeaways
 
 1. **The repo builds cleanly and matches the USA ROM today** using a Dockerized `devkitpro/devkitarm` flow plus `pret/agbcc`.

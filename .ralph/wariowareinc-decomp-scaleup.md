@@ -9,11 +9,17 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1004 / 5961` = **16.84%**
-- **Matched code percent:** **5.821934%**
-- **C units in linker graph:** `565 / 6687` = **8.45%**
-- **ASM-only units in linker graph:** `6122`
+- **Matched functions:** `1016 / 5961` = **17.044119%**
+- **Matched code percent:** **5.848815%**
+- **C units in linker graph:** `564 / 6687`
+- **ASM-only units in linker graph:** `6123`
 - **ROM status:** `wariowareinc.gba: OK`
+- **Accepted delta vs prior verified baseline:** `+12 matched functions`
+
+## Current Working State
+- HEAD restores a matching ROM after isolating the bad candidate from the previous batch.
+- `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
+- `asm_0800ccb4` is restored to asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
 ## Success Criteria For Any Accepted Progress
 A batch only counts as real progress if all of the following are true:
@@ -190,9 +196,27 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - leaving converted `.s` files in place causes wildcard / linker collisions
 - bare `extern` declarations for g-symbols can conflict with existing types
 - `POP {R1}; BX R1` wrappers are not safe under agbcc’s normal output
+- `((u8 *)&gBeatscriptScene)[N]` may compile as a **symbol+offset literal relocation** instead of loading the base symbol and using `[base, #N]`
+- even when function bytes look close, TU-level padding/alignment can still break the final ROM; compare `.text` section sizes when a full-ROM mismatch survives seemingly matched code
 
 ## Next Candidate Queue
-1. small already-proven pattern batches from remaining standalone asm TUs
-2. safe inline asm stub replacements in existing C translation units
-3. short getter/setter or return-constant families that can move metrics cheaply
-4. only after that, broader multi-call wrappers or branchy small functions
+1. mine more short standalone asm TUs that reuse already-proven wrapper/getter/setter families
+2. specifically target patterns that avoid literal-pool or symbol+offset codegen traps
+3. safe inline asm stub replacements in existing C translation units
+4. short return-constant or bitfield helpers that can move matched-functions cheaply
+5. reserve branchier multi-call wrappers for later batches unless they already have a proven sibling match
+
+## Iteration Log
+- **Iteration 1**
+  - Candidate set: previously converted small wrapper/getter/setter family now present at HEAD `878d178b`
+  - Result: **partial** — project builds cleanly, objdiff metrics improve locally to `1017 / 5961 (17.06%)`, but full ROM no longer matches
+  - Metric delta vs verified baseline: `+13 matched functions`, but **not accepted yet** because ROM identity regressed
+  - Verification: clean Docker build reaches link step and reports `Build succeeded, but did not match the official ROM.`; local ARM64 `objdiff-cli` generated `build/report.json`
+  - Next action: binary-search or selectively revert this batch until `wariowareinc.gba: OK` returns, then rerun report and update docs before claiming progress
+- **Iteration 2**
+  - Candidate set: binary-search / repair pass over the mismatching batch, focusing first on `asm_0800ccb4` and neighboring `asm_0800cba4` because the ROM diff landed around `0x0800CBA4`
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1004 -> 1016 matched functions` (**+12**), `matched_code_percent 5.821934% -> 5.848815%`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `564 C / 6123 asm-only units`
+  - Learnings: `asm_0800cba4` required a local pointer variable to force `[base, #1]` codegen; `asm_0800ccb4` was reverted to asm after revealing both a wrong initial mask and a 4-byte TU-size mismatch risk
+  - Next action: commit code + docs together, push immediately, then queue another narrow proven-pattern batch
