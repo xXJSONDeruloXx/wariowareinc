@@ -34,47 +34,56 @@ python3 tools/gen_objdiff.py
 
 ### Latest verified metrics
 
-- `matched_functions`: **1046 / 5961**
-- `matched_functions_percent`: **17.547392%**
-- `matched_code_percent`: **5.890302%**
-- `tools/gen_objdiff.py`: **599 C / 6088 asm-only units**
-- previous verified baseline used by this checkpoint: **1041 / 5961**, **594 C / 6093 asm-only units**
+- `matched_functions`: **1051 / 5961**
+- `matched_functions_percent`: **17.631270%**
+- `matched_code_percent`: **5.901177%**
+- `tools/gen_objdiff.py`: **604 C / 6083 asm-only units**
+- previous verified baseline used by this checkpoint: **1046 / 5961**, **599 C / 6088 asm-only units**
 - accepted delta for this batch: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_0808bae0.c`
-- `src/decomp/asm_080afb98.c`
-- `src/decomp/asm_080d330c.c`
-- `src/decomp/asm_080b9a98.c`
-- `src/decomp/asm_080c0718.c`
+- `src/decomp/asm_080f25d8.c`
+- `src/decomp/asm_080f25e4.c`
+- `src/decomp/asm_080f25f0.c`
+- `src/decomp/asm_080f25fc.c`
+- `src/decomp/asm_080f26b0.c`
 
 Original asm files were moved to `asm/converted/`:
 
-- `asm/converted/asm_0808bae0.s`
-- `asm/converted/asm_080afb98.s`
-- `asm/converted/asm_080d330c.s`
-- `asm/converted/asm_080b9a98.s`
-- `asm/converted/asm_080c0718.s`
+- `asm/converted/asm_080f25d8.s`
+- `asm/converted/asm_080f25e4.s`
+- `asm/converted/asm_080f25f0.s`
+- `asm/converted/asm_080f25fc.s`
+- `asm/converted/asm_080f26b0.s`
 
 ### What worked
 
-- A mixed one-call wrapper batch converted cleanly and again moved both major metric families.
-- Two useful shapes were confirmed:
+- A sibling-rich raw-pointer struct-entry setter family converted cleanly and again moved both major metric families.
+- The accepted family used two closely related shapes:
 
 ```c
-void func_0808BAE0(u8 *a0) { scene_set_current_thread(1); a0[0x1A] = 1; }
-void func_080AFB98(u8 *a0) { scene_set_current_thread(1); a0[0xC] = 1; }
-void func_080D330C(u8 *a0) { scene_set_current_thread(1); a0[0x1E] = 0; }
+void func_080F25D8(void *arg0, u32 arg1, u8 arg2) {
+    ((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + 0xC] = arg2;
+}
+
+void func_080F25F0(void *arg0, u32 arg1, u8 arg2) {
+    ((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + 0x14] = arg2;
+}
+
+void func_080F26B0(void *arg0, u32 arg1, u8 arg2) {
+    ((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + 0x1C] = arg2;
+}
 ```
 
-and the paired `gCurrentSceneVariable` word-clear shape:
+and the halfword sibling:
 
 ```c
-void func_080B9A98(void) { scene_set_current_thread(1); *(u32 *)((u8 *)gCurrentSceneVariable + 0x10) = 0; }
-void func_080C0718(void) { scene_set_current_thread(1); *(u32 *)((u8 *)gCurrentSceneVariable + 0x4C) = 0; }
+void func_080F25E4(void *arg0, u32 arg1, u32 arg2) {
+    *(u16 *)&((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + 0x10] = arg2 << 8;
+}
 ```
 
 ### Durable workflow lesson reinforced
@@ -85,17 +94,16 @@ For this batch, it confirmed:
 
 - identical instruction sequences
 - identical `.text` sizes
-- preserved `PUSH {R4, LR}` / `POP {R4}` / `POP {R0}` / `BX R0` shape for the object-field wrappers
-- preserved `PUSH {LR}` / `POP {R0}` / `BX R0` shape for the `gCurrentSceneVariable` word clears
+- no need for guessed named structs when raw pointer arithmetic already mirrors the original asm access pattern exactly
 
 before linker edits were made.
 
 ### Strategy update from this batch
 
-This widens the productive search space again:
+This extends the productive search space again:
 
-- sibling families can be mixed within one batch when each subgroup has already been object-preflighted cleanly
-- short one-call wrappers that only differ by field offsets or zeroed slots remain high-value targets
+- sibling families operating on array-like entries behind a pointer field can be good targets
+- raw pointer arithmetic can be safer than forcing speculative struct definitions when the asm is simple and fixed-offset based
 
 ### Prior traps carried forward
 

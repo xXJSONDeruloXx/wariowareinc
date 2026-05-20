@@ -9,16 +9,16 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1046 / 5961` = **17.547392%**
-- **Matched code percent:** **5.890302%**
-- **C units in linker graph:** `599 / 6687`
-- **ASM-only units in linker graph:** `6088`
+- **Matched functions:** `1051 / 5961` = **17.631270%**
+- **Matched code percent:** **5.901177%**
+- **C units in linker graph:** `604 / 6687`
+- **ASM-only units in linker graph:** `6083`
 - **ROM status:** `wariowareinc.gba: OK`
 - **Accepted delta vs prior verified baseline:** `+5 matched functions`, `+5 C units`, `-5 asm-only units`
 
 ## Current Working State
-- HEAD is matching after a clean Docker build and includes a verified mixed wrapper batch combining object-field stores and `gCurrentSceneVariable` word clears after `scene_set_current_thread(1)`.
-- The latest accepted files are `asm_0808bae0`, `asm_080afb98`, `asm_080d330c`, `asm_080b9a98`, and `asm_080c0718`.
+- HEAD is matching after a clean Docker build and includes a verified `0x080F25xx` struct-entry setter batch.
+- The latest accepted files are `asm_080f25d8`, `asm_080f25e4`, `asm_080f25f0`, `asm_080f25fc`, and `asm_080f26b0`.
 - `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
 - `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
@@ -198,6 +198,8 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - one-call wrappers of the form `scene_set_current_thread(1); *(u8 *)((u8 *)gCurrentSceneVariable + off) = val;` can also match cleanly across sibling groups
 - `PUSH {R4, LR}` wrappers that preserve the incoming object pointer and then store a byte field after `scene_set_current_thread(1)` can match cleanly
 - one-call wrappers that clear a `gCurrentSceneVariable` word slot after `scene_set_current_thread(1)` can also match cleanly
+- raw-pointer entry setters of the form `((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + off] = value;` can match cleanly across sibling families
+- raw-pointer entry setters with `*(u16 *)&... = arg2 << 8;` can also match cleanly for halfword fields in the same family
 - preflighting candidate C spellings as object files before linker edits is effective for short standalone TU batches
 
 ## Current Known Traps / Non-Matching Patterns
@@ -210,11 +212,11 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - for large byte offsets, writing the full offset directly can change Thumb address splitting (`+0x26` / `[+0]` instead of `+8` / `[+0x1E]`); shape the pointer expression to preserve the original immediate split
 
 ## Next Candidate Queue
-1. continue mining sibling-rich one-call wrapper families, especially `scene_set_current_thread` groups that differ only by store offset/value or object-field offset
-2. continue mining short `gCurrentSceneVariable` sibling families where one validated spelling can fan out to multiple siblings
-3. mine short `LDR global; STR/STRB/STRH` setters that do not use risky symbol+offset forms
-4. mine short `LDR global; LDR/LDRB/LDRH` getters and bitfield extracts that already have matched siblings
-5. selectively harvest more `BX LR` leaves only when we want cheap C-unit coverage gains
+1. continue mining sibling-rich families where one validated spelling can fan out to multiple siblings, including raw-pointer entry setters like the `0x080F25xx` group
+2. continue mining sibling-rich one-call wrapper families, especially `scene_set_current_thread` groups that differ only by store offset/value or object-field offset
+3. continue mining short `gCurrentSceneVariable` sibling families where one validated spelling can fan out to multiple siblings
+4. mine short `LDR global; STR/STRB/STRH` setters that do not use risky symbol+offset forms
+5. mine short `LDR global; LDR/LDRB/LDRH` getters and bitfield extracts that already have matched siblings
 
 ## Reflection Checkpoint (Iteration 6)
 1. **What has been accomplished so far?**
@@ -300,3 +302,10 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
   - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `599 C / 6088 asm-only units`
   - Learnings: one-call wrapper families can safely mix `R4`-preserving object-field stores and `gCurrentSceneVariable` word clears when object-preflight confirms exact wrapper shape, field offsets, and section sizes first
   - Next action: commit code + docs together, push immediately, then keep mining sibling-rich one-call wrapper families before returning to lower-yield one-offs
+- **Iteration 10**
+  - Candidate set: a 5-function raw-pointer struct-entry setter family — `asm_080f25d8`, `asm_080f25e4`, `asm_080f25f0`, `asm_080f25fc`, `asm_080f26b0`
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1046 -> 1051 matched functions` (**+5**), `matched_code_percent 5.890302% -> 5.901177%`, linker/unit coverage `599 C / 6088 asm-only -> 604 C / 6083 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `604 C / 6083 asm-only units`
+  - Learnings: raw pointer arithmetic can be safer than guessed named structs for decomping isolated setters; the family matched cleanly with `((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + off] = ...` and the halfword variant `*(u16 *)&... = arg2 << 8` after object-preflight confirmed byte-for-byte-equivalent codegen
+  - Next action: commit code + docs together, push immediately, then keep mining sibling-rich families that reuse the same raw-pointer or one-call-wrapper spellings

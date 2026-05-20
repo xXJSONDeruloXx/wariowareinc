@@ -1,0 +1,2 @@
+#include "global.h"
+void func_080F25D8(void *arg0, u32 arg1, u8 arg2) { ((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + 0xC] = arg2; }
