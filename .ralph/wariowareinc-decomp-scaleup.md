@@ -9,16 +9,16 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1036 / 5961` = **17.379635%**
-- **Matched code percent:** **5.866135%**
-- **C units in linker graph:** `589 / 6687`
-- **ASM-only units in linker graph:** `6098`
+- **Matched functions:** `1041 / 5961` = **17.463512%**
+- **Matched code percent:** **5.876205%**
+- **C units in linker graph:** `594 / 6687`
+- **ASM-only units in linker graph:** `6093`
 - **ROM status:** `wariowareinc.gba: OK`
 - **Accepted delta vs prior verified baseline:** `+5 matched functions`, `+5 C units`, `-5 asm-only units`
 
 ## Current Working State
-- HEAD is matching after a clean Docker build and includes a verified 5-function shift-based `gCurrentSceneVariable` byte-setter batch.
-- The latest accepted files are `asm_08053264`, `asm_080c61d0`, `asm_080d24a8`, `asm_080d2890`, and `asm_080d7738`.
+- HEAD is matching after a clean Docker build and includes a verified 5-function `scene_set_current_thread(1)` + `gCurrentSceneVariable` byte-setter wrapper batch.
+- The latest accepted files are `asm_08043cc4`, `asm_080b1254`, `asm_080b12c0`, `asm_080b134c`, and `asm_080b13d8`.
 - `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
 - `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
@@ -195,6 +195,7 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - short direct `gCurrentSceneVariable` setters can move both matched-function totals and linker/unit coverage
 - short `gCurrentSceneVariable` pointer-deref helpers like `u8 *p = *(u8 **)((u8 *)gCurrentSceneVariable + off); *p = 1;` can also match cleanly
 - shift-based `gCurrentSceneVariable` byte setters like `u8 *p = (u8 *)gCurrentSceneVariable; p[(IMM << SHIFT)] = VALUE;` can fan out across many siblings
+- one-call wrappers of the form `scene_set_current_thread(1); *(u8 *)((u8 *)gCurrentSceneVariable + off) = val;` can also match cleanly across sibling groups
 - preflighting candidate C spellings as object files before linker edits is effective for short standalone TU batches
 
 ## Current Known Traps / Non-Matching Patterns
@@ -208,10 +209,31 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 
 ## Next Candidate Queue
 1. continue mining short `gCurrentSceneVariable` sibling families where one validated spelling can fan out to multiple siblings
-2. prioritize families that differ only by immediates (shift-based offset setters, repeated flag initializers, pointer-deref stores)
+2. prioritize families that differ only by immediates or by one fixed call plus one store (`scene_set_current_thread` wrappers, shift-based setters, repeated flag initializers, pointer-deref stores)
 3. mine short `LDR global; STR/STRB/STRH` setters that do not use risky symbol+offset forms
 4. mine short `LDR global; LDR/LDRB/LDRH` getters and bitfield extracts that already have matched siblings
 5. selectively harvest more `BX LR` leaves only when we want cheap C-unit coverage gains
+
+## Reflection Checkpoint (Iteration 6)
+1. **What has been accomplished so far?**
+   - The verified baseline moved from `1004 / 5961` to `1041 / 5961` matched functions.
+   - Linker/unit coverage improved to `594 C / 6093 asm-only`.
+   - Several durable short-function families are now proven and reusable.
+2. **What's working well?**
+   - Sibling-rich families with one validated spelling reused across multiple asm files.
+   - Object-level preflight before linker edits.
+   - Tight 5-item batches with immediate Docker/report verification.
+3. **What's not working or blocking progress?**
+   - One-off exploratory functions are still lower-yield.
+   - Minor source spelling changes can still drift codegen.
+   - Some accepted batches improve unit coverage without moving matched-function totals, so candidate selection needs care.
+4. **Should the approach be adjusted?**
+   - Yes: continue prioritizing sibling families, but expand beyond plain setters into one-BL wrappers when they cluster tightly and preflight cleanly.
+   - Keep object preflight as a standard gate before touching `wariowareinc.ld`.
+5. **What are the next priorities?**
+   - Continue mining sibling-rich `gCurrentSceneVariable` families.
+   - Prefer families differing only by immediates or one fixed call plus one store.
+   - Keep using easy `BX LR` leaves only as opportunistic filler, not the main driver.
 
 ## Iteration Log
 - **Iteration 1**
@@ -262,3 +284,10 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
   - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `589 C / 6098 asm-only units`
   - Learnings: sibling families whose asm differs only by immediates are excellent batch targets; the spelling `u8 *p = (u8 *)gCurrentSceneVariable; p[(IMM << SHIFT)] = VALUE;` matched cleanly across all five functions once preflighted at the object-file level
   - Next action: commit code + docs together, push immediately, then continue prioritizing sibling-rich `gCurrentSceneVariable` families that can reuse one validated spelling across multiple asm files
+- **Iteration 8**
+  - Candidate set: a 5-function `scene_set_current_thread(1)` + `gCurrentSceneVariable` byte-setter wrapper family — `asm_08043cc4`, `asm_080b1254`, `asm_080b12c0`, `asm_080b134c`, `asm_080b13d8`
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1036 -> 1041 matched functions` (**+5**), `matched_code_percent 5.866135% -> 5.876205%`, linker/unit coverage `589 C / 6098 asm-only -> 594 C / 6093 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `594 C / 6093 asm-only units`
+  - Learnings: the one-call wrapper form `scene_set_current_thread(1); *(u8 *)((u8 *)gCurrentSceneVariable + off) = val;` matched cleanly across a sibling group once object-preflight confirmed the exact push/pop/literal-pool shape
+  - Next action: commit code + docs together, push immediately, then continue mining sibling-rich families that combine one fixed call with one simple store
