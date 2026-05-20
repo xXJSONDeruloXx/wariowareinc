@@ -1,0 +1,198 @@
+# WarioWare Inc. Decompilation Scale-Up
+
+## Goal
+Reach **80% matched/decompiled-function progress** on the `docs/macabeus-tooling-assessment` branch in `/Users/kurt/Developer/wariowareinc`, while preserving a **byte-identical ROM match** at every accepted milestone.
+
+Target function count:
+- **4768 / 5961 matched functions**
+
+## Latest Verified Baseline
+Use this as the starting point until a newer verified `make report` run replaces it.
+
+- **Matched functions:** `1004 / 5961` = **16.84%**
+- **Matched code percent:** **5.821934%**
+- **C units in linker graph:** `565 / 6687` = **8.45%**
+- **ASM-only units in linker graph:** `6122`
+- **ROM status:** `wariowareinc.gba: OK`
+
+## Success Criteria For Any Accepted Progress
+A batch only counts as real progress if all of the following are true:
+1. The ROM still matches exactly.
+2. `make report` has been rerun.
+3. At least one measurable metric improved versus the previously documented verified baseline.
+4. The improvement, learnings, traps, and next actions were documented in `/docs`.
+5. The code changes **and** the documentation updates were committed and pushed together.
+
+## Primary Measurable Metrics
+Track these explicitly after each successful batch:
+- `build/report.json`:
+  - `matched_functions`
+  - `matched_functions_percent`
+  - `matched_code_percent`
+- `wariowareinc.ld` / objdiff-style unit coverage:
+  - number of `build/src/...` units
+  - number of asm-only units
+
+## Hard Rules
+1. **One function per C file** in `src/decomp/` — grouping breaks ROM match.
+2. **Move converted `.s` files to `asm/converted/`** — prevents wildcard collision and linker errors.
+3. **Update `wariowareinc.ld`** for every standalone TU conversion:
+   - swap `build/asm/X.s.o(.text*);`
+   - to `build/src/decomp/X.c.o(.text*);`
+4. **Every accepted batch must pass a clean Docker build** and report `wariowareinc.gba: OK`.
+5. **Every accepted batch must rerun `make report`** and refresh the documented baseline.
+6. **Any measurable improvement must be committed and pushed immediately** — do not leave verified progress sitting locally.
+7. **Documentation is mandatory for every measurable improvement**:
+   - update `docs/README.md` if the headline metrics changed
+   - update `docs/wariowareinc-decomp-progress-audit.md` with new metrics and what changed
+   - update any other relevant `/docs` file with tooling/workflow learnings, traps, or pattern notes
+8. `#include "global.h"` at the top of every C file; add `#include "types.h"` when referencing g-symbols from `types.h`.
+9. **g-symbol references**: prefer `#include "types.h"` over bare `extern` declarations — bare `extern u32 gSym;` can cause type conflicts.
+10. **D_ symbols**: use `*(volatile u8/u16/u32 *)0xNNNNNNNN` syntax with `u32` arg type; only offset `0` is known-good here.
+11. **Function pointer + 1 syntax**: use `(void *)(funcptr + 1)` cast or a symbol form proven to preserve literal-pool behavior.
+12. **If a build mismatches**: binary-search the new conversions, isolate the bad function(s), revert or fix them, and document the trap.
+13. **POP {R0}/BX R0 vs POP {R1}/BX R1**: agbcc emits `POP {R0}; BX R0`. Functions whose original ROM uses `POP {R1}; BX R1` are not safe matches for the simple wrapper strategy.
+
+## Required Commands
+### Clean Docker build
+```bash
+docker run --rm -v "$PWD:/workspace" -w /workspace devkitpro/devkitarm:latest \
+  bash -lc 'set -euo pipefail; make clean >/dev/null 2>&1; make -j4 2>&1 | tail -n 3'
+```
+Required success signal:
+- `wariowareinc.gba: OK`
+
+### Refresh report
+```bash
+docker run --rm -v "$PWD:/workspace" -w /workspace devkitpro/devkitarm:latest \
+  bash -lc 'set -euo pipefail; make report 2>&1 | tail -n 3'
+```
+Then parse:
+- `build/report.json`
+
+### Refresh linker / unit coverage snapshot
+```bash
+python3 tools/gen_objdiff.py
+```
+Use its totals or recompute directly from `wariowareinc.ld`.
+
+## Iteration Workflow
+For every iteration, follow this exact loop:
+1. Select a narrow candidate set.
+2. State why those candidates were chosen.
+3. Convert the smallest safe batch first.
+4. Build in Docker.
+5. If mismatch:
+   - binary-search the batch
+   - identify the failing pattern or function
+   - revert/fix
+   - record the trap
+6. If the ROM matches:
+   - run `make report`
+   - refresh unit coverage
+   - compare against the previous verified baseline
+7. If there is **measurable improvement**:
+   - update `/docs`
+   - commit code + docs together
+   - push immediately
+   - update the verified baseline in this task file
+8. If there is **no measurable improvement** but useful knowledge was gained:
+   - keep only changes that are still strategically useful and safe
+   - document the learning/trap if it affects future work
+   - do **not** claim progress that did not move a tracked metric
+9. Queue the next candidate batch based on what was learned.
+
+## Self-Correction Rules
+This loop must adapt, not just repeat.
+
+Trigger a strategy adjustment when any of these happen:
+- **2 consecutive iterations** with no measurable metric improvement
+- **2 consecutive mismatch batches** from the same pattern family
+- a supposedly safe pattern stops matching reliably
+- a documentation gap caused repeated confusion
+
+When triggered, do all of the following before continuing:
+1. Write down what was attempted.
+2. State exactly what failed or stagnated.
+3. Identify whether the issue was:
+   - candidate selection
+   - codegen pattern choice
+   - repo integration mechanics
+   - linker/script handling
+   - documentation gap
+4. Change the approach explicitly.
+5. Record the new rule or trap in `/docs` and in this task file.
+
+## Required Per-Iteration Record
+Keep this task file updated with a concise running record. After each completed iteration, update these sections.
+
+### Iteration Log
+- iteration number
+- candidate set attempted
+- result: match / mismatch / partial
+- metric deltas
+- commit hash if progress was accepted
+- next action
+
+### Known Good Patterns
+List patterns that repeatedly match safely.
+
+### Known Traps / Non-Matching Patterns
+List patterns or mechanics that caused mismatches, wasted time, or integration issues.
+
+### Next Candidate Queue
+Short prioritized queue for the next iteration or two.
+
+## Documentation Requirements For Successful Progress
+On every accepted measurable improvement, update `/docs` with:
+- **what changed**
+- **why it worked**
+- **what nearly failed / what to avoid**
+- **new metric values**
+- **what pattern should be tried next**
+
+At minimum, review/update:
+- `docs/README.md`
+- `docs/wariowareinc-decomp-progress-audit.md`
+
+Also update any relevant workflow/tooling doc when the iteration teaches something durable about:
+- candidate selection
+- agbcc matching behavior
+- linker handling
+- inline asm stub replacement
+- Mizuchi / Atlas / helper-script workflow
+
+## High-Value Pattern Ideas
+- empty BX LR functions
+- simple void call wrappers that preserve `POP {R0}; BX R0`
+- MOVS `R0, #const`; BX LR return-constant functions
+- simple getter/setter pairs with g-symbol offsets that work with `types.h`
+- bitfield extract / bit-clear / zero-init helpers already proven by prior batches
+- inline asm stubs in C files when the surrounding TU already exists in C
+- functions with 5-8 instructions, 0-1 branches, 0-2 BL calls
+- `LDR R0, =gSym; LDR R0, [R0]; LDR R0, [R0, #offset]; BX LR` getter chains
+- `PUSH {R4, LR}; BL f; BL f2; POP {R4}; POP {R0}; BX R0` save/restore call pairs
+
+## Current Known Good Patterns
+- empty BX LR
+- simple tail-call wrappers
+- void call-wrappers
+- D_ setter/getters
+- MOVS `R0, #N`; BX LR
+- bitfield extract
+- abs
+- decrement
+- bit-clear
+- zero-init
+
+## Current Known Traps / Non-Matching Patterns
+- grouping multiple functions in one C file breaks ROM matching
+- leaving converted `.s` files in place causes wildcard / linker collisions
+- bare `extern` declarations for g-symbols can conflict with existing types
+- `POP {R1}; BX R1` wrappers are not safe under agbcc’s normal output
+
+## Next Candidate Queue
+1. small already-proven pattern batches from remaining standalone asm TUs
+2. safe inline asm stub replacements in existing C translation units
+3. short getter/setter or return-constant families that can move metrics cheaply
+4. only after that, broader multi-call wrappers or branchy small functions
