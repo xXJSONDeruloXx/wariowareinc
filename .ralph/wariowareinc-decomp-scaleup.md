@@ -40,6 +40,13 @@ Target: **4768 / 5961 matched functions**
 - **Commit:** `ceba332e`, pushed
 - **Learnings:** (1) gCSV shift-computed offsets like `(0xBD << 4)` can match when agbcc emits the same MOVS+LSLS pair (2) `scene_set_current_thread` wrappers with one-BL calls still match cleanly (3) `(s16)arg0` doesn't produce LSLS/ASRS sign-extension in agbcc — need explicit sign extension C spelling
 
+## Iteration 27 — accepted
+- **Candidate set:** 5-function batch — `asm_08007ea0` (D_ word clear), `asm_080a9360` (sct+gCSV byte clear), `asm_080d409c` (sct+tail-call wrapper), `asm_080f2e74` (one-call+store wrapper), `asm_08020198` (const-arg one-BL wrapper)
+- **Result:** match ✅
+- **Metric delta:** matched_functions 1141→1146 (+5), matched_code_percent 6.020377%→6.029842%, C units 689→694, asm-only 5998→5993
+- **Commit:** `b00387e7`, pushed
+- **Learnings:** (1) D_ zero-offset word clears work with `*(volatile u32 *)addr = 0` (2) `scene_set_current_thread(1); *(u8 *)gCurrentSceneVariable = 0` matches (3) const-arg wrappers like `func_0800CE1C((void *)0x083BBCDC)` match when the constant address goes to literal pool
+
 ## Checklist (next batch priorities)
 - [ ] Select next 5-function candidate batch from proven sibling families
 - [ ] Preflight candidates at object-file level
