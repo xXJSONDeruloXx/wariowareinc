@@ -11,13 +11,13 @@ This docs set records a real tooling pass over `wariowareinc`, focused on:
 ## Latest verified scale-up checkpoint (2026-05-20)
 
 - Clean Docker build: `wariowareinc.gba: OK`
-- `make report`: **1051 / 5961 matched functions = 17.631270%**
-- `matched_code_percent`: **5.901177%**
-- `tools/gen_objdiff.py`: **604 C / 6083 asm-only units**
-- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1046 -> 1051`, `599 -> 604`)
-- Latest successful pattern: a 5-function raw-pointer struct-entry setter family in the `0x080F25xx` region
+- `make report`: **1056 / 5961 matched functions = 17.715149%**
+- `matched_code_percent`: **5.906414%**
+- `tools/gen_objdiff.py`: **609 C / 6078 asm-only units**
+- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1051 -> 1056`, `604 -> 609`)
+- Latest successful pattern: a 5-function pair-add helper family that updates two adjacent words from two sibling source words
 - Proven workflow detail: preflighting candidate C spellings by compiling just the object files and diffing their disassembly/section sizes against the original asm objects continues to de-risk standalone TU batches before linker edits
-- New successful spellings from this batch: `((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + off] = value;` and `*(u16 *)&... = arg2 << 8;` for the halfword sibling
+- New successful spelling from this batch: `u32 *arg0; arg0[1] += arg0[a]; arg0[2] += arg0[b];` matched cleanly across all five siblings after object preflight
 - Important trap from the prior batch still applies: for large byte offsets, writing the total offset directly can change Thumb addressing shape. `*(u8 *)((u8 *)gCurrentSceneVariable + 0x26) = N;` compiled as `adds #0x26; strb #0`, but the target required `adds #8; strb #0x1e`. Using an intermediate pointer (`u8 *p = (u8 *)gCurrentSceneVariable + 8; p[0x1E] = N;`) restored the original codegen.
 - Important metric note still applies: in this repo, some standalone conversions improve explicit C coverage without changing `matched_functions`, so both objdiff match metrics and linker/unit coverage must be tracked together.
 

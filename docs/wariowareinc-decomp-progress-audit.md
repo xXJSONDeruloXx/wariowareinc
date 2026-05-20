@@ -34,56 +34,49 @@ python3 tools/gen_objdiff.py
 
 ### Latest verified metrics
 
-- `matched_functions`: **1051 / 5961**
-- `matched_functions_percent`: **17.631270%**
-- `matched_code_percent`: **5.901177%**
-- `tools/gen_objdiff.py`: **604 C / 6083 asm-only units**
-- previous verified baseline used by this checkpoint: **1046 / 5961**, **599 C / 6088 asm-only units**
+- `matched_functions`: **1056 / 5961**
+- `matched_functions_percent`: **17.715149%**
+- `matched_code_percent`: **5.906414%**
+- `tools/gen_objdiff.py`: **609 C / 6078 asm-only units**
+- previous verified baseline used by this checkpoint: **1051 / 5961**, **604 C / 6083 asm-only units**
 - accepted delta for this batch: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted in this batch
 
 Verified C conversions kept:
 
-- `src/decomp/asm_080f25d8.c`
-- `src/decomp/asm_080f25e4.c`
-- `src/decomp/asm_080f25f0.c`
-- `src/decomp/asm_080f25fc.c`
-- `src/decomp/asm_080f26b0.c`
+- `src/decomp/asm_0804ef64.c`
+- `src/decomp/asm_08089668.c`
+- `src/decomp/asm_080b3328.c`
+- `src/decomp/asm_080c950c.c`
+- `src/decomp/asm_080cd710.c`
 
 Original asm files were moved to `asm/converted/`:
 
-- `asm/converted/asm_080f25d8.s`
-- `asm/converted/asm_080f25e4.s`
-- `asm/converted/asm_080f25f0.s`
-- `asm/converted/asm_080f25fc.s`
-- `asm/converted/asm_080f26b0.s`
+- `asm/converted/asm_0804ef64.s`
+- `asm/converted/asm_08089668.s`
+- `asm/converted/asm_080b3328.s`
+- `asm/converted/asm_080c950c.s`
+- `asm/converted/asm_080cd710.s`
 
 ### What worked
 
-- A sibling-rich raw-pointer struct-entry setter family converted cleanly and again moved both major metric families.
-- The accepted family used two closely related shapes:
+- A sibling-rich arithmetic helper family converted cleanly and again moved both major metric families.
+- All five functions shared the same core spelling:
 
 ```c
-void func_080F25D8(void *arg0, u32 arg1, u8 arg2) {
-    ((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + 0xC] = arg2;
-}
-
-void func_080F25F0(void *arg0, u32 arg1, u8 arg2) {
-    ((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + 0x14] = arg2;
-}
-
-void func_080F26B0(void *arg0, u32 arg1, u8 arg2) {
-    ((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + 0x1C] = arg2;
+void func_xxx(u32 *arg0) {
+    arg0[1] += arg0[a];
+    arg0[2] += arg0[b];
 }
 ```
 
-and the halfword sibling:
+Examples from the accepted batch:
 
 ```c
-void func_080F25E4(void *arg0, u32 arg1, u32 arg2) {
-    *(u16 *)&((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + 0x10] = arg2 << 8;
-}
+void func_0804EF64(u32 *arg0) { arg0[1] += arg0[4]; arg0[2] += arg0[5]; }
+void func_08089668(u32 *arg0) { arg0[1] += arg0[9]; arg0[2] += arg0[10]; }
+void func_080CD710(u32 *arg0) { arg0[1] += arg0[10]; arg0[2] += arg0[11]; }
 ```
 
 ### Durable workflow lesson reinforced
@@ -94,16 +87,16 @@ For this batch, it confirmed:
 
 - identical instruction sequences
 - identical `.text` sizes
-- no need for guessed named structs when raw pointer arithmetic already mirrors the original asm access pattern exactly
+- that simple typed pointer arithmetic on `u32 *` can be just as safe as raw byte-pointer expressions when the asm is already operating on fixed word slots
 
 before linker edits were made.
 
 ### Strategy update from this batch
 
-This extends the productive search space again:
+This adds another productive target class:
 
-- sibling families operating on array-like entries behind a pointer field can be good targets
-- raw pointer arithmetic can be safer than forcing speculative struct definitions when the asm is simple and fixed-offset based
+- sibling arithmetic helpers whose asm differs only by source-slot offsets
+- especially when the same typed-pointer spelling can be reused across every sibling in the family
 
 ### Prior traps carried forward
 

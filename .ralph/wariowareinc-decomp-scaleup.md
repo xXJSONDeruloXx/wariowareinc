@@ -9,16 +9,16 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1051 / 5961` = **17.631270%**
-- **Matched code percent:** **5.901177%**
-- **C units in linker graph:** `604 / 6687`
-- **ASM-only units in linker graph:** `6083`
+- **Matched functions:** `1056 / 5961` = **17.715149%**
+- **Matched code percent:** **5.906414%**
+- **C units in linker graph:** `609 / 6687`
+- **ASM-only units in linker graph:** `6078`
 - **ROM status:** `wariowareinc.gba: OK`
 - **Accepted delta vs prior verified baseline:** `+5 matched functions`, `+5 C units`, `-5 asm-only units`
 
 ## Current Working State
-- HEAD is matching after a clean Docker build and includes a verified `0x080F25xx` struct-entry setter batch.
-- The latest accepted files are `asm_080f25d8`, `asm_080f25e4`, `asm_080f25f0`, `asm_080f25fc`, and `asm_080f26b0`.
+- HEAD is matching after a clean Docker build and includes a verified 5-function pair-add family that updates two adjacent words from two sibling source words.
+- The latest accepted files are `asm_0804ef64`, `asm_08089668`, `asm_080b3328`, `asm_080c950c`, and `asm_080cd710`.
 - `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
 - `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
 
@@ -200,6 +200,7 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - one-call wrappers that clear a `gCurrentSceneVariable` word slot after `scene_set_current_thread(1)` can also match cleanly
 - raw-pointer entry setters of the form `((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + off] = value;` can match cleanly across sibling families
 - raw-pointer entry setters with `*(u16 *)&... = arg2 << 8;` can also match cleanly for halfword fields in the same family
+- pair-add helpers of the form `u32 *arg0; arg0[1] += arg0[a]; arg0[2] += arg0[b];` can match cleanly across sibling families with different source indices
 - preflighting candidate C spellings as object files before linker edits is effective for short standalone TU batches
 
 ## Current Known Traps / Non-Matching Patterns
@@ -212,7 +213,7 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - for large byte offsets, writing the full offset directly can change Thumb address splitting (`+0x26` / `[+0]` instead of `+8` / `[+0x1E]`); shape the pointer expression to preserve the original immediate split
 
 ## Next Candidate Queue
-1. continue mining sibling-rich families where one validated spelling can fan out to multiple siblings, including raw-pointer entry setters like the `0x080F25xx` group
+1. continue mining sibling-rich families where one validated spelling can fan out to multiple siblings, including pair-add helpers and raw-pointer entry setters
 2. continue mining sibling-rich one-call wrapper families, especially `scene_set_current_thread` groups that differ only by store offset/value or object-field offset
 3. continue mining short `gCurrentSceneVariable` sibling families where one validated spelling can fan out to multiple siblings
 4. mine short `LDR global; STR/STRB/STRH` setters that do not use risky symbol+offset forms
@@ -309,3 +310,10 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
   - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `604 C / 6083 asm-only units`
   - Learnings: raw pointer arithmetic can be safer than guessed named structs for decomping isolated setters; the family matched cleanly with `((u8 *)*(void **)((u8 *)arg0 + 0x18))[arg1 * 0x20 + off] = ...` and the halfword variant `*(u16 *)&... = arg2 << 8` after object-preflight confirmed byte-for-byte-equivalent codegen
   - Next action: commit code + docs together, push immediately, then keep mining sibling-rich families that reuse the same raw-pointer or one-call-wrapper spellings
+- **Iteration 11**
+  - Candidate set: a 5-function pair-add helper family — `asm_0804ef64`, `asm_08089668`, `asm_080b3328`, `asm_080c950c`, `asm_080cd710`
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1051 -> 1056 matched functions` (**+5**), `matched_code_percent 5.901177% -> 5.906414%`, linker/unit coverage `604 C / 6083 asm-only -> 609 C / 6078 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `609 C / 6078 asm-only units`
+  - Learnings: simple arithmetic helper families can be excellent targets when their asm differs only by source-slot offsets; the spelling `u32 *arg0; arg0[1] += arg0[a]; arg0[2] += arg0[b];` matched cleanly across all five preflighted siblings
+  - Next action: commit code + docs together, push immediately, then keep mining sibling-rich arithmetic and wrapper families before resorting to more speculative one-offs
