@@ -11,11 +11,11 @@ This docs set records a real tooling pass over `wariowareinc`, focused on:
 ## Latest verified scale-up checkpoint (2026-05-20)
 
 - Clean Docker build: `wariowareinc.gba: OK`
-- `make report`: **1091 / 5961 matched functions = 18.302298%**
-- `matched_code_percent`: **5.967838%**
-- `tools/gen_objdiff.py`: **639 C / 6048 asm-only units**
-- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1086 -> 1091`, `634 -> 639`)
-- Latest successful pattern: BX LR empty stubs continue as reliable filler
+- `make report`: **1111 / 5961 matched functions = 18.637812%**
+- `matched_code_percent`: **5.976095%**
+- `tools/gen_objdiff.py`: **659 C / 6028 asm-only units**
+- Accepted batch result: **+5 matched functions** and **+5 C units** versus the previous verified baseline (`1106 -> 1111`, `654 -> 659`)
+- Latest successful pattern: small-body functions (bitfield-extract, bit-clear, struct-field-add, zero-byte, zero-word) with real body logic
 
 ## Main takeaways
 

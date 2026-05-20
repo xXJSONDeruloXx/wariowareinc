@@ -13,23 +13,27 @@ This audit was done against:
 
 ## 0. Latest verified checkpoint (2026-05-20)
 
-A BX LR empty-stub batch was verified successfully.
+A mixed small-body function batch (bitfield-extract, bit-clear, struct-field-add, zero-byte, zero-word) was verified successfully.
 
 ### Latest verified metrics
 
-- `matched_functions`: **1091 / 5961** = **18.302298%**
-- `matched_code_percent`: **5.967838%**
-- `tools/gen_objdiff.py`: **639 C / 6048 asm-only units**
-- previous verified baseline: **1086 / 5961**, **634 C / 6053 asm-only units**
+- `matched_functions`: **1111 / 5961** = **18.637812%**
+- `matched_code_percent`: **5.976095%**
+- `tools/gen_objdiff.py`: **659 C / 6028 asm-only units**
+- previous verified baseline: **1106 / 5961**, **654 C / 6033 asm-only units**
 - accepted delta: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted
 
-- `src/decomp/asm_08008130.c`, `src/decomp/asm_0801684c.c`, `src/decomp/asm_08016f5c.c`, `src/decomp/asm_080174a0.c`, `src/decomp/asm_080179e0.c`
+- `src/decomp/asm_08006734.c` (bitfield-extract: LDRH, LSLS#20, LSRS#20)
+- `src/decomp/asm_08003d1c.c` (bit-clear: LDRB, MOVS#2, NEGS, ANDS, STRB)
+- `src/decomp/asm_080396f8.c` (struct-field-add: LDR, ADDS#0x80, STR)
+- `src/decomp/asm_0805ca6c.c` (zero-byte: MOVS#0, STRB)
+- `src/decomp/asm_08088fa0.c` (zero-word: MOVS#0, STR offset 0x38)
 
 ### What worked
 
-BX LR empty stubs (`void func(void) {}`) continue as reliable filler. ROM matched on first attempt.
+Small-body functions (3-6 instructions, no BL calls) with real body logic moved `matched_code_percent` more than BX LR stubs. The bitfield-extract (`return (u16)(((u32)val << 20) >> 20)`) and bit-clear (`u32 mask = 2; mask = -mask; mask = val & mask;`) spellings required careful C to match agbcc codegen. The struct-field-add, zero-byte, and zero-word matched directly with straightforward spellings.
 
 ## 1. Real build baseline
 
