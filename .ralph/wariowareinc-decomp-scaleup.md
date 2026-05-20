@@ -9,18 +9,20 @@ Target function count:
 ## Latest Verified Baseline
 Use this as the starting point until a newer verified `make report` run replaces it.
 
-- **Matched functions:** `1101 / 5961` = **18.470055%**
-- **Matched code percent:** **5.97106%**
-- **C units in linker graph:** `649 / 6687`
-- **ASM-only units in linker graph:** `6038`
+- **Matched functions:** `1116 / 5961` = **18.721691%**
+- **Matched code percent:** **5.980525%**
+- **C units in linker graph:** `664 / 6687`
+- **ASM-only units in linker graph:** `6023`
 - **ROM status:** `wariowareinc.gba: OK`
 - **Accepted delta vs prior verified baseline:** `+5 matched functions`, `+5 C units`, `-5 asm-only units`
 
 ## Current Working State
-- HEAD is matching after a clean Docker build and includes a verified batch of 5 BX LR empty stubs.
-- The latest accepted files are `asm_08008130`, `asm_0801684c`, `asm_08016f5c`, `asm_080174a0`, and `asm_080179e0`.
+- HEAD is matching after a clean Docker build and includes two verified batches since loop reactivation: 5 small-body functions (iteration 21: bitfield-extract, bit-clear, struct-add, zero-init) and 5 more small-body functions (iteration 22: byte-extract, byte-combine, dual-zero-word, struct-inits).
+- Latest accepted files: `asm_080c4794`, `asm_080f2c44`, `asm_080cd708`, `asm_080f2780`, `asm_08002fb4`.
+- Iteration 21 files: `asm_08006734`, `asm_08003d1c`, `asm_080396f8`, `asm_0805ca6c`, `asm_08088fa0`.
 - `asm_0800cba4` stays in C using a local pointer form to force `LDR base; LDRB/STRB #1` codegen.
 - `asm_0800ccb4` remains in asm because the C forms either changed the mask/codegen or shrank the TU by 4 bytes.
+- Current metrics: 1116/5961 matched = 18.721691%, code 5.980525%, 664 C / 6023 asm-only units.
 
 ## Success Criteria For Any Accepted Progress
 A batch only counts as real progress if all of the following are true:
@@ -451,4 +453,16 @@ Also update any relevant workflow/tooling doc when the iteration teaches somethi
 - **Pivot needed**: The BX LR stubs are easy but don't move `matched_code_percent` meaningfully. The remaining ~20+ BX LR stubs should still be picked up opportunistically, but the main focus should shift to functions with actual body logic that improve `matched_code_percent`
 - **Promising next families**: The simple non-BL BX LR functions (`asm_08003d1c` bitfield-clear, `asm_08006410` dec-and-store, `asm_08006734` bitfield-extract, `asm_0800d75c` triple-store) have small bodies and should improve `matched_code_percent` more than empty stubs
 - **D_03006520 complex wrappers** with gCurrentSceneVariable loads (`asm_0801f2a0`, `asm_08022b28`, `asm_08024450`) are the next frontier — they have real body logic but need careful C spelling to match codegen
-- **Running total**: 15 iterations × 5 functions = ~75 functions decompiled since iteration 12 baseline of 1061, now at 1096. Need 4768 target → still 3672 to go
+- **Iteration 22** (second batch after loop reactivation)
+  - Candidate set: 5 small-body functions — `asm_080c4794` (byte-extract via LSLS#0x10, LSRS#0x18), `asm_080f2c44` (byte-combine via LDRB/LSLS/ORRS), `asm_080cd708` (dual zero word at +0x28/+0x2C), `asm_080f2780` (struct init: byte[6]=0, word[8]=0, byte[7]=0), `asm_08002fb4` (struct init: word[0]=0, byte[5]=0, byte[4]=0)
+  - Result: **match**
+  - Metric delta vs previous verified baseline: `1111 -> 1116 matched functions` (**+5**), `matched_code_percent 5.976095% -> 5.980525%`, linker/unit coverage `659 C / 6028 asm-only -> 664 C / 6023 asm-only`
+  - Verification: clean Docker build returned `wariowareinc.gba: OK`; `make report` refreshed `build/report.json`; `python3 tools/gen_objdiff.py` reported `664 C / 6023 asm-only units`
+  - Learnings:
+    - `return (u16)(((u32)val << 16) >> 24)` matches LSLS#16; LSRS#24 pattern for byte extraction
+    - `return ((u16)ptr[0] << 8) | ptr[1]` matches LDRB/LSLS#8/LDRB/ORRS for big-endian u16 combine
+    - `u32 zero = 0; p[6] = 0; *(u32 *)(p + 8) = zero; p[7] = 0` avoids redundant MOVS by sharing a `u32 zero` variable across mi xed-width stores
+    - `asm_080cd564` (struct copy via ADDS R3) and `asm_0800c610` (load ptr, store -1 via ADDS copy) were NOT matched — the C form loses the extra ADDS instruction the original asm has
+  - Next action: continue mining small-body functions, skip ones with extra ADDS register-copy instructions that agbcc doesn't emit
+
+- **Running total**: 17 iterations × 5 functions = ~85 functions decompiled since iteration 12 baseline of 1061, now at 1116. Need 4768 target → still 3652 to go

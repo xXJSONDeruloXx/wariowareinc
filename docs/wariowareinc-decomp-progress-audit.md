@@ -13,27 +13,27 @@ This audit was done against:
 
 ## 0. Latest verified checkpoint (2026-05-20)
 
-A mixed small-body function batch (bitfield-extract, bit-clear, struct-field-add, zero-byte, zero-word) was verified successfully.
+A small-body function batch (byte-extract, byte-combine, dual-zero-word, struct-inits) was verified successfully.
 
 ### Latest verified metrics
 
-- `matched_functions`: **1111 / 5961** = **18.637812%**
-- `matched_code_percent`: **5.976095%**
-- `tools/gen_objdiff.py`: **659 C / 6028 asm-only units**
-- previous verified baseline: **1106 / 5961**, **654 C / 6033 asm-only units**
+- `matched_functions`: **1116 / 5961** = **18.721691%**
+- `matched_code_percent`: **5.980525%**
+- `tools/gen_objdiff.py`: **664 C / 6023 asm-only units**
+- previous verified baseline: **1111 / 5961**, **659 C / 6028 asm-only units**
 - accepted delta: **+5 matched functions**, **+5 C units**, **-5 asm-only units**
 
 ### Files accepted
 
-- `src/decomp/asm_08006734.c` (bitfield-extract: LDRH, LSLS#20, LSRS#20)
-- `src/decomp/asm_08003d1c.c` (bit-clear: LDRB, MOVS#2, NEGS, ANDS, STRB)
-- `src/decomp/asm_080396f8.c` (struct-field-add: LDR, ADDS#0x80, STR)
-- `src/decomp/asm_0805ca6c.c` (zero-byte: MOVS#0, STRB)
-- `src/decomp/asm_08088fa0.c` (zero-word: MOVS#0, STR offset 0x38)
+- `src/decomp/asm_080c4794.c` (byte-extract: LSLS#16, LSRS#24)
+- `src/decomp/asm_080f2c44.c` (byte-combine: LDRB, LSLS#8, LDRB, ORRS)
+- `src/decomp/asm_080cd708.c` (dual-zero-word: MOVS#0, STR offset 0x28, STR offset 0x2C)
+- `src/decomp/asm_080f2780.c` (struct init: byte[6], word[8], byte[7] zeroed)
+- `src/decomp/asm_08002fb4.c` (struct init: word[0], byte[5], byte[4] zeroed)
 
 ### What worked
 
-Small-body functions (3-6 instructions, no BL calls) with real body logic moved `matched_code_percent` more than BX LR stubs. The bitfield-extract (`return (u16)(((u32)val << 20) >> 20)`) and bit-clear (`u32 mask = 2; mask = -mask; mask = val & mask;`) spellings required careful C to match agbcc codegen. The struct-field-add, zero-byte, and zero-word matched directly with straightforward spellings.
+Small-body functions with no extern references (no `=D_` literals, no BL calls) are the easiest target class. The `u32 zero = 0;` variable trick avoids redundant `MOVS #0` between mixed-width stores. The bitfield/extract family (`return (u16)(((u32)val << N) >> M)`) continues to match consistently.
 
 ## 1. Real build baseline
 
