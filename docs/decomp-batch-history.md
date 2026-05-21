@@ -6,7 +6,8 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
-| 51 | (current) | +4 | `sprite_id_delete` byte-offset siblings (shift-1, direct, and dual delete) |
+| 52 | `12cf970c` | +4 | `sprite_id_delete` single, dual shift-1, dual direct, sign-ext+delete+CDB0 |
+| 51 | `c6a88977` | +4 | `sprite_id_delete` byte-offset siblings (shift-1, direct, and dual delete) |
 | 50 | `3dacfb4c` | +4 | `sprite_id_delete` const-arg, sign-ext+delete, 2-delete+gGraphicsBuffer clear |
 | 49 | `d98c2b49` | +9 | `sprite_id_delete` byte-offset siblings, plus one `func_0800CDB0(1)` + delete wrapper |
 | 48 | `0f121592` | +7 | pair-add, field++/2-BL, gGraphicsBuffer store pair, gCurrentSceneData add, 3-BL return, 2-BL call |
@@ -34,6 +35,20 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 | 25 | `9796ba11` | +6 | gCSV pointer-deref byte store, gCSV word add/increment, D_ setters |
 | 24 | `fc4f684b` | +5 | D_ stores, struct init, load-word-pair, crossed 6% matched code |
 | 23 | `234220c1` | +5 | BX LR stub, D_ byte setter, gCurrentSceneVariable decrement, pair-add |
+
+## Iteration 52 details
+- Result: match ✅ all 4 accepted
+- Report: **1318 / 5957**, **6.3711314%**
+- Commit: `12cf970c`
+- Accepted functions:
+  - `asm_080ba9d4` — `sprite_id_delete(gSpriteHandler, *(u32*)((u8*)gCurrentSceneVariable + (0x90 << 2)))` (PUSH {LR} single-call variant)
+  - `asm_0804c388` — dual delete at `(0xB0 << 1)` and `(0xB2 << 1)` (R4/R5 dual-call pattern)
+  - `asm_08056788` — dual delete at direct byte offsets `0xF4` and `0xF8`
+  - `asm_0803e96c` — `func_08001B28(*(s8*)((u8*)gCSV+0xE4))` then `sprite_id_delete` at `gCSV+0xE0` then `func_0800CDB0(1)`
+- Durable takeaways:
+  - PUSH {LR} / POP {R0}; BX R0 single-call wrappers continue to match reliably for sprite_id_delete
+  - sign-ext byte → func_08001B28 → sprite_id_delete → func_0800CDB0(1) three-call pattern works cleanly
+  - Only 8 sprite_id_delete asm files remain unconverted in the queue
 
 ## Iteration 51 details
 - Result: match ✅ all 4 accepted

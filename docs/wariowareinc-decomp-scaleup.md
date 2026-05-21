@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 51` candidate — `sprite_id_delete` byte-offset siblings (shift-1, direct, dual delete)
-- `matched_functions`: **1314 / 5957** = **22.058083%**
-- `matched_code_percent`: **6.352630%**
-- `tools/gen_objdiff.py`: **862 C / 5825 asm-only units**
+- Verified working tree: `batch 52` — sprite_id_delete siblings (single, dual shift-1, dual direct, sign-ext+delete+CDB0)
+- `matched_functions`: **1318 / 5957** = **22.125%**
+- `matched_code_percent`: **6.3711314%**
+- `tools/gen_objdiff.py`: **866 C / 5821 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -19,6 +19,16 @@ At the current `total_functions` count (`5957`), that means:
 - current gap: **3460** more matched functions
 
 ## What just landed
+### Batch 52 — accepted
+- Metric delta: **1314 → 1318 matched functions** (**+4**)
+- Matched code: **6.352630% → 6.3711314%**
+- Commit: `12cf970c`
+- Accepted functions:
+  - `asm_080ba9d4` — `sprite_id_delete(gSpriteHandler, *(u32*)((u8*)gCurrentSceneVariable + (0x90 << 2)))`
+  - `asm_0804c388` — dual delete at `(0xB0 << 1)` and `(0xB2 << 1)`
+  - `asm_08056788` — dual delete at direct offsets `0xF4` and `0xF8`
+  - `asm_0803e96c` — `func_08001B28` sign-ext byte at `+0xE4`, then `sprite_id_delete` at `+0xE0`, then `func_0800CDB0(1)`
+
 ### Batch 51 — accepted
 - Metric delta: **1310 → 1314 matched functions** (**+4**)
 - Matched code: **6.337337% → 6.352630%**
@@ -55,7 +65,8 @@ At the current `total_functions` count (`5957`), that means:
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
-| 51 | (current) | +4 | `sprite_id_delete` shift-1, direct, dual delete siblings |
+| 52 | `12cf970c` | +4 | `sprite_id_delete` single shift-2, dual shift-1, dual direct, sign-ext+delete+CDB0 |
+| 51 | `c6a88977` | +4 | `sprite_id_delete` shift-1, direct, dual delete siblings |
 | 50 | `3dacfb4c` | +4 | `sprite_id_delete` const-arg, sign-ext+delete, 2-delete+gGB clear |
 | 49 | `d98c2b49` | +9 | `sprite_id_delete` byte-offset siblings |
 | 48 | `0f121592` | +7 | pair-add, wrappers, gGraphicsBuffer, gCurrentSceneData |
