@@ -4,13 +4,13 @@
 Reach **80% matched/decompiled-function progress** on the `docs/macabeus-tooling-assessment` branch, while preserving a **byte-identical ROM match** at every accepted milestone.
 Target: **4768 / 5961 matched functions**
 
-## Latest Verified Baseline (confirmed 2026-05-21)
-- **Matched functions:** 1121 / 5961 = 18.805569%
-- **Matched code percent:** 5.986366%
-- **C units in linker graph:** 669 / 6687
-- **ASM-only units in linker graph:** 6018
+## Latest Verified Baseline (confirmed 2026-05-21, iterations 23-28)
+- **Matched functions:** 1149 / 5961 = 19.275464%
+- **Matched code percent:** 6.034865%
+- **C units in linker graph:** 697 / 6687
+- **ASM-only units in linker graph:** 5990
 - **ROM status:** `wariowareinc.gba: OK`
-- **Gap to target:** 1126 → 4768 = need +3642 more matched functions
+- **Gap to target:** 1149 → 4768 = need +3619 more matched functions
 
 ## Iteration 23 — accepted
 - **Candidate set:** 5-function batch — `asm_0801e914` (BX LR stub), `asm_08005570` (D_03003FE8 byte setter), `asm_080656e4` (gCurrentSceneVariable decrement), `asm_080da190` (pair-add), `asm_080e5514` (pair-add sibling)
@@ -46,6 +46,14 @@ Target: **4768 / 5961 matched functions**
 - **Metric delta:** matched_functions 1141→1146 (+5), matched_code_percent 6.020377%→6.029842%, C units 689→694, asm-only 5998→5993
 - **Commit:** `b00387e7`, pushed
 - **Learnings:** (1) D_ zero-offset word clears work with `*(volatile u32 *)addr = 0` (2) `scene_set_current_thread(1); *(u8 *)gCurrentSceneVariable = 0` matches (3) const-arg wrappers like `func_0800CE1C((void *)0x083BBCDC)` match when the constant address goes to literal pool
+
+## Iteration 28 — accepted (partial)
+- **Candidate set:** 8-function attempt — 3 accepted, 5 reverted
+- **Accepted:** `asm_0802eca0` (increment-and-call), `asm_080aaa2c` (const-arg pair call), `asm_080359b4` (offset-deref tail-call)
+- **Reverted:** asm_08004994/080049bc/08004a30/08004a74 (POP {R1}/BX R1 trap), asm_0803dda4 (MOVS+NEGS vs MOVS+RSBS), asm_0801667c (D_ offset addressing), asm_08007e8c (wrong arg slot)
+- **Metric delta:** matched_functions 1146→1149 (+3), matched_code_percent 6.029842%→6.034865%, C units 694→697, asm-only 5993→5990
+- **Commit:** `84964974`, pushed
+- **Learnings:** (1) POP {R1}/BX R1 trap still catches zero-pad wrapper siblings — need to check POP pattern before attempting conversion (2) -1 in C compiles as MOVS+NEGS not MOVS+RSBS — another known trap reconfirmed (3) D_ with non-zero offsets like `[R0,#6]` produce different machine code than C absolute address + [R0,#0]
 
 ## Checklist (next batch priorities)
 - [ ] Select next 5-function candidate batch from proven sibling families
