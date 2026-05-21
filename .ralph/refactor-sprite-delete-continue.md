@@ -1,1 +1,1 @@
-Continue decompilation by selecting the next batch from the queue (item 1: more conditional byte-check + BL wrappers). Converted one conditional byte-check + BL wrapper: asm_0800200c. Verify with Docker, update docs, and commit if metrics improve.
+Continue decompilation by selecting the next batch from the queue (item 1: more conditional byte-check + BL wrappers). Converted one conditional byte-check + BL wrapper: asm_0800200c. Build succeed. Next iteration: continue with more wrappers.
