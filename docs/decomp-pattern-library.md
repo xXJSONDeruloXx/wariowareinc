@@ -93,6 +93,7 @@
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers
-- remaining `sprite_id_delete` siblings
+- remaining `sprite_id_delete` siblings (NOTE: loop-based variants like asm_08016d3c, asm_0806843c, asm_0806fe20 failed to match; their loop iteration patterns and register allocation don't align with simple C for-loops even when semantically correct)
 - `scene_set_current_thread(1)` sibling families
+- more MOVS R0, #const + BL wrapper families
 - multi-BL wrappers whose good spellings are now documented
