@@ -303,14 +303,8 @@ export default function wariowareDecompLoop(pi) {
       };
 
       ctx.compact({
-        // One-line summary so context is essentially empty after compaction.
-        // replaceInstructions is not available here — customInstructions appends to default.
-        // Keeping it tight enough that the model outputs a single line.
-        customInstructions:
-          "Output ONLY a single line in this exact format (no other text): " +
-          `'Chunk ${state.chunk} done: ${summary.split(".")[0]}'`,
         onComplete: doAdvance,
-        onError: doAdvance, // advance even if compact fails
+        onError: doAdvance,
       });
 
       return {
@@ -407,6 +401,20 @@ export default function wariowareDecompLoop(pi) {
   });
 
   // ── Events ─────────────────────────────────────────────────────────────────
+
+  // Static compaction — bypass LLM summary entirely.
+  // When compact fires (either from decomp_chunk_done or auto context-overflow),
+  // return a fixed one-liner immediately. No API call, no delay, zero prior context
+  // for the agent. Canonical docs are the project's memory, not chat history.
+  pi.on("session_before_compact", (event, _ctx) => {
+    return {
+      compaction: {
+        summary: "[prior work complete — re-read canonical docs for context]",
+        firstKeptEntryId: event.preparation.firstKeptEntryId,
+        tokensBefore: event.preparation.tokensBefore,
+      },
+    };
+  });
 
   pi.on("session_start", async (_event, ctx) => {
     latestCtx = ctx;
