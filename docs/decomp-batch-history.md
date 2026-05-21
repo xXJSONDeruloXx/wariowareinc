@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 61 | `pending` | +1 | `func_080029D0` byte `&= ~3` + halfword `&= 3` mask pair (RSBS register pin) |
 | 60 | `7fab3891` | +1 | `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper |
 | 58 | `f36b7bd6` | +1 | Pointer-deref halfword store (-1 wrapper) |
 | 57 | `b3752d25` | +7 | Small wrapper sweep (SVC, div, arithmetic, D_ store, byte-write, HW reg, struct init) |
@@ -257,6 +258,18 @@ This period built the reusable base library of patterns:
 - Outcome: the isolated C spelling matched the target asm, but moving it out of the mid-file include in `src/graphics_table.c` changed ROM ordering; the safe ROM-preserving shape is to keep it as an include-shim until the host TU can be split.
 - Durable takeaway:
   - mid-file asm includes inside a larger C TU are not always safe standalone conversions, even when `compile_and_view_asm` reports a perfect local match
+
+## Iteration 61 details
+- Result: match ✅
+- Report: **1334 / 5956**, **6.4118%**
+- Commit: pending
+- Accepted functions:
+  - `asm_080029d0` — byte `&= ~3` + halfword `&= 3` mask pair
+- Durable takeaways:
+  - agbcc folds `&= ~3` into `mov r1, #0xfc` instead of `mov r1, #3; neg r1, r1`; register-pinning forces the RSBS form
+  - Register-pinning with `register type asm("rN")` is a viable strategy for exact instruction matching on small functions
+  - Tooling fix: added mtime-based db cache invalidation and synthetic fn entries from function names so preflight works for functions not in mizuchi-db
+  - mizuchi-db.json was expanded with 4434 entries from filesystem scan and stripped of asmCode to keep file small
 
 ## Iteration 60 details
 - Result: match ✅

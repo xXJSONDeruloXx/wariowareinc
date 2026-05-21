@@ -75,6 +75,7 @@
 - `byte &= ~N` is dangerous when `(~N & 0xFF)` fits in 8 bits; agbcc tends to emit `MOVS #imm8; ANDS` instead of `MOVS #N; RSBS; ANDS`
 - `-1` / other negative immediates can pick `NEGS`, `RSBS`, or literal-pool forms differently than expected
 - some OR/bit-clear forms need a very specific spelling to avoid extra `ADDS`
+- **register-pinning workaround**: when `&= ~3` must emit `MOVS R1,#3; RSBS R1,R1,#0; ANDS R1,R2` but agbcc prefers `MOVS R1,#0xFC; ANDS`, pin the mask variable to a register: `register u8 m asm("r1"); m = 3; m = -m; m = v & m;`
 
 ### Addressing / literal-pool traps
 - D_ absolute-address access is known-good mainly at offset `0`; non-zero offsets often drift

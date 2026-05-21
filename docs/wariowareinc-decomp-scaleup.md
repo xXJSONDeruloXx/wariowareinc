@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 60` — `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper
-- `matched_functions`: **1333 / 5956** = **22.381%**
-- `matched_code_percent`: **6.409759%**
-- `tools/gen_objdiff.py`: **881 C / 5806 asm-only units**
+- Verified working tree: `batch 61` — `func_080029D0` byte/halfword mask pair
+- `matched_functions`: **1334 / 5956** = **22.398%**
+- `matched_code_percent`: **6.4118%**
+- `tools/gen_objdiff.py`: **882 C / 5805 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -19,6 +19,13 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3432** more matched functions
 
 ## What just landed
+### Batch 61 — accepted
+- Metric delta: **1333 → 1334 matched functions** (+1)
+- Matched code: **6.4098% → 6.4118%**
+- Commit: pending
+- Accepted functions:
+  - `asm_080029d0` — byte `&= ~3` + halfword `&= 3` mask pair (register-pinned RSBS pattern)
+
 ### Batch 60 — accepted
 - Metric delta: **1332 → 1333 matched functions** (**+1**)
 - Matched code: **6.406549% → 6.4097586%**
@@ -116,6 +123,7 @@ At the current `total_functions` count (`5956`), that means:
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
+| 61 | pending | +1 | `func_080029D0` byte/halfword mask pair (RSBS register pin) |
 | 60 | pending | +1 | `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper |
 | 58 | `f36b7bd6` | +1 | pointer-deref halfword store (-1 wrapper) |
 | 57 | `b3752d25` | +7 | Small wrapper sweep (SVC, div, HW reg, struct init) |

@@ -35,13 +35,17 @@ function findRepoRoot(startDir) {
 
 let _dbCache = null;
 let _dbCacheFile = null;
+let _dbCacheMtime = null;
 
 function loadDb(repoRoot) {
   const dbFile = path.join(repoRoot, DB_FILE);
-  if (_dbCache && _dbCacheFile === dbFile) return _dbCache;
   if (!fs.existsSync(dbFile)) return null;
+  const stat = fs.statSync(dbFile);
+  const mtime = stat.mtimeMs;
+  if (_dbCache && _dbCacheFile === dbFile && _dbCacheMtime === mtime) return _dbCache;
   _dbCache = JSON.parse(fs.readFileSync(dbFile, "utf8"));
   _dbCacheFile = dbFile;
+  _dbCacheMtime = mtime;
   return _dbCache;
 }
 
@@ -541,7 +545,15 @@ function registerPreflightCandidate(pi) {
     async execute(_id, { functionName }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const db = loadDb(repoRoot);
-      const fn = findFn(db, functionName);
+      let fn = findFn(db, functionName);
+      // If not in db, synthesize a minimal entry from the function name so preflight
+      // can still check the filesystem (linker entry, including source, asm existence).
+      if (!fn) {
+        const addr = addrFromName(functionName);
+        if (addr) {
+          fn = { name: functionName, asmModulePath: `.mizuchi-asm/asm/asm_${addr}.s`, callsFunctions: [] };
+        }
+      }
       const pf = preflightFunction(repoRoot, fn, functionName);
       return {
         content: [{ type: "text", text: formatPreflight(pf) }],
@@ -571,7 +583,13 @@ function registerM2cDecompile(pi) {
     async execute(_id, { functionName, target = "gba" }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const db = loadDb(repoRoot);
-      const fn = findFn(db, functionName);
+      let fn = findFn(db, functionName);
+      if (!fn) {
+        const addr = addrFromName(functionName);
+        if (addr) {
+          fn = { name: functionName, asmModulePath: `.mizuchi-asm/asm/asm_${addr}.s`, callsFunctions: [] };
+        }
+      }
       const pf = preflightFunction(repoRoot, fn, functionName);
 
       const m2cPy = path.join(MIZUCHI_ROOT, "vendor/m2c/m2c.py");
@@ -894,7 +912,14 @@ function registerApplyConversion(pi) {
     async execute(_id, { functionName, cCode, verify = true, dryRun = false }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const db = loadDb(repoRoot);
-      const fn = findFn(db, functionName);
+      let fn = findFn(db, functionName);
+      // If not in db, synthesize a minimal entry so preflight can check the filesystem.
+      if (!fn) {
+        const addr = addrFromName(functionName);
+        if (addr) {
+          fn = { name: functionName, asmModulePath: `.mizuchi-asm/asm/asm_${addr}.s`, callsFunctions: [] };
+        }
+      }
       const pf = preflightFunction(repoRoot, fn, functionName);
 
       if (!["standalone_tu", "included_stub"].includes(pf.conversionMode)) {
