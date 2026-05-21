@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs` over `.ralph/`.
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 49` candidate — `sprite_id_delete` byte-offset siblings
-- `matched_functions`: **1306 / 5957** = **21.923786%**
-- `matched_code_percent`: **6.3184834%**
-- `tools/gen_objdiff.py`: **854 C / 5833 asm-only units**
+- Verified working tree: `batch 50` candidate — `sprite_id_delete` byte-offset siblings
+- `matched_functions`: **1310 / 5957** = **21.990936%**
+- `matched_code_percent`: **6.337337%**
+- `tools/gen_objdiff.py`: **858 C / 5829 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -19,6 +19,16 @@ At the current `total_functions` count (`5957`), that means:
 - current gap: **3460** more matched functions
 
 ## What just landed
+### Batch 50 — accepted
+- Metric delta: **1306 → 1310 matched functions** (**+4**)
+- Matched code: **6.3184834% → 6.337337%**
+- Commit: `3dacfb4c`
+- Accepted functions:
+  - `asm_08097fcc` — `sprite_id_delete(gSpriteHandler, *(u32*)((u8*)gCSV + 0x714))`
+  - `asm_08016fb0` — `sprite_id_delete(gSpriteHandler, 1)` + `func_08001B70(1)`
+  - `asm_0805f438` — `func_08001B28(*(s8*)(gCSV+0x46))` + `sprite_id_delete` at `gCSV + (0xAA<<2)`
+  - `asm_080b0e80` — two `sprite_id_delete` + `gGraphicsBuffer.unk4C/0x4E` clear + `func_0800CDB0(1)`
+
 ### Batch 49 — accepted
 - Metric delta: **1297 → 1306 matched functions** (**+9**)
 - Matched code: **6.285469% → 6.3184834%**

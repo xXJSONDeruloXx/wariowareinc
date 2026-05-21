@@ -1,5 +1,10 @@
 # Decomp pattern library
 
+## Build / verification rule (critical)
+- Always verify with Docker before committing: `docker run --rm -v $(pwd):/workspace devkitpro/devkitarm:latest /bin/bash -c "cd /workspace && make -j4"`
+- The local `tools/agbcc/bin/agbcc` is a Linux aarch64 binary and will not run on macOS; Docker is the only valid local build path
+- A chunk is not done until `wariowareinc.gba: OK` is confirmed in the Docker build output
+
 ## Proven high-yield families
 ### Easy filler / utility
 - standalone `BX LR` leaves
@@ -42,6 +47,11 @@
 - when the original reuses the same base load for multiple stores, mirror that with a local pointer for the first stores and only fall back to the raw global on the final store if needed
 
 ## Known traps
+### Header / include traps
+- `gSpriteHandler` is declared in `src/lib_sprite.h` — include as `"src/lib_sprite.h"` (relative to repo root), not `"lib_sprite.h"`
+- Never add a bare `extern void sprite_id_delete(u32, u32)` — it conflicts with the real `struct SpriteHandler *` signature; let lib_sprite.h provide it
+- `gCurrentSceneVariable` is in `types.h`; `gGraphicsBuffer` is in `graphics.h`
+
 ### Register / return-shape traps
 - `POP {R1}; BX R1` wrappers often do **not** match normal agbcc wrapper output
 - BL + STRH patterns may keep the wrong register live and produce `POP {R0}; BX R0` instead of `POP {R1}; BX R1`

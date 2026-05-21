@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 50 | `3dacfb4c` | +4 | `sprite_id_delete` const-arg, sign-ext+delete, 2-delete+gGraphicsBuffer clear |
 | 49 | `d98c2b49` | +9 | `sprite_id_delete` byte-offset siblings, plus one `func_0800CDB0(1)` + delete wrapper |
 | 48 | `0f121592` | +7 | pair-add, field++/2-BL, gGraphicsBuffer store pair, gCurrentSceneData add, 3-BL return, 2-BL call |
 | 47 | `49223873` | +4 | gCSV byte-- siblings, BL+s8 sign-ext+BL, multi-store-with-reload |
@@ -32,6 +33,21 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 | 25 | `9796ba11` | +6 | gCSV pointer-deref byte store, gCSV word add/increment, D_ setters |
 | 24 | `fc4f684b` | +5 | D_ stores, struct init, load-word-pair, crossed 6% matched code |
 | 23 | `234220c1` | +5 | BX LR stub, D_ byte setter, gCurrentSceneVariable decrement, pair-add |
+
+## Iteration 50 details
+- Result: match ✅ all 4 accepted
+- Report: **1310 / 5957**, **6.337337%**
+- Commit: `3dacfb4c`
+- Accepted functions:
+  - `asm_08097fcc` — single `sprite_id_delete` at byte offset 0x714
+  - `asm_08016fb0` — `sprite_id_delete(gSpriteHandler, 1)` then `func_08001B70(1)` (const-arg pattern)
+  - `asm_0805f438` — `func_08001B28` sign-ext byte load from gCSV+0x46, then `sprite_id_delete` at `gCSV+(0xAA<<2)`
+  - `asm_080b0e80` — two deletes + `gGraphicsBuffer.unk4C = 0` + `*(u16*)((u8*)&gGraphicsBuffer+0x4E) = 0` + `func_0800CDB0(1)`
+- Durable takeaways:
+  - `gSpriteHandler` is in `src/lib_sprite.h`; include as `"src/lib_sprite.h"` (not `"lib_sprite.h"`)
+  - Never redeclare `sprite_id_delete` with a raw `u32` arg — conflicts with the real `struct SpriteHandler *` signature in lib_sprite.h
+  - `gGraphicsBuffer.unk4C` covers offset 0x4C; `*(u16*)((u8*)&gGraphicsBuffer + 0x4E)` covers the pad field immediately after
+  - Docker build via `docker run --rm -v $(pwd):/workspace devkitpro/devkitarm:latest /bin/bash -c "cd /workspace && make -j4"` is the correct local verification path; must complete with `wariowareinc.gba: OK` before any commit
 
 ## Iteration 49 details
 - Result: match ✅ after an immediate binary-search catch on a shaping bug
