@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 53 | `80ba7f84` | +1 | conditional 4-delete sprite_id_delete wrapper |
 | 52 | `12cf970c` | +4 | `sprite_id_delete` single, dual shift-1, dual direct, sign-ext+delete+CDB0 |
 | 51 | `c6a88977` | +4 | `sprite_id_delete` byte-offset siblings (shift-1, direct, and dual delete) |
 | 50 | `3dacfb4c` | +4 | `sprite_id_delete` const-arg, sign-ext+delete, 2-delete+gGraphicsBuffer clear |
@@ -35,6 +36,17 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 | 25 | `9796ba11` | +6 | gCSV pointer-deref byte store, gCSV word add/increment, D_ setters |
 | 24 | `fc4f684b` | +5 | D_ stores, struct init, load-word-pair, crossed 6% matched code |
 | 23 | `234220c1` | +5 | BX LR stub, D_ byte setter, gCurrentSceneVariable decrement, pair-add |
+
+## Iteration 53 details
+- Result: match ✅ all 1 accepted
+- Report: **1319 / 5957**, **6.3811874%**
+- Commit: `80ba7f84`
+- Accepted functions:
+  - `asm_08067080` — conditional check at `gCurrentSceneVariable + 0xE0`, then four sequential `sprite_id_delete` calls at offsets (0xC4<<4), 0xC4C, 0xC48, 0xC44
+- Durable takeaways:
+  - Remaining sprite_id_delete functions are increasingly complex (loops, multi-call patterns)
+  - Only 7 sprite_id_delete asm files remain unconverted
+  - Conditional-skip-then-multi-delete pattern continues to match cleanly
 
 ## Iteration 52 details
 - Result: match ✅ all 4 accepted

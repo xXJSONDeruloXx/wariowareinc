@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 52` — sprite_id_delete siblings (single, dual shift-1, dual direct, sign-ext+delete+CDB0)
-- `matched_functions`: **1318 / 5957** = **22.125%**
-- `matched_code_percent`: **6.3711314%**
-- `tools/gen_objdiff.py`: **866 C / 5821 asm-only units**
+- Verified working tree: `batch 53` — conditional 4-delete sprite_id_delete wrapper
+- `matched_functions`: **1319 / 5957** = **22.142%**
+- `matched_code_percent`: **6.3811874%**
+- `tools/gen_objdiff.py`: **867 C / 5820 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -19,6 +19,13 @@ At the current `total_functions` count (`5957`), that means:
 - current gap: **3460** more matched functions
 
 ## What just landed
+### Batch 53 — accepted
+- Metric delta: **1318 → 1319 matched functions** (**+1**)
+- Matched code: **6.3711314% → 6.3811874%**
+- Commit: `80ba7f84`
+- Accepted functions:
+  - `asm_08067080` — conditional check on gCurrentSceneVariable + 0xE0, then four `sprite_id_delete` calls at (0xC4<<4), 0xC4C, 0xC48, 0xC44
+
 ### Batch 52 — accepted
 - Metric delta: **1314 → 1318 matched functions** (**+4**)
 - Matched code: **6.352630% → 6.3711314%**
@@ -65,6 +72,7 @@ At the current `total_functions` count (`5957`), that means:
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
+| 53 | `80ba7f84` | +1 | conditional 4-delete sprite_id_delete wrapper |
 | 52 | `12cf970c` | +4 | `sprite_id_delete` single shift-2, dual shift-1, dual direct, sign-ext+delete+CDB0 |
 | 51 | `c6a88977` | +4 | `sprite_id_delete` shift-1, direct, dual delete siblings |
 | 50 | `3dacfb4c` | +4 | `sprite_id_delete` const-arg, sign-ext+delete, 2-delete+gGB clear |
