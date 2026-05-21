@@ -2,14 +2,31 @@ import fs from "node:fs";
 import path from "node:path";
 
 const WIDGET_KEY = "warioware-decomp-loop";
-const REFRESH_INTERVAL_MS = 2000;
+const REFRESH_INTERVAL_MS = 3000;
 const STATE_FILE = path.join(".pi", "decomp-loop-state.json");
 const REPO_SENTINEL = "wariowareinc.ld";
 const DONE_MARKER = "<DECOMP_CHUNK_DONE>";
 const BLOCKED_MARKER = "<DECOMP_BLOCKED>";
 
-let latestCtx;
-let timer;
+// ── Module-level state (persists via jiti module cache across sessions) ──────
+let latestCtx;    // updated from session_start / agent_end (ExtensionContext)
+let timer;        // shared setInterval handle
+
+/**
+ * Stored newSession function, set from command/withSession contexts
+ * (ExtensionCommandContext).  This is the KEY fix: we never call
+ * pi.sendUserMessage("/advance") (which sends text to the LLM). Instead we
+ * store ctx.newSession here and call it directly from the timer.
+ *
+ * Lifecycle:
+ *   - Set when /decomp-loop start or /decomp-next runs (command ctx).
+ *   - Re-set inside withSession callback (ReplacedSessionContext) so the next
+ *     session can chain forward.
+ *   - Cleared to null on session_shutdown so stale refs are never used.
+ */
+let newSessionFn = null;
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function findRepoRoot(startDir) {
   let current = path.resolve(startDir);
@@ -37,20 +54,20 @@ function defaultState() {
 }
 
 function loadState(repoRoot) {
-  const statePath = getStatePath(repoRoot);
   try {
-    if (!fs.existsSync(statePath)) return defaultState();
-    return { ...defaultState(), ...JSON.parse(fs.readFileSync(statePath, "utf8")) };
+    const p = getStatePath(repoRoot);
+    if (!fs.existsSync(p)) return defaultState();
+    return { ...defaultState(), ...JSON.parse(fs.readFileSync(p, "utf8")) };
   } catch {
     return defaultState();
   }
 }
 
 function saveState(repoRoot, state) {
-  const statePath = getStatePath(repoRoot);
-  fs.mkdirSync(path.dirname(statePath), { recursive: true });
+  const p = getStatePath(repoRoot);
+  fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(
-    statePath,
+    p,
     JSON.stringify({ ...state, updatedAt: new Date().toISOString() }, null, 2),
     "utf8",
   );
@@ -60,7 +77,10 @@ function extractAssistantText(messages) {
   for (let i = messages.length - 1; i >= 0; i--) {
     const msg = messages[i];
     if (msg?.role !== "assistant" || !Array.isArray(msg.content)) continue;
-    return msg.content.filter((part) => part?.type === "text").map((part) => part.text).join("\n");
+    return msg.content
+      .filter((part) => part?.type === "text")
+      .map((part) => part.text)
+      .join("\n");
   }
   return "";
 }
@@ -102,8 +122,9 @@ function buildChunkPrompt(chunk) {
 
 function formatStatus(state) {
   let line = `decomp loop: ${state.enabled ? "on" : "off"} · chunk ${state.chunk} · ${state.lastStatus}`;
-  if (state.advanceRequested) line += " · advance queued";
-  if (state.lastStatus === "blocked" && state.lastBlockedReason) line += ` · ${state.lastBlockedReason}`;
+  if (state.advanceRequested) line += " · advance pending";
+  if (state.lastStatus === "blocked" && state.lastBlockedReason)
+    line += ` · ${state.lastBlockedReason}`;
   return line;
 }
 
@@ -115,7 +136,7 @@ function applyWidget(ctx, repoRoot) {
 
 function ensureTimer() {
   if (timer) return;
-  timer = setInterval(() => {
+  timer = setInterval(async () => {
     const ctx = latestCtx;
     if (!ctx) return;
     const repoRoot = findRepoRoot(ctx.cwd);
@@ -124,41 +145,85 @@ function ensureTimer() {
 
     if (!state.enabled) return;
     if (!state.advanceRequested) return;
+    if (!newSessionFn) return; // no session fn available yet
     if (!ctx.isIdle()) return;
     if (ctx.hasPendingMessages()) return;
 
-    pi.sendUserMessage("/decomp-loop-advance");
+    // Advance: clear request flag, then launch the next chunk directly
+    state.advanceRequested = false;
+    state.lastStatus = "advancing";
+    saveState(repoRoot, state);
+    applyWidget(ctx, repoRoot);
+
+    try {
+      await launchChunk({ repoRoot, enableLoop: true });
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err);
+      const s = loadState(repoRoot);
+      s.enabled = false;
+      s.lastStatus = "error";
+      s.lastBlockedReason = reason;
+      saveState(repoRoot, s);
+      applyWidget(ctx, repoRoot);
+    }
   }, REFRESH_INTERVAL_MS);
 }
 
-let pi;
+/**
+ * Launch one chunk in a fresh session.
+ *
+ * Uses the module-level `newSessionFn` which was stored from the most recent
+ * command or withSession context.  Inside `withSession`, we immediately
+ * re-set `newSessionFn` to the NEW session's ctx.newSession so the timer can
+ * chain forward into session N+2, N+3, … without ever calling sendUserMessage.
+ */
+async function launchChunk({ repoRoot, enableLoop }) {
+  const state = loadState(repoRoot);
+  state.enabled = enableLoop;
+  state.advanceRequested = false;
+  state.chunk += 1;
+  state.lastBlockedReason = "";
+  state.lastStatus = "launching";
+  saveState(repoRoot, state);
+  applyWidget(latestCtx, repoRoot);
 
-export default function wariowareDecompLoop(api) {
-  pi = api;
+  const parentSession = latestCtx?.sessionManager?.getSessionFile?.();
+  const prompt = buildChunkPrompt(state.chunk);
+  const chunkNum = state.chunk;
 
+  // Capture and clear so a double-fire can't happen
+  const fn = newSessionFn;
+  newSessionFn = null;
+
+  await fn({
+    parentSession,
+    withSession: async (newCtx) => {
+      // ── KEY: store newSession from the NEW session's context ──────────────
+      // This lets the timer advance into session N+2 without sendUserMessage.
+      // withSession runs after the new session has started (session_start has
+      // already fired), so setting module-level state here is safe.
+      newSessionFn = (opts) => newCtx.newSession(opts);
+      // ─────────────────────────────────────────────────────────────────────
+
+      newCtx.ui.notify(
+        `Started decomp chunk ${chunkNum}${enableLoop ? " (loop)" : ""}`,
+        "info",
+      );
+      await newCtx.sendUserMessage(prompt);
+    },
+  });
+}
+
+// ── Extension export ─────────────────────────────────────────────────────────
+
+export default function wariowareDecompLoop(pi) {
   pi.registerCommand("decomp-next", {
     description: "Start one fresh-context WarioWare decomp chunk",
     handler: async (_args, ctx) => {
-      const repoRoot = findRepoRoot(ctx.cwd);
-      const state = loadState(repoRoot);
-      state.enabled = false;
-      state.advanceRequested = false;
-      state.chunk += 1;
-      state.lastBlockedReason = "";
-      state.lastStatus = "launching";
-      saveState(repoRoot, state);
-      applyWidget(ctx, repoRoot);
-
-      const prompt = buildChunkPrompt(state.chunk);
-      const parentSession = ctx.sessionManager.getSessionFile();
       await ctx.waitForIdle();
-      await ctx.newSession({
-        parentSession,
-        withSession: async (newCtx) => {
-          newCtx.ui.notify(`Started decomp chunk ${state.chunk}`, "info");
-          await newCtx.sendUserMessage(prompt);
-        },
-      });
+      const repoRoot = findRepoRoot(ctx.cwd);
+      newSessionFn = (opts) => ctx.newSession(opts);
+      await launchChunk({ repoRoot, enableLoop: false });
     },
   });
 
@@ -170,24 +235,10 @@ export default function wariowareDecompLoop(api) {
       const sub = args.trim().toLowerCase();
 
       if (sub === "start") {
-        state.enabled = true;
-        state.advanceRequested = false;
-        state.chunk += 1;
-        state.lastBlockedReason = "";
-        state.lastStatus = "launching";
-        saveState(repoRoot, state);
-        applyWidget(ctx, repoRoot);
-
-        const prompt = buildChunkPrompt(state.chunk);
-        const parentSession = ctx.sessionManager.getSessionFile();
         await ctx.waitForIdle();
-        await ctx.newSession({
-          parentSession,
-          withSession: async (newCtx) => {
-            newCtx.ui.notify(`Started decomp chunk ${state.chunk} (loop enabled)`, "info");
-            await newCtx.sendUserMessage(prompt);
-          },
-        });
+        newSessionFn = (opts) => ctx.newSession(opts);
+        ensureTimer();
+        await launchChunk({ repoRoot, enableLoop: true });
         return;
       }
 
@@ -217,33 +268,6 @@ export default function wariowareDecompLoop(api) {
     },
   });
 
-  pi.registerCommand("decomp-loop-advance", {
-    description: "Internal: advance the WarioWare decomp loop to a fresh session",
-    handler: async (_args, ctx) => {
-      const repoRoot = findRepoRoot(ctx.cwd);
-      const state = loadState(repoRoot);
-      if (!state.enabled) return;
-      state.advanceRequested = false;
-      state.lastStatus = "advancing";
-      saveState(repoRoot, state);
-      applyWidget(ctx, repoRoot);
-
-      const prompt = buildChunkPrompt(state.chunk + 1);
-      state.chunk += 1;
-      saveState(repoRoot, state);
-
-      const parentSession = ctx.sessionManager.getSessionFile();
-      await ctx.waitForIdle();
-      await ctx.newSession({
-        parentSession,
-        withSession: async (newCtx) => {
-          newCtx.ui.notify(`Started decomp chunk ${state.chunk} (loop enabled)`, "info");
-          await newCtx.sendUserMessage(prompt);
-        },
-      });
-    },
-  });
-
   pi.on("session_start", async (_event, ctx) => {
     latestCtx = ctx;
     ensureTimer();
@@ -254,20 +278,26 @@ export default function wariowareDecompLoop(api) {
     latestCtx = ctx;
     const repoRoot = findRepoRoot(ctx.cwd);
     const state = loadState(repoRoot);
-    applyWidget(ctx, repoRoot);
-    if (!state.enabled) return;
+
+    if (!state.enabled) {
+      applyWidget(ctx, repoRoot);
+      return;
+    }
 
     const text = extractAssistantText(event.messages);
+
     if (text.includes(BLOCKED_MARKER)) {
       const idx = text.lastIndexOf(BLOCKED_MARKER);
-      const tail = text.slice(idx + BLOCKED_MARKER.length).trim().split(/\r?\n/)[0] ?? "";
+      const tail =
+        text.slice(idx + BLOCKED_MARKER.length).trim().split(/\r?\n/)[0] ?? "";
       state.enabled = false;
       state.advanceRequested = false;
       state.lastStatus = "blocked";
       state.lastBlockedReason = tail;
       saveState(repoRoot, state);
       applyWidget(ctx, repoRoot);
-      if (ctx.hasUI) ctx.ui.notify(`decomp loop blocked${tail ? `: ${tail}` : ""}`, "warning");
+      if (ctx.hasUI)
+        ctx.ui.notify(`decomp loop blocked${tail ? `: ${tail}` : ""}`, "warning");
       return;
     }
 
@@ -279,6 +309,7 @@ export default function wariowareDecompLoop(api) {
       return;
     }
 
+    // No marker found — keep loop enabled but flag the missing marker
     state.lastStatus = "waiting-for-marker";
     saveState(repoRoot, state);
     applyWidget(ctx, repoRoot);
@@ -286,5 +317,9 @@ export default function wariowareDecompLoop(api) {
 
   pi.on("session_shutdown", async () => {
     latestCtx = undefined;
+    // Clear stale newSessionFn so the timer doesn't call a dead reference.
+    // withSession will re-set it after the new session starts if the loop
+    // was advancing (withSession always runs after session_shutdown).
+    newSessionFn = null;
   });
 }
