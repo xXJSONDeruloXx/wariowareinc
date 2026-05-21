@@ -19,6 +19,19 @@ At the current `total_functions` count (`5957`), that means:
 - current gap: **3460** more matched functions
 
 ## What just landed
+### Batch 55 — exploration (no match)
+- Exploration result: **BLOCKED** on loop-based patterns
+- Commit: `c5cbc506` (docs update only)
+- Attempted functions that failed:
+  - `asm_0805d394` — loop with 3 iterations + 1 delete (loop variable ordering mismatch)
+  - `asm_0806843c` — loop with 4 iterations + 1 byte-call + 1 delete (register allocation differs)
+  - `asm_08016d3c` — loop with 2 iterations + 4 calls per iteration (loop unroll vs roll mismatch)
+- Durable takeaways:
+  - Loop-based sprite_id_delete functions with BLS/CMP patterns don't match simple C for-loops
+  - Even semantically identical loops fail due to agbcc's register allocation and loop unrolling decisions
+  - Remaining 6 unconverted sprite_id_delete functions are all loop-based; deprioritize this family
+  - Focus shifted to conditional byte-check wrappers, shift-offset patterns, MOVS constant wrappers
+
 ### Batch 54 — accepted
 - Metric delta: **1319 → 1320 matched functions** (**+1**)
 - Matched code: **6.3811874% → 6.3896456%**
@@ -100,11 +113,11 @@ At the current `total_functions` count (`5957`), that means:
 ## Active next candidate queue
 1. More conditional byte-check + BL wrappers
 2. More shift-offset + store wrappers
-3. More `sprite_id_delete(gSpriteHandler, *(u32*)(gCSV + offset))` siblings
+3. More `MOVS R0, #const` + BL wrapper families
 4. Two-pointer call variants with alternate shift patterns
 5. Functions that rely on `ADDS R0, R1, R2` three-register forms plus multiple BL calls
 6. More `scene_set_current_thread(1)` + shift-store families
-7. More `MOVS R0, #const` + BL wrapper families
+7. ~~More `sprite_id_delete(gSpriteHandler, *(u32*)(gCSV + offset))` siblings~~ — BLOCKED: remaining loop-based variants (asm_08016d3c, asm_0806843c, asm_0806fe20, asm_0805d394, asm_0805c550, asm_0806b99c) fail to match due to loop iteration register patterns not aligning with C for-loop code generation
 
 ## Highest-value reminders before selecting a batch
 - `#include "types.h"` when touching g-symbols from `types.h`.

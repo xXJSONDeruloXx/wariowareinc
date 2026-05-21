@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 55 | `c5cbc506` | +0 (exploration) | loop-based sprite_id_delete variants failed to match; identified register allocation mismatch blocker |
 | 54 | `adc5930c` | +1 | gGraphicsBuffer clears + 2-call wrapper |
 | 53 | `80ba7f84` | +1 | conditional 4-delete sprite_id_delete wrapper |
 | 52 | `12cf970c` | +4 | `sprite_id_delete` single, dual shift-1, dual direct, sign-ext+delete+CDB0 |
@@ -37,6 +38,21 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 | 25 | `9796ba11` | +6 | gCSV pointer-deref byte store, gCSV word add/increment, D_ setters |
 | 24 | `fc4f684b` | +5 | D_ stores, struct init, load-word-pair, crossed 6% matched code |
 | 23 | `234220c1` | +5 | BX LR stub, D_ byte setter, gCurrentSceneVariable decrement, pair-add |
+
+## Iteration 55 details
+- Result: exploration/blocked ❌ (no matches)
+- Report: remains **1320 / 5957**, **6.3896456%** (unchanged)
+- Commit: `c5cbc506` (docs/pattern-library update only)
+- Attempted functions that failed to match:
+  - `asm_0805d394` — loop from 0 to 2, byte-load at gCurrentSceneVariable + (i<<5) + 0x4FB with func_08001B28, then 1 sprite_id_delete
+  - `asm_0806843c` — loop from 0 to 3, byte-load at gCurrentSceneVariable + (i<<5) + 0x7B with func_08001B28, then 1 more byte-load + 1 sprite_id_delete
+  - `asm_08016d3c` — two func calls (func_08000F74, func_08003E64), then loop from 1 to 2 with sprite_id_delete + func_08001B70 + task_pool_force_cancel_id + mem_heap_dealloc_with_id
+- Durable takeaways:
+  - Loop-based patterns with BLS/CMP exit conditions fundamentally mismatch agbcc's loop code generation
+  - Even semantically identical C loops fail due to register allocation and loop unroll/fold heuristics
+  - The CMP + BLS (while <= N) pattern doesn't align with standard for-loop code generation
+  - Remaining 6 unconverted sprite_id_delete functions are all loop-based; unlikely to match with simple C patterns
+  - Deprioritize sprite_id_delete family entirely; focus on other higher-yield families
 
 ## Iteration 54 details
 - Result: match ✅ all 1 accepted
