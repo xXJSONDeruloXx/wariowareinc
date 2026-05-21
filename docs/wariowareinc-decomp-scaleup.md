@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 62` — `func_08002068` conditional sound call wrapper
-- `matched_functions`: **1335 / 5955** = **22.422%**
-- `matched_code_percent`: **6.4136%**
-- `tools/gen_objdiff.py`: **883 C / 5804 asm-only units**
+- Verified working tree: `batch 63` — `func_08003A00` abs-value helper
+- `matched_functions`: **1336 / 5954** = **22.447%**
+- `matched_code_percent`: **6.4148%**
+- `tools/gen_objdiff.py`: **884 C / 5803 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -19,6 +19,13 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3432** more matched functions
 
 ## What just landed
+### Batch 63 — accepted
+- Metric delta: **1335 → 1336 matched functions** (+1)
+- Matched code: **6.4136% → 6.4148%**
+- Commit: pending
+- Accepted functions:
+  - `asm_08003a00` — absolute value helper (CMP+BGE+NEGS pattern)
+
 ### Batch 62 — accepted
 - Metric delta: **1334 → 1335 matched functions** (+1)
 - Matched code: **6.4118% → 6.4136%**

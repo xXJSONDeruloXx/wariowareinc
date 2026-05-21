@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 63 | `pending` | +1 | `func_08003A00` absolute value helper (CMP+BGE+NEGS) |
 | 62 | `pending` | +1 | `func_08002068` conditional sound call wrapper (LSLS+LSRS+BL) |
 | 61 | `pending` | +1 | `func_080029D0` byte `&= ~3` + halfword `&= 3` mask pair (RSBS register pin) |
 | 60 | `7fab3891` | +1 | `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper |
