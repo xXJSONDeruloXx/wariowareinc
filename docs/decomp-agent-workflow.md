@@ -19,12 +19,13 @@ These commands are preferred over Ralph or pifinity because each chunk starts fr
 1. One function per file in `src/decomp/`
 2. Move accepted asm sources into `asm/converted/`
 3. Update `wariowareinc.ld` for each standalone TU conversion
-4. Only use the generic conversion workflow when `preflight_candidate` reports `conversionMode=standalone_tu` and `safeForAutonomous=true`
-5. Treat `included_stub` candidates as unsafe for autonomous linker-swap conversion; skip/block unless a dedicated included-stub workflow exists
-6. Require a matching ROM before treating anything as accepted
-7. Rerun report + objdiff after accepted progress
-8. Commit code + docs together
-9. Push immediately after verified progress
+4. Use supported mechanical workflows when `preflight_candidate` reports `safeForAutonomous=true`
+5. Supported workflows: `standalone_tu` (src/decomp + linker swap) and `included_stub` (guarded include-shim inside the host C TU)
+6. Treat `unknown_skip` and `already_converted` as research/manual candidates; do not force generic linker-swap conversion onto them
+7. Require a matching ROM before treating anything as accepted
+8. Rerun report + objdiff after accepted progress
+9. Commit code + docs together
+10. Push immediately after verified progress
 
 ## Required verification commands
 ### Clean Docker build
@@ -55,25 +56,27 @@ Track:
 - asm-only units
 
 ## Batch workflow
-1. Select a narrow, sibling-rich candidate set with `query_candidates` (default `conversionMode=standalone_tu`)
-2. Call `preflight_candidate` before iteration; skip anything that is `included_stub` or `unknown_skip`
-3. Explain to yourself why that family is worth testing
-4. Convert the smallest safe subset first if the family is risky
-5. After a 100% isolated match, prefer `apply_conversion` for mechanical edits and clean Docker verification
-6. Build in Docker
-7. If mismatch:
+1. Select a narrow, sibling-rich candidate set with `query_candidates` (default `conversionMode=recommended`)
+2. `recommended` includes `standalone_tu` and `included_stub` candidates that the tools can apply mechanically
+3. Call `preflight_candidate` before iteration; proceed when `safeForAutonomous=true`
+4. If only `unknown_skip`/manual candidates remain, use `conversionMode=all` diagnostically and pick a small promising target only when you can explain the integration path
+5. Explain to yourself why that family is worth testing
+6. Convert the smallest safe subset first if the family is risky
+7. After a 100% isolated match, prefer `apply_conversion` for mechanical edits and clean Docker verification
+8. Build in Docker
+9. If mismatch:
    - binary-search immediately
    - isolate the exact failing function or spelling
    - revert/fix it in the same pass
    - document the trap
-8. If match:
+10. If match:
    - rerun report
    - rerun objdiff snapshot
    - compare against the last verified baseline
-9. If any tracked metric improved:
+11. If any tracked metric improved:
    - update docs
    - commit + push immediately
-10. If no metric improved but a durable lesson was learned:
+12. If no metric improved but a durable lesson was learned:
    - keep only safe/useful changes
    - document the lesson clearly
    - do not pretend it was progress

@@ -129,7 +129,11 @@ function preflightFunction(repoRoot, fn, fallbackName) {
   const includingSource = findIncludingSource(repoRoot, asmRel);
   const linkerEntry = linkerEntryFor(repoRoot, targetObjRel);
   const decompRel = addr ? `src/decomp/asm_${addr}.c` : null;
+  const decompObjRel = addr ? `build/src/decomp/asm_${addr}.c.o` : null;
   const convertedAsmRel = addr ? `asm/converted/asm_${addr}.s` : null;
+  const decompAbs = decompRel ? path.join(repoRoot, decompRel) : null;
+  const convertedAsmAbs = convertedAsmRel ? path.join(repoRoot, convertedAsmRel) : null;
+  const decompLinkerEntry = linkerEntryFor(repoRoot, decompObjRel);
 
   let conversionMode = "unknown_skip";
   let safeForAutonomous = false;
@@ -139,11 +143,19 @@ function preflightFunction(repoRoot, fn, fallbackName) {
   if (!fn) {
     reasons.push("function was not found in mizuchi-db.json");
     nextSteps.push("Run the Mizuchi indexer or pick a candidate from query_candidates.");
+  } else if (!fs.existsSync(asmAbs ?? "") && (fs.existsSync(decompAbs ?? "") || fs.existsSync(convertedAsmAbs ?? "") || decompLinkerEntry)) {
+    conversionMode = "already_converted";
+    reasons.push("mizuchi-db still lists this function as unmatched, but the working tree already has converted artifacts");
+    if (decompRel && fs.existsSync(decompAbs ?? "")) reasons.push(`found ${decompRel}`);
+    if (convertedAsmRel && fs.existsSync(convertedAsmAbs ?? "")) reasons.push(`found ${convertedAsmRel}`);
+    if (decompLinkerEntry) reasons.push(`linker already points at ${decompObjRel}`);
+    nextSteps.push("Refresh the Mizuchi index before using this function again; do not select it for a new chunk.");
   } else if (includingSource) {
     conversionMode = "included_stub";
+    safeForAutonomous = true;
     reasons.push(`asm stub is included by ${includingSource}`);
-    reasons.push("the generic src/decomp + linker-swap workflow changes object layout for included stubs");
-    nextSteps.push("Skip this candidate for autonomous chunks unless an included-stub-specific workflow is implemented.");
+    reasons.push("use include-shim conversion: replace the asm include with a guarded src/decomp C include so code stays in the original host TU order");
+    nextSteps.push("Use compile_and_view_asm until 100%, then apply_conversion; it will use the included-stub shim workflow automatically.");
   } else if (linkerEntry) {
     conversionMode = "standalone_tu";
     safeForAutonomous = true;
@@ -151,7 +163,7 @@ function preflightFunction(repoRoot, fn, fallbackName) {
     nextSteps.push("Use compile_and_view_asm until 100%, then apply_conversion for the mechanical edits and ROM check.");
   } else {
     reasons.push("no including C source and no matching linker-script object entry were found");
-    nextSteps.push("Do not mechanically convert this candidate; inspect the build layout first or pick a standalone_tu candidate.");
+    nextSteps.push("Use this for research only until a dedicated build integration strategy is added for this layout.");
   }
 
   return {
@@ -163,6 +175,7 @@ function preflightFunction(repoRoot, fn, fallbackName) {
     targetObjectExists: targetObj ? fs.existsSync(targetObj) : false,
     includingSource,
     linkerEntry,
+    decompLinkerEntry,
     conversionMode,
     safeForAutonomous,
     decompRel,
@@ -179,12 +192,53 @@ function formatPreflight(pf) {
     `  target object: ${pf.targetObjRel ?? "?"}${pf.targetObjectExists ? " (exists)" : " (not built/found)"}`,
     `  including source: ${pf.includingSource ?? "none"}`,
     `  linker entry: ${pf.linkerEntry ? `${pf.linkerEntry.lineNumber}: ${pf.linkerEntry.text}` : "none"}`,
+    `  decomp linker entry: ${pf.decompLinkerEntry ? `${pf.decompLinkerEntry.lineNumber}: ${pf.decompLinkerEntry.text}` : "none"}`,
     `  planned C: ${pf.decompRel ?? "?"}`,
     `  planned converted asm: ${pf.convertedAsmRel ?? "?"}`,
   ];
   if (pf.reasons.length) lines.push("\nReasons:\n" + pf.reasons.map((r) => `  - ${r}`).join("\n"));
   if (pf.nextSteps.length) lines.push("\nNext steps:\n" + pf.nextSteps.map((r) => `  - ${r}`).join("\n"));
   return lines.join("\n");
+}
+
+function asmForStandaloneObject(asmCode) {
+  let out = asmCode ?? "";
+  out = out.replace(/^\s*thumb_func_start\s+(\w+)\s*$/gim, ".thumb\n.thumb_func\n.global $1\n$1:");
+  out = out.replace(/^\s*arm_func_start\s+(\w+)\s*$/gim, ".arm\n.global $1\n$1:");
+  out = out.replace(/^\s*(thumb_func_end|arm_func_end)\s+\w+\s*$/gim, "");
+  if (!/^\s*\.syntax\s+unified\b/im.test(out)) out = `.syntax unified\n${out}`;
+  return out;
+}
+
+function assembleAsmTargetInDocker(repoRoot, asmCode, outObj) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ww-target-asm-"));
+  const asmFile = path.join(tmpDir, "target.s");
+  try {
+    fs.writeFileSync(asmFile, asmForStandaloneObject(asmCode), "utf8");
+    fs.mkdirSync(path.dirname(outObj), { recursive: true });
+    execFileSync(
+      "docker",
+      [
+        "run", "--rm",
+        "-v", `${tmpDir}:/tmp/ww-target`,
+        "-v", `${repoRoot}:/workspace`,
+        "-w", "/workspace",
+        "devkitpro/devkitarm:latest",
+        "bash", "-lc",
+        "/opt/devkitpro/devkitARM/bin/arm-none-eabi-as -march=armv4t -o /tmp/ww-target/target.o /tmp/ww-target/target.s",
+      ],
+      { cwd: repoRoot, timeout: 120_000, stdio: "pipe" },
+    );
+    fs.copyFileSync(path.join(tmpDir, "target.o"), outObj);
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
+function wrapIncludedStubCode(cCode) {
+  const body = cCode.endsWith("\n") ? cCode : cCode + "\n";
+  if (/__INCLUDE_LEVEL__/.test(body)) return body;
+  return `#if __INCLUDE_LEVEL__ > 0\n${body}#endif\n`;
 }
 
 // ── objdiff JSON parser ───────────────────────────────────────────────────────
@@ -282,10 +336,10 @@ function registerCompileAndViewAsm(pi) {
     name: "compile_and_view_asm",
     label: "Compile & View ASM Diff",
     description:
-      "Compiles C code for a single standalone_tu function using the project toolchain (Docker + agbcc) and shows the objdiff comparison against the target binary.\n" +
+      "Compiles C code for a single function using the project toolchain (Docker + agbcc) and shows the objdiff comparison against the target binary.\n" +
       "Use this for fast iteration without running a full ROM build.\n" +
-      "Returns: match percentage, instruction diffs, and whether it is a perfect match.\n" +
-      "Requires: Docker running and a standalone_tu target object in build/asm. Included stubs are rejected/guided by preflight output.",
+      "Supports standalone_tu objects and included_stub asm snippets by assembling a temporary target object when needed.\n" +
+      "Returns: match percentage, instruction diffs, and whether it is a perfect match.",
     parameters: Type.Object({
       functionName: Type.String({
         description:
@@ -299,6 +353,7 @@ function registerCompileAndViewAsm(pi) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const db = loadDb(repoRoot);
       const fn = findFn(db, functionName);
+      let generatedTargetDir = null;
 
       // Resolve target .o
       let targetObj = fn ? targetObjPath(repoRoot, fn) : null;
@@ -309,24 +364,28 @@ function registerCompileAndViewAsm(pi) {
 
       if (!targetObj || !fs.existsSync(targetObj)) {
         const pf = preflightFunction(repoRoot, fn, functionName);
-        const guidance =
-          pf.conversionMode === "included_stub"
-            ? "This is an included asm stub, so a full build will not create the flattened build/asm target object. Pick a standalone_tu candidate for the normal autonomous workflow."
-            : pf.conversionMode === "standalone_tu"
+        if (pf.conversionMode === "included_stub" && fn?.asmCode?.trim()) {
+          generatedTargetDir = fs.mkdtempSync(path.join(os.tmpdir(), "ww-included-target-"));
+          targetObj = path.join(generatedTargetDir, `${functionName}.target.o`);
+          assembleAsmTargetInDocker(repoRoot, fn.asmCode, targetObj);
+        } else {
+          const guidance =
+            pf.conversionMode === "standalone_tu"
               ? "This is a standalone TU, but the comparison object is missing. Run one clean Docker build to populate build/asm objects, then retry compile_and_view_asm."
-              : "The build layout is unknown for this function. Run preflight_candidate and pick a standalone_tu candidate before iterating.";
-        return {
-          content: [
-            {
-              type: "text",
-              text:
-                `ERROR: Target object not found: ${targetObj ?? "unknown"}\n\n` +
-                `${guidance}\n\n` +
-                formatPreflight(pf),
-            },
-          ],
-          details: { error: "target_not_found", targetObj, preflight: pf },
-        };
+              : "The build layout is not yet supported for isolated comparison. Run preflight_candidate and prefer standalone_tu or included_stub candidates.";
+          return {
+            content: [
+              {
+                type: "text",
+                text:
+                  `ERROR: Target object not found: ${targetObj ?? "unknown"}\n\n` +
+                  `${guidance}\n\n` +
+                  formatPreflight(pf),
+              },
+            ],
+            details: { error: "target_not_found", targetObj, preflight: pf },
+          };
+        }
       }
 
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ww-compile-"));
@@ -388,6 +447,7 @@ function registerCompileAndViewAsm(pi) {
         };
       } finally {
         fs.rmSync(tmpDir, { recursive: true, force: true });
+        if (generatedTargetDir) fs.rmSync(generatedTargetDir, { recursive: true, force: true });
       }
     },
   });
@@ -616,7 +676,7 @@ function registerQueryCandidates(pi) {
       "  families    – functions that share callers/callees with already-matched functions\n" +
       "  address     – ordered by ROM address (useful for sequential batches)\n" +
       "  random      – random sample for exploration\n" +
-      "Default conversionMode is standalone_tu, which excludes included asm stubs that break the generic linker-swap workflow.\n" +
+      "Default conversionMode is recommended, which includes standalone TUs and included asm stubs that have supported integration workflows.\n" +
       "Optional `family` filter: only return functions in the same source module (e.g. graphics_table).",
     parameters: Type.Object({
       count: Type.Optional(Type.Number({ description: "How many candidates to return (default 10)" })),
@@ -638,12 +698,18 @@ function registerQueryCandidates(pi) {
       ),
       conversionMode: Type.Optional(
         Type.Union(
-          [Type.Literal("standalone_tu"), Type.Literal("included_stub"), Type.Literal("all")],
-          { description: "Filter by safe conversion workflow (default: standalone_tu)" },
+          [
+            Type.Literal("recommended"),
+            Type.Literal("standalone_tu"),
+            Type.Literal("included_stub"),
+            Type.Literal("unknown_skip"),
+            Type.Literal("all"),
+          ],
+          { description: "Filter by conversion workflow (default: recommended)" },
         ),
       ),
     }),
-    async execute(_id, { count = 10, strategy = "smallest", family, conversionMode = "standalone_tu" }, _signal, _onUpdate, ctx) {
+    async execute(_id, { count = 10, strategy = "smallest", family, conversionMode = "recommended" }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const db = loadDb(repoRoot);
       if (!db) {
@@ -685,8 +751,21 @@ function registerQueryCandidates(pi) {
         return preflights.get(f.name);
       };
 
-      // Conversion-mode filter. Autonomous chunks should use standalone_tu only.
-      if (conversionMode !== "all") {
+      const modeCounts = {};
+      for (const f of candidates) {
+        const mode = getPreflight(f).conversionMode;
+        modeCounts[mode] = (modeCounts[mode] ?? 0) + 1;
+      }
+
+      // Hide stale already-converted entries from candidate lists. They come from an old
+      // mizuchi-db index after a successful conversion and should not be selectable.
+      candidates = candidates.filter((f) => getPreflight(f).conversionMode !== "already_converted");
+
+      // Conversion-mode filter. "recommended" includes all layouts this extension can
+      // mechanically test/apply today.
+      if (conversionMode === "recommended") {
+        candidates = candidates.filter((f) => ["standalone_tu", "included_stub"].includes(getPreflight(f).conversionMode));
+      } else if (conversionMode !== "all") {
         candidates = candidates.filter((f) => getPreflight(f).conversionMode === conversionMode);
       }
 
@@ -726,9 +805,13 @@ function registerQueryCandidates(pi) {
 
       const top = candidates.slice(0, count);
 
-      const lines = [
+      const lines = [];
+      lines.push(
+        `Mode counts before stale-converted filtering: ${Object.entries(modeCounts).map(([k, v]) => `${k}=${v}`).join(", ") || "none"}`,
+      );
+      lines.push(
         `Found ${candidates.length} ${conversionMode} unmatched function candidates. Showing top ${top.length} by "${strategy}"${family ? ` in module "${family}"` : ""}:\n`,
-      ];
+      );
 
       for (const fn of top) {
         const pf = getPreflight(fn);
@@ -741,7 +824,7 @@ function registerQueryCandidates(pi) {
         ).length;
         lines.push(
           `• ${fn.name}  [${asmLines} asm lines]\n` +
-          `  workflow: ${pf.conversionMode}${pf.safeForAutonomous ? " (safe)" : " (skip/default-unsafe)"}\n` +
+          `  workflow: ${pf.conversionMode}${pf.safeForAutonomous ? " (supported)" : " (research/manual)"}\n` +
           `  asm: ${asmSrc}\n` +
           `  target: ${targetObj}${pf.targetObjectExists ? " (exists)" : " (not built/found)"}\n` +
           `  included-by: ${pf.includingSource ?? "none"}\n` +
@@ -757,6 +840,8 @@ function registerQueryCandidates(pi) {
           strategy,
           family: family ?? null,
           conversionMode,
+          modeCounts,
+          noRecommendedCandidates: conversionMode === "recommended" && candidates.length === 0,
           candidates: top.map((f) => ({
             name: f.name,
             asmLines: f.asmCode?.split("\n").length ?? 0,
@@ -788,13 +873,13 @@ function restoreFiles(repoRoot, backups) {
 function registerApplyConversion(pi) {
   pi.registerTool({
     name: "apply_conversion",
-    label: "Apply Standalone Decomp Conversion",
+    label: "Apply Decomp Conversion",
     description:
-      "Mechanically applies a verified standalone-TU conversion: writes src/decomp/asm_xxxxxxxx.c, swaps the linker entry, moves the original asm to asm/converted, and optionally runs a clean Docker ROM build. " +
-      "It refuses included_stub candidates and auto-restores files if verification fails.",
+      "Mechanically applies a verified conversion. standalone_tu uses src/decomp + linker swap; included_stub uses a guarded include-shim in the original host C TU to preserve ROM order. " +
+      "Runs a clean Docker ROM build by default and auto-restores files if verification fails.",
     parameters: Type.Object({
       functionName: Type.String({
-        description: "Function name that preflight_candidate classified as standalone_tu",
+        description: "Function name that preflight_candidate classified as standalone_tu or included_stub",
       }),
       cCode: Type.String({
         description: "Complete C source for src/decomp/asm_xxxxxxxx.c (should already be 100% in compile_and_view_asm)",
@@ -812,17 +897,17 @@ function registerApplyConversion(pi) {
       const fn = findFn(db, functionName);
       const pf = preflightFunction(repoRoot, fn, functionName);
 
-      if (pf.conversionMode !== "standalone_tu") {
+      if (!["standalone_tu", "included_stub"].includes(pf.conversionMode)) {
         return {
           content: [
             {
               type: "text",
               text:
-                `Refusing to apply conversion for ${functionName}: workflow is ${pf.conversionMode}, not standalone_tu.\n\n` +
+                `Refusing to apply conversion for ${functionName}: workflow is ${pf.conversionMode}; supported workflows are standalone_tu and included_stub.\n\n` +
                 formatPreflight(pf),
             },
           ],
-          details: { error: "unsafe_conversion_mode", preflight: pf },
+          details: { error: "unsupported_conversion_mode", preflight: pf },
         };
       }
 
@@ -832,18 +917,29 @@ function registerApplyConversion(pi) {
       const decompRel = pf.decompRel;
       const convertedRel = pf.convertedAsmRel;
       const decompObjRel = `build/src/decomp/asm_${addr}.c.o`;
+      const includeLine = `#include "${asmRel}"`;
+      const decompIncludeLine = `#include "decomp/asm_${addr}.c"`;
+      const workflow = pf.conversionMode;
 
-      const plan = [
-        `write ${decompRel}`,
-        `replace ${targetObjRel} -> ${decompObjRel} in wariowareinc.ld`,
-        `move ${asmRel} -> ${convertedRel}`,
-        verify ? "run clean Docker build and require wariowareinc.gba: OK" : "skip build verification",
-      ];
+      const plan = workflow === "standalone_tu"
+        ? [
+            `write ${decompRel}`,
+            `replace ${targetObjRel} -> ${decompObjRel} in wariowareinc.ld`,
+            `move ${asmRel} -> ${convertedRel}`,
+            verify ? "run clean Docker build and require wariowareinc.gba: OK" : "skip build verification",
+          ]
+        : [
+            `write guarded include-shim ${decompRel}`,
+            `replace ${includeLine} -> ${decompIncludeLine} in ${pf.includingSource}`,
+            `move ${asmRel} -> ${convertedRel}`,
+            "leave wariowareinc.ld unchanged so host TU order is preserved",
+            verify ? "run clean Docker build and require wariowareinc.gba: OK" : "skip build verification",
+          ];
 
       if (dryRun) {
         return {
-          content: [{ type: "text", text: `Dry-run apply_conversion plan for ${functionName}:\n` + plan.map((x) => `  - ${x}`).join("\n") + "\n\n" + formatPreflight(pf) }],
-          details: { dryRun: true, plan, preflight: pf },
+          content: [{ type: "text", text: `Dry-run apply_conversion plan for ${functionName} (${workflow}):\n` + plan.map((x) => `  - ${x}`).join("\n") + "\n\n" + formatPreflight(pf) }],
+          details: { dryRun: true, workflow, plan, preflight: pf },
         };
       }
 
@@ -855,19 +951,35 @@ function registerApplyConversion(pi) {
 
       try {
         backup(decompRel);
-        backup("wariowareinc.ld");
         backup(asmRel);
         backup(convertedRel);
+        if (workflow === "standalone_tu") backup("wariowareinc.ld");
+        if (workflow === "included_stub") backup(pf.includingSource);
 
         fs.mkdirSync(path.dirname(path.join(repoRoot, decompRel)), { recursive: true });
-        fs.writeFileSync(path.join(repoRoot, decompRel), cCode.endsWith("\n") ? cCode : cCode + "\n", "utf8");
+        fs.writeFileSync(
+          path.join(repoRoot, decompRel),
+          workflow === "included_stub"
+            ? wrapIncludedStubCode(cCode)
+            : (cCode.endsWith("\n") ? cCode : cCode + "\n"),
+          "utf8",
+        );
 
-        const ldPath = path.join(repoRoot, "wariowareinc.ld");
-        const ldText = fs.readFileSync(ldPath, "utf8");
-        if (!ldText.includes(targetObjRel)) {
-          throw new Error(`linker entry disappeared before edit: ${targetObjRel}`);
+        if (workflow === "standalone_tu") {
+          const ldPath = path.join(repoRoot, "wariowareinc.ld");
+          const ldText = fs.readFileSync(ldPath, "utf8");
+          if (!ldText.includes(targetObjRel)) {
+            throw new Error(`linker entry disappeared before edit: ${targetObjRel}`);
+          }
+          fs.writeFileSync(ldPath, ldText.replace(targetObjRel, decompObjRel), "utf8");
+        } else {
+          const sourcePath = path.join(repoRoot, pf.includingSource);
+          const sourceText = fs.readFileSync(sourcePath, "utf8");
+          if (!sourceText.includes(includeLine)) {
+            throw new Error(`source include disappeared before edit: ${includeLine}`);
+          }
+          fs.writeFileSync(sourcePath, sourceText.replace(includeLine, decompIncludeLine), "utf8");
         }
-        fs.writeFileSync(ldPath, ldText.replace(targetObjRel, decompObjRel), "utf8");
 
         fs.mkdirSync(path.dirname(path.join(repoRoot, convertedRel)), { recursive: true });
         fs.renameSync(path.join(repoRoot, asmRel), path.join(repoRoot, convertedRel));
@@ -896,12 +1008,12 @@ function registerApplyConversion(pi) {
             {
               type: "text",
               text:
-                `✅ Applied standalone conversion for ${functionName}.\n` +
+                `✅ Applied ${workflow} conversion for ${functionName}.\n` +
                 plan.map((x) => `  - ${x}`).join("\n") +
                 (verify ? `\n\nBuild tail:\n${buildOutput.split("\n").slice(-6).join("\n")}` : ""),
             },
           ],
-          details: { ok: true, plan, preflight: pf, buildOutputTail: buildOutput.split("\n").slice(-20).join("\n") },
+          details: { ok: true, workflow, plan, preflight: pf, buildOutputTail: buildOutput.split("\n").slice(-20).join("\n") },
         };
       } catch (err) {
         restoreFiles(repoRoot, backups);
@@ -914,7 +1026,7 @@ function registerApplyConversion(pi) {
                 `${err.stderr?.toString?.() || err.message}`,
             },
           ],
-          details: { error: err.message, stderr: err.stderr?.toString?.() ?? "", restored: true, preflight: pf },
+          details: { error: err.message, stderr: err.stderr?.toString?.() ?? "", restored: true, workflow, preflight: pf },
         };
       }
     },

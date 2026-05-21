@@ -89,10 +89,11 @@ function buildChunkPrompt(chunk) {
     "- docs/decomp-batch-history.md",
     "",
     "## Step 2 — Select and preflight a target function",
-    "Use `query_candidates` (strategy: 'smallest' or 'families', default conversionMode: 'standalone_tu').",
+    "Use `query_candidates` (strategy: 'smallest' or 'families'; default conversionMode: 'recommended').",
+    "Recommended candidates include both standalone_tu and included_stub workflows that the tools can apply mechanically.",
     "Then call `preflight_candidate` for the chosen function.",
-    "Only proceed if preflight says conversionMode=standalone_tu and safeForAutonomous=true.",
-    "If the best candidate is included_stub or unknown_skip, skip it and choose another; if none are safe, call decomp_chunk_done with blocked=true.",
+    "Proceed if preflight says safeForAutonomous=true. Supported workflows are standalone_tu and included_stub.",
+    "If only unknown_skip/manual candidates remain, use conversionMode='all' for diagnostics, pick the most promising small candidate, and block only if no supported/manual path is reasonable.",
     "One function per chunk.",
     "",
     "## Step 3 — Gather context",
@@ -109,9 +110,9 @@ function buildChunkPrompt(chunk) {
     "Do NOT run a full Docker make build during iteration.",
     "",
     "## Step 6 — Apply and verify (only after PERFECT MATCH)",
-    "Call `apply_conversion` with the matched C code. It performs the src/decomp write, linker swap, asm move, clean Docker build, and auto-restore on failure.",
+    "Call `apply_conversion` with the matched C code. It performs the src/decomp write, linker swap or include-shim edit, asm move, clean Docker build, and auto-restore on failure.",
     "Require: wariowareinc.gba: OK.",
-    "Do not manually improvise included-stub integration; if apply_conversion refuses, block/skip rather than editing around it.",
+    "For included_stub candidates, apply_conversion preserves host-TU order by replacing the asm include with a guarded src/decomp C include.",
     "",
     "## Step 7 — Commit, report, and signal done",
     "1. docker run --rm -v \"$PWD:/workspace\" -w /workspace devkitpro/devkitarm:latest bash -lc 'make report'",
@@ -300,7 +301,7 @@ export default function wariowareDecompLoop(pi) {
         try {
           loopPi.sendUserMessage(nextPrompt);
         } catch {
-          try { loopPi.sendUserMessage(nextPrompt, { deliverAs: "followUp" }); } catch { /* give up */ }
+          try { loopPi.sendUserMessage(nextPrompt, { deliverAs: "followUp" }); } catch { /* delivery fallback failed */ }
         }
       };
 
