@@ -21,6 +21,7 @@ SECTIONS {
         build/src/audio.c.o(.text);
         build/src/decomp/asm_0800200c.c.o(.text*);
         build/src/decomp/asm_08002024.c.o(.text*);
+        build/asm/asm_08002038.s.o(.text*);
         build/src/decomp/asm_08002038_c.c.o(.text*);
         build/src/decomp/asm_0800204c.c.o(.text*);
         build/src/decomp/asm_08002068.c.o(.text*);
