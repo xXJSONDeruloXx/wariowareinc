@@ -188,11 +188,17 @@ function ensureTimer() {
     const state = loadState(repoRoot);
     applyWidget(ctx, repoRoot);
 
+    // Primary path: decomp_chunk_done tool → compact → onComplete → sendUserMessage
+    // This timer is fallback-only: fires when the text marker was detected in agent_end
+    // (i.e. agent printed <DECOMP_CHUNK_DONE> instead of calling the tool).
     if (!state.enabled) return;
     if (!state.advanceRequested) return;
+    if (state.lastStatus === "compacting") return; // compact already in progress
     if (!ctx.isIdle()) return;
     if (ctx.hasPendingMessages()) return;
 
+    // Text-marker fallback: advance without compact (simpler, since we don't have
+    // tool ctx here — just send the next prompt directly).
     advanceLoop(repoRoot);
   }, REFRESH_INTERVAL_MS);
 }
@@ -212,7 +218,8 @@ export default function wariowareDecompLoop(pi) {
     description:
       "Signal that this decomp chunk is complete. " +
       "Call this at the end of every chunk — whether work was done, partially done, or blocked. " +
-      "If the loop is enabled, the next chunk will start automatically.",
+      "If the loop is enabled, prior context is compacted to a single summary line and the next " +
+      "chunk starts immediately after, with essentially fresh context.",
     parameters: Type.Object({
       summary: Type.String({
         description: "1-3 sentence summary: what was done, which function(s), current metrics",
@@ -257,30 +264,65 @@ export default function wariowareDecompLoop(pi) {
         };
       }
 
-      // Successful chunk — queue advancement if loop is enabled
       state.lastChunkSummary = summary;
-      if (state.enabled) {
-        state.advanceRequested = true;
-        state.lastStatus = "waiting-to-advance";
-      } else {
+
+      if (!state.enabled) {
+        // Single-shot /decomp-next — just mark done, no advancement
         state.lastStatus = "done";
+        saveState(repoRoot, state);
+        applyWidget(latestCtx, repoRoot);
+        return {
+          content: [{ type: "text", text: `Chunk ${state.chunk} done (loop off). Summary: ${summary}` }],
+          details: { chunkDone: true, chunkNum: state.chunk, willAdvance: false },
+        };
       }
+
+      // Loop is on — compact then immediately send next chunk prompt.
+      // compact() is fire-and-forget with onComplete/onError callbacks.
+      // The next chunk prompt arrives AFTER compact finishes so the agent
+      // sees only [one-line compact summary] + [fresh chunk N+1 prompt].
+      const nextChunkNum = state.chunk + 1;
+      const nextPrompt = buildChunkPrompt(nextChunkNum);
+
+      state.lastStatus = "compacting";
       saveState(repoRoot, state);
       applyWidget(latestCtx, repoRoot);
+
+      const doAdvance = () => {
+        const s = loadState(repoRoot);
+        s.chunk = nextChunkNum;
+        s.advanceRequested = false;
+        s.lastStatus = "running";
+        saveState(repoRoot, s);
+        applyWidget(latestCtx, repoRoot);
+        try {
+          loopPi.sendUserMessage(nextPrompt);
+        } catch {
+          try { loopPi.sendUserMessage(nextPrompt, { deliverAs: "followUp" }); } catch { /* give up */ }
+        }
+      };
+
+      ctx.compact({
+        // One-line summary so context is essentially empty after compaction.
+        // replaceInstructions is not available here — customInstructions appends to default.
+        // Keeping it tight enough that the model outputs a single line.
+        customInstructions:
+          "Output ONLY a single line in this exact format (no other text): " +
+          `'Chunk ${state.chunk} done: ${summary.split(".")[0]}'`,
+        onComplete: doAdvance,
+        onError: doAdvance, // advance even if compact fails
+      });
 
       return {
         content: [
           {
             type: "text",
             text:
-              `Chunk ${state.chunk} marked complete.\n` +
-              `Summary: ${summary}\n` +
-              (state.enabled
-                ? `Loop will advance to chunk ${state.chunk + 1}.`
-                : `Loop is off — no automatic advancement.`),
+              `Chunk ${state.chunk} complete. Compacting context, then starting chunk ${nextChunkNum}.\n` +
+              `Summary: ${summary}`,
           },
         ],
-        details: { chunkDone: true, chunkNum: state.chunk, willAdvance: state.enabled },
+        details: { chunkDone: true, chunkNum: state.chunk, willAdvance: true, nextChunkNum },
       };
     },
   });
