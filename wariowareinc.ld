@@ -449,7 +449,7 @@ SECTIONS {
         build/asm/asm_080164cc.s.o(.text*);
         build/asm/asm_08016520.s.o(.text*);
         build/asm/asm_080165d4.s.o(.text*);
-        build/asm/asm_08016670.s.o(.text*);
+        build/src/decomp/asm_08016670.c.o(.text*);
         build/asm/asm_0801667c.s.o(.text*);
         build/asm/asm_08016688.s.o(.text*);
         build/src/scenes/intro.c.o(.text);

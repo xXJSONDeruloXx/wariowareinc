@@ -52,6 +52,7 @@
 - when the original reuses the same base load for multiple stores, mirror that with a local pointer for the first stores and only fall back to the raw global on the final store if needed
 - For GBA BIOS SVC wrappers: use `s32 result = a0; asm volatile("svc #6" : "+r"(result) : "r"(a1)); return result;` to keep R0=R0 and R1=a1 for the SWI call
 - For hardware register writes: use `*(volatile u16 *)0x4XXXXXXX = val;` to match literal-pool address generation and store
+- For IWRAM absolute-address byte store with non-zero offset: use a local struct typedef with fields laid out to put the target byte at the correct offset, then cast the address: `(*(StructType *)0x0300XXXX).field = val;`. Using `((u8 *)0x0300XXXX)[offset]` causes agbcc to fold the offset into the literal pool address, producing a different object. Also use `s32` parameter type instead of `u8` to avoid the compiler inserting `LSLS R0, #24; LSR R0, #24` u8 masking.
 - For sequential byte writes: use `u8 *p = *a0; *p = byte0; p++; *p = byte1; p++; *a0 = p;` — pointer increment `p++` pattern generates `ADDS R2, #1` matching the original asm, while array indexing `p[0]`/`p[1]` uses different offset forms
 - D_ symbols used in C files need entries in both `include/undefined_syms.inc` (for asm preprocessing) AND `undefined_syms.ld` (for linker resolution from C objects)
 
