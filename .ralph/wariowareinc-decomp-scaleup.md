@@ -4,11 +4,19 @@
 Reach **80% matched/decompiled-function progress** on the `docs/macabeus-tooling-assessment` branch, while preserving a **byte-identical ROM match** at every accepted milestone.
 Target: **4768 / 5961 matched functions**
 
-## Latest Verified Baseline (confirmed 2026-05-20, iterations 45-46)
-- **Matched functions:** 1286 / 5957 = 21.59%
-- **Matched code percent:** 6.2599%
+## Latest Verified Baseline (confirmed 2026-05-20, iterations 45-47)
+- **Matched functions:** 1290 / 5957 = 21.65%
+- **Matched code percent:** 6.2704%
 - **ROM status:** `wariowareinc.gba: OK`
-- **Gap to target:** 1286 → 4768 = need +3482 more matched functions
+- **Gap to target:** 1290 → 4768 = need +3478 more matched functions
+
+## Iteration 47 — accepted (partial: 4/8)
+- **Candidate set:** 8 attempted — 4 accepted: `asm_08062260`/`asm_08062278` (gCSV[0xBBA/BBB]--), `asm_0801c758` (BL+s8 sign-ext+BL), `asm_0808a56c` (local-ptr multi-store with reload)
+- **Reverted:** `asm_0801af18`/`asm_0801bea8`/`asm_0801b3e4` (bitfield clear ~N trap), `asm_080d3a60`/`asm_080d3a60` (POP register mismatch)
+- **Result:** match ✅ (4-for-8 after binary search)
+- **Metric delta:** matched_functions 1286→1290 (+4), matched_code_percent 6.2599%→6.2704%
+- **Commit:** `49223873`, pushed
+- **Learnings:** (1) `byte &= ~N` where `(~N & 0xFF)` fits in 8 bits: agbcc optimizes to `MOVS #(~N&0xFF); ANDS` instead of `MOVS #N; RSBS; ANDS` — cannot match (2) BL+gCSV+shift+STRH pattern may have POP register mismatch (R0 vs R1) — check carefully (3) Multi-store with reload requires local ptr var for first two stores if the original reused same gCSV load: `u8 *p = gCSV; *(u16*)(p+X)=0; p[Y]=1; *(u16*)(gCSV+Z)=arg0` (4) `((u8*)gCSV)[0xBBA]--` generates LDR+LDRB+SUBS#1+STRB from literal pool correctly
 
 ## Iteration 46 — accepted
 - **Candidate set:** 7-function batch — `asm_08006790` (5-arg struct init), `asm_0802b078` (4-call R4 save wrapper), `asm_080623e4` (gCSV word++), `asm_08088f8c` (gCurrentSceneData LDRH+=), `asm_0808ed64` (byte store+BL), `asm_080b27d8` (gCSV byte clear large offset), `asm_080cd358` (gCurrentSceneData LDRH+shift+store)
@@ -226,6 +234,8 @@ python3 tools/gen_objdiff.py
 - Large byte offsets may need pointer shaping for Thumb immediate splitting
 - `((u32*)&gGlobal)[N]` generates `gGlobal+N*4` in literal pool (wrong!) — use local ptr var instead
 - C89: no declarations after statements in same block level
+- **NEW: `byte &= ~N` optimization trap** — when `(~N & 0xFF)` fits in u8, agbcc uses `MOVS #(~N&0xFF); ANDS` not `MOVS #N; RSBS; ANDS`. Affects ~1→0xFE, ~2→0xFD, ~0x3C→0xC3, etc.
+- **NEW: BL+STRH POP register** — after BL+store pattern, agbcc may pick POP {R0}/BX R0 but original has POP {R1}/BX R1. Check register liveness carefully.
 
 ## Next Candidate Queue
 1. More conditional check patterns (byte compare + BL call)
