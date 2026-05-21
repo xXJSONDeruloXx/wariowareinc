@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 64` — `func_08004994` zero-arg wrapper
-- `matched_functions`: **1337 / 5954** = **22.464%**
-- `matched_code_percent`: **6.4162%**
-- `tools/gen_objdiff.py`: **885 C / 5802 asm-only units**
+- Verified working tree: `batch 65` — `func_080049BC` zero-arg wrapper
+- `matched_functions`: **1338 / 5954** = **22.481%**
+- `matched_code_percent`: **6.4176%**
+- `tools/gen_objdiff.py`: **886 C / 5801 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -19,6 +19,13 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3432** more matched functions
 
 ## What just landed
+### Batch 65 — accepted
+- Metric delta: **1337 → 1338 matched functions** (+1)
+- Matched code: **6.4162% → 6.4176%**
+- Commit: pending
+- Accepted functions:
+  - `asm_080049BC` — zero-arg wrapper calling func_080049CC(arg0, arg1, 0, 0) (non-void return shape)
+
 ### Batch 64 — accepted
 - Metric delta: **1336 → 1337 matched functions** (+1)
 - Matched code: **6.4148% → 6.4162%**
