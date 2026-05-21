@@ -55,3 +55,12 @@ plugins:
 
   decomp-permuter:
     enable: false
+
+  integrator:
+    enable: true
+    integratorModule: ./mizuchi-integrator.mjs
+    verifyBuildScript: |
+      cd {{worktreePath}} && docker run --rm -v "$PWD:/workspace" -w /workspace devkitpro/devkitarm:latest bash -lc 'set -euo pipefail; make -j4 2>&1 | tail -5'
+    autoAction: commit
+    commitMessageTemplate: "feat: match {{functionName}}"
+    branchTemplate: "mizuchi/{{functionName}}-{{timestamp}}"
