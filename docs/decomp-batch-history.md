@@ -6,7 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
-| 60 | pending | +1 | `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper |
+| 60 | `7fab3891` | +1 | `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper |
 | 58 | `f36b7bd6` | +1 | Pointer-deref halfword store (-1 wrapper) |
 | 57 | `b3752d25` | +7 | Small wrapper sweep (SVC, div, arithmetic, D_ store, byte-write, HW reg, struct init) |
 | 56 | `4c3f3d3d` | +4 | RSBS mask-clear + s16-indexed byte-store siblings |
@@ -261,7 +261,7 @@ This period built the reusable base library of patterns:
 ## Iteration 60 details
 - Result: match ✅
 - Report: **1333 / 5956**, **6.4097586%**
-- Commit: pending
+- Commit: `7fab3891`
 - Accepted functions:
   - `asm_08006E94` — `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper
 - Durable takeaways:
