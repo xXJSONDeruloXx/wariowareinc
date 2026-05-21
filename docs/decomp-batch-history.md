@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 54 | `adc5930c` | +1 | gGraphicsBuffer clears + 2-call wrapper |
 | 53 | `80ba7f84` | +1 | conditional 4-delete sprite_id_delete wrapper |
 | 52 | `12cf970c` | +4 | `sprite_id_delete` single, dual shift-1, dual direct, sign-ext+delete+CDB0 |
 | 51 | `c6a88977` | +4 | `sprite_id_delete` byte-offset siblings (shift-1, direct, and dual delete) |
@@ -36,6 +37,17 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 | 25 | `9796ba11` | +6 | gCSV pointer-deref byte store, gCSV word add/increment, D_ setters |
 | 24 | `fc4f684b` | +5 | D_ stores, struct init, load-word-pair, crossed 6% matched code |
 | 23 | `234220c1` | +5 | BX LR stub, D_ byte setter, gCurrentSceneVariable decrement, pair-add |
+
+## Iteration 54 details
+- Result: match ✅ all 1 accepted
+- Report: **1320 / 5957**, **6.3896456%**
+- Commit: `adc5930c`
+- Accepted functions:
+  - `asm_0804bc4c` — gGraphicsBuffer DISPCNT AND 0xDFFF, clear 4 halfwords at 0x46/0x44/0x3C/0x40, then sprite_id_delete at gCurrentSceneVariable+0xE4, then func_08001B28 with sign-ext at gCurrentSceneVariable+0xCA
+- Durable takeaways:
+  - gGraphicsBuffer halfword clears with byte-offset casting match cleanly
+  - The pattern of struct clear + deref-load + BL chain remains productive
+  - 6 remaining sprite_id_delete asm files after this pass (one failed to match due to loop optimization)
 
 ## Iteration 53 details
 - Result: match ✅ all 1 accepted
