@@ -4,13 +4,25 @@
 Reach **80% matched/decompiled-function progress** on the `docs/macabeus-tooling-assessment` branch, while preserving a **byte-identical ROM match** at every accepted milestone.
 Target: **4768 / 5961 matched functions**
 
-## Latest Verified Baseline (confirmed 2026-05-20, iterations 35-44)
-- **Matched functions:** 1271 / 5957 = 21.33%
-- **Matched code percent:** 6.231208%
-- **C units in linker graph:** 780 / 6687
-- **ASM-only units in linker graph:** 5907
+## Latest Verified Baseline (confirmed 2026-05-20, iterations 45-46)
+- **Matched functions:** 1286 / 5957 = 21.59%
+- **Matched code percent:** 6.2599%
 - **ROM status:** `wariowareinc.gba: OK`
-- **Gap to target:** 1271 → 4768 = need +3497 more matched functions
+- **Gap to target:** 1286 → 4768 = need +3482 more matched functions
+
+## Iteration 46 — accepted
+- **Candidate set:** 7-function batch — `asm_08006790` (5-arg struct init), `asm_0802b078` (4-call R4 save wrapper), `asm_080623e4` (gCSV word++), `asm_08088f8c` (gCurrentSceneData LDRH+=), `asm_0808ed64` (byte store+BL), `asm_080b27d8` (gCSV byte clear large offset), `asm_080cd358` (gCurrentSceneData LDRH+shift+store)
+- **Result:** match ✅ (7-for-7)
+- **Metric delta:** matched_functions 1279→1286 (+7), matched_code_percent 6.245104%→6.2599%
+- **Commit:** `10050330`, pushed
+- **Learnings:** (1) 5-arg struct init with stack-passed arg4 (`LDR R4, [SP, #8]`) matches `void func(void*, u32, u32, u32, u32)` directly (2) 4-call R4-save wrapper: agbcc saves arg0 in R4 before first BL, restores with `ADDS R0, R4, #0` before each subsequent call (3) `(*(u32*)((u8*)gCSV + (0xBD << 4)))++` generates LDR/ADDS#1/STR correctly (4) `gCurrentSceneData` half-word add/shift patterns match cleanly with `#include "scenes.h"`
+
+## Iteration 45 — accepted
+- **Candidate set:** 8-function batch — `asm_080862cc`/`asm_080bf188`/`asm_080e4454` (gGraphicsBuffer.unk4C=0 siblings), `asm_0801e42c`/`asm_0801e43c` (BG_OFS[0].y setters), `asm_080df2c4`/`asm_080df2d8` (LDRH-SUB-STRH-LDRSH-set_soundplayer_pitch siblings), `asm_0808de30` (two-const-BL wrapper)
+- **Result:** match ✅ (8-for-8)
+- **Metric delta:** matched_functions 1271→1279 (+8), matched_code_percent 6.231208%→6.245104%
+- **Commit:** `f92ed4ac`, pushed
+- **Learnings:** (1) `gGraphicsBuffer.unk4C = 0` cleanly matches 3 sibling functions (2) `*(s16*)arg1` after `*arg1 -= N` generates MOVS R2, #0 + LDRSH [R1, R2] (3) Two-const-BL wrapper with POP {R0}/BX R0 matches `void func_X(){func_A(3); func_B(0);}`
 
 ## Iteration 44 — accepted
 - **Candidate set:** 7-function batch — `asm_0807e1ac`/`asm_0807e350` (sprite_set_enable_updates + LDRSH), `asm_08062430` (shift deref + two BL), `asm_080597a8` (s8 sign-ext + two BL), `asm_0807b044` (gCSV increment + D_ ROM call), `asm_08073660` (func(0) + gCSV large-offset store), `asm_08024480` (gBeatscriptScene[1] with local ptr var)
