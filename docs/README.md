@@ -10,13 +10,13 @@ If an agent resumes cold, read these first:
 
 ## Current verified baseline
 - Branch: `docs/macabeus-tooling-assessment`
-- HEAD: `0f121592` (`feat: add batch 48 ...`)
-- `matched_functions`: **1297 / 5957** (**21.772705%**)
-- `matched_code_percent`: **6.285469%**
-- `tools/gen_objdiff.py`: **845 C / 5842 asm-only units**
+- Verified working tree: `batch 49` candidate (`sprite_id_delete` byte-offset siblings)
+- `matched_functions`: **1306 / 5957** (**21.923786%**)
+- `matched_code_percent`: **6.3184834%**
+- `tools/gen_objdiff.py`: **854 C / 5833 asm-only units**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4766 / 5957**
-- Remaining gap to 80%: **3469 matched functions**
+- Remaining gap to 80%: **3460 matched functions**
 
 ## How autonomous continuation should work
 - Pifinity / `continue` should keep moving forward without asking for a focus area unless truly blocked.

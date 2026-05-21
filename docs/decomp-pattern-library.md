@@ -13,6 +13,7 @@
 - shift-based byte setters
 - `((u8*)gCurrentSceneVariable)[N]++` / `--` siblings
 - shift-computed offset loads/stores like `(0xBD << 4)`
+- `sprite_id_delete(gSpriteHandler, *(u32 *)((u8 *)gCurrentSceneVariable + off))` siblings
 - signed-load helpers using explicit `(s8)` or `(s16)` shaping
 - multi-store patterns that need a local pointer reload shape
 
@@ -36,6 +37,7 @@
 - add `#include "types.h"` when touching g-symbols declared there
 - add `#include "scenes.h"` when touching `gCurrentSceneData`
 - use a local pointer variable when `((u32*)&gGlobal)[N]` would otherwise collapse into the wrong literal-pool expression
+- `gCurrentSceneVariable` is a `struct BeatscriptLocalData *`, so raw `gCurrentSceneVariable + N` scales by `sizeof(struct BeatscriptLocalData)`; use `(u8 *)gCurrentSceneVariable + off` for byte offsets, or an intentional typed index like `((u32 *)gCurrentSceneVariable)[N]`
 - for post-BL stores, declare locals before statements and assign after the BL if needed to preserve C89 compliance
 - when the original reuses the same base load for multiple stores, mirror that with a local pointer for the first stores and only fall back to the raw global on the final store if needed
 
@@ -74,6 +76,9 @@
   - `*(u16*)((u8*)gCurrentSceneVariable + Z) = arg0;`
 - `gCurrentSceneData` helper pattern:
   - `*(u32*)((u8*)arg0 + off) += *(u16*)((u8*)gCurrentSceneData + 0x16);`
+- `sprite_id_delete` byte-offset helper pattern:
+  - `sprite_id_delete(gSpriteHandler, *(u32 *)((u8 *)gCurrentSceneVariable + off));`
+  - if the original has a pre-call like `func_0800CDB0(1)`, keep it before the delete and keep the byte-cast on the offset load
 
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers

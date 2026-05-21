@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs` over `.ralph/`.
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified HEAD: `0f121592` — `feat: add batch 48 (pair-add, field++/2-BL, gGraphics stores, gCurrentSceneData, 3-BL return, 2-BL call)`
-- `matched_functions`: **1297 / 5957** = **21.772705%**
-- `matched_code_percent`: **6.285469%**
-- `tools/gen_objdiff.py`: **845 C / 5842 asm-only units**
+- Verified working tree: `batch 49` candidate — `sprite_id_delete` byte-offset siblings
+- `matched_functions`: **1306 / 5957** = **21.923786%**
+- `matched_code_percent`: **6.3184834%**
+- `tools/gen_objdiff.py`: **854 C / 5833 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -16,31 +16,32 @@ Reach at least **80% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5957`), that means:
 - target: **4766 / 5957** matched functions
-- current gap: **3469** more matched functions
+- current gap: **3460** more matched functions
 
 ## What just landed
-### Batch 48 — accepted
-- Commit: `0f121592`
-- Metric delta: **1290 → 1297 matched functions** (**+7**)
-- Matched code: **6.2703905% → 6.285469%**
+### Batch 49 — accepted
+- Metric delta: **1297 → 1306 matched functions** (**+9**)
+- Matched code: **6.285469% → 6.3184834%**
 - Accepted functions:
-  - `asm_0800cc9c` — 2-BL call using `func_0800A038()` result as arg0
-  - `asm_0802e4ac` — field increment + 2 BL calls
-  - `asm_08035fd8` — ordered halfword zero stores
-  - `asm_08062dcc` — pair-add helper
-  - `asm_080862dc` — `gGraphicsBuffer` store pair
-  - `asm_080b7bb4` — 3-BL wrapper returning `u8`
-  - `asm_080c9520` — `gCurrentSceneData` halfword >> 5 add
+  - `asm_080749c4` — `sprite_id_delete` at `gCurrentSceneVariable + (0xE8 << 3)`
+  - `asm_0807f078` — `sprite_id_delete` at `gCurrentSceneVariable + 0x444`
+  - `asm_080840b4` — `sprite_id_delete` at `gCurrentSceneVariable + (0x89 << 3)`
+  - `asm_08088564` — `sprite_id_delete` at `gCurrentSceneVariable + (0xE2 << 1)`
+  - `asm_080a4424` — `sprite_id_delete` at `gCurrentSceneVariable + (0xCC << 4)`
+  - `asm_080c4754` — `func_0800CDB0(1)` + `sprite_id_delete` at `gCurrentSceneVariable + (0x94 << 1)`
+  - `asm_080d9b0c` — `sprite_id_delete` at `gCurrentSceneVariable + (0xC2 << 1)`
+  - `asm_080e0fa8` — `sprite_id_delete` at `gCurrentSceneVariable + (0x92 << 1)`
+  - `asm_080e4e0c` — `sprite_id_delete` at `gCurrentSceneVariable + (0xC4 << 1)`
 
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
+| 49 | `pending commit` | +9 | `sprite_id_delete` byte-offset siblings |
 | 48 | `0f121592` | +7 | pair-add, wrappers, gGraphicsBuffer, gCurrentSceneData |
 | 47 | `49223873` | +4 | gCSV byte-- siblings, s8 sign-ext BL, multi-store reload |
 | 46 | `10050330` | +7 | struct init, 4-call wrapper, gCSV byte/word ops, gCurrentSceneData |
 | 45 | `f92ed4ac` | +8 | gGraphicsBuffer clears, BG_OFS setters, sound wrappers |
 | 44 | `e0c0f888` | +7 | sprite helpers, s8 sign-ext, gCSV store families |
-| 43 | `36eed474` | +8 | 8-sibling `func_08026264(...); gCSV[4] |= M` family |
 
 ## Current proven strategy
 - Mine sibling-rich families first.
@@ -60,6 +61,7 @@ At the current `total_functions` count (`5957`), that means:
 ## Highest-value reminders before selecting a batch
 - `#include "types.h"` when touching g-symbols from `types.h`.
 - `#include "scenes.h"` when touching `gCurrentSceneData`.
+- `gCurrentSceneVariable` is a struct pointer: use `(u8 *)gCurrentSceneVariable + off` for byte offsets unless you intentionally want scaled indexing like `((u32 *)gCurrentSceneVariable)[N]`.
 - Use local pointer shaping when literal-pool or offset form matters.
 - Re-check any wrapper that returns with `POP {R1}; BX R1` — this is a frequent trap.
 - Re-check any byte mask using `~N` — agbcc often collapses it to an 8-bit immediate and breaks the match.

@@ -6,12 +6,12 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 49 | `pending commit` | +9 | `sprite_id_delete` byte-offset siblings, plus one `func_0800CDB0(1)` + delete wrapper |
 | 48 | `0f121592` | +7 | pair-add, field++/2-BL, gGraphicsBuffer store pair, gCurrentSceneData add, 3-BL return, 2-BL call |
 | 47 | `49223873` | +4 | gCSV byte-- siblings, BL+s8 sign-ext+BL, multi-store-with-reload |
 | 46 | `10050330` | +7 | 5-arg struct init, 4-call R4 wrapper, gCSV word++, gCurrentSceneData LDRH families |
 | 45 | `f92ed4ac` | +8 | gGraphicsBuffer clears, BG_OFS setters, soundplayer_pitch siblings, DE30 wrapper |
 | 44 | `e0c0f888` | +7 | sprite_set_enable_updates, shift deref + 2 BL, s8 sign-ext, gCSV store families |
-| 43 | `36eed474` | +8 | 8-sibling `func_08026264(...); gCSV[4] |= M` family |
 | 42 | `4218ab64` | +8 | `scene_set_current_thread(1)` patterns, conditionals, BL+store combos |
 | 41 | `40aa7e61` | +6 | sprite_id_delete shift offsets, two-pointer wrappers, ASRS signed load helper |
 | 40 | `702b14cc` | +27 | BX LR stub sweep |
@@ -32,6 +32,24 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 | 25 | `9796ba11` | +6 | gCSV pointer-deref byte store, gCSV word add/increment, D_ setters |
 | 24 | `fc4f684b` | +5 | D_ stores, struct init, load-word-pair, crossed 6% matched code |
 | 23 | `234220c1` | +5 | BX LR stub, D_ byte setter, gCurrentSceneVariable decrement, pair-add |
+
+## Iteration 49 details
+- Result: match ✅ after an immediate binary-search catch on a shaping bug
+- Report: **1306 / 5957**, **6.3184834%**
+- Accepted functions:
+  - `asm_080749c4`
+  - `asm_0807f078`
+  - `asm_080840b4`
+  - `asm_08088564`
+  - `asm_080a4424`
+  - `asm_080c4754`
+  - `asm_080d9b0c`
+  - `asm_080e0fa8`
+  - `asm_080e4e0c`
+- Durable takeaways:
+  - `sprite_id_delete` byte-offset siblings remain a strong family
+  - for `gCurrentSceneVariable`, missing the `(u8 *)` byte-cast is an easy self-inflicted mismatch because `gCurrentSceneVariable + N` scales by the local-data struct size
+  - the `func_0800CDB0(1)` pre-call variant is also safe when the delete load keeps the byte-cast spelling
 
 ## Iteration 48 details
 - Result: match ✅ after initial mismatch and binary search
