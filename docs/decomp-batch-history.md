@@ -6,7 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
-| 57 | (to be committed) | +7 | Small wrapper sweep (SVC, div, arithmetic, D_ store, byte-write, HW reg, struct init) |
+| 57 | `b3752d25` | +7 | Small wrapper sweep (SVC, div, arithmetic, D_ store, byte-write, HW reg, struct init) |
 | 56 | `4c3f3d3d` | +4 | RSBS mask-clear + s16-indexed byte-store siblings |
 | 55 | `c5cbc506` | +0 (exploration) | loop-based sprite_id_delete variants failed to match; identified register allocation mismatch blocker |
 | 54 | `adc5930c` | +1 | gGraphicsBuffer clears + 2-call wrapper |
@@ -44,7 +44,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Iteration 57 details
 - Result: match ✅ all 7 accepted
 - Report: **1331 / 5956**, **6.4053407%**
-- Commit: (to be committed)
+- Commit: `b3752d25`
 - Accepted functions:
   - `asm_080ee61c` — `SVC #6` BIOS wrapper via inline asm with register constraints
   - `asm_08089614` — `__divsi3(a2 << 8, a1)` wrapper
