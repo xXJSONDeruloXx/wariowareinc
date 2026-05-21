@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs` over `.ralph/`.
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 50` candidate — `sprite_id_delete` byte-offset siblings
-- `matched_functions`: **1310 / 5957** = **21.990936%**
-- `matched_code_percent`: **6.337337%**
-- `tools/gen_objdiff.py`: **858 C / 5829 asm-only units**
+- Verified working tree: `batch 51` candidate — `sprite_id_delete` byte-offset siblings (shift-1, direct, dual delete)
+- `matched_functions`: **1314 / 5957** = **22.058083%**
+- `matched_code_percent`: **6.352630%**
+- `tools/gen_objdiff.py`: **862 C / 5825 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -19,6 +19,15 @@ At the current `total_functions` count (`5957`), that means:
 - current gap: **3460** more matched functions
 
 ## What just landed
+### Batch 51 — accepted
+- Metric delta: **1310 → 1314 matched functions** (**+4**)
+- Matched code: **6.337337% → 6.352630%**
+- Accepted functions:
+  - `asm_08077174` — `sprite_id_delete(gSpriteHandler, *(u32*)((u8*)gCSV + (0xE6 << 1)))`
+  - `asm_080b2bac` — `sprite_id_delete(gSpriteHandler, *(u32*)((u8*)gCSV + (0xB2 << 1)))`
+  - `asm_080c9050` — `sprite_id_delete(gSpriteHandler, *(u32*)((u8*)gCSV + 0x574))`
+  - `asm_0805ab2c` — two `sprite_id_delete` calls at byte offsets 0x94 and 0x98
+
 ### Batch 50 — accepted
 - Metric delta: **1306 → 1310 matched functions** (**+4**)
 - Matched code: **6.3184834% → 6.337337%**
@@ -46,6 +55,8 @@ At the current `total_functions` count (`5957`), that means:
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
+| 51 | (current) | +4 | `sprite_id_delete` shift-1, direct, dual delete siblings |
+| 50 | `3dacfb4c` | +4 | `sprite_id_delete` const-arg, sign-ext+delete, 2-delete+gGB clear |
 | 49 | `d98c2b49` | +9 | `sprite_id_delete` byte-offset siblings |
 | 48 | `0f121592` | +7 | pair-add, wrappers, gGraphicsBuffer, gCurrentSceneData |
 | 47 | `49223873` | +4 | gCSV byte-- siblings, s8 sign-ext BL, multi-store reload |

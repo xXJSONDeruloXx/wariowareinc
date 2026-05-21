@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 51 | (current) | +4 | `sprite_id_delete` byte-offset siblings (shift-1, direct, and dual delete) |
 | 50 | `3dacfb4c` | +4 | `sprite_id_delete` const-arg, sign-ext+delete, 2-delete+gGraphicsBuffer clear |
 | 49 | `d98c2b49` | +9 | `sprite_id_delete` byte-offset siblings, plus one `func_0800CDB0(1)` + delete wrapper |
 | 48 | `0f121592` | +7 | pair-add, field++/2-BL, gGraphicsBuffer store pair, gCurrentSceneData add, 3-BL return, 2-BL call |
@@ -33,6 +34,20 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 | 25 | `9796ba11` | +6 | gCSV pointer-deref byte store, gCSV word add/increment, D_ setters |
 | 24 | `fc4f684b` | +5 | D_ stores, struct init, load-word-pair, crossed 6% matched code |
 | 23 | `234220c1` | +5 | BX LR stub, D_ byte setter, gCurrentSceneVariable decrement, pair-add |
+
+## Iteration 51 details
+- Result: match ✅ all 4 accepted
+- Report: **1314 / 5957**, **6.352630%**
+- Commit: (to be committed)
+- Accepted functions:
+  - `asm_08077174` — `sprite_id_delete(gSpriteHandler, *(u32 *)((u8 *)gCurrentSceneVariable + (0xE6 << 1)))`
+  - `asm_080b2bac` — `sprite_id_delete(gSpriteHandler, *(u32 *)((u8 *)gCurrentSceneVariable + (0xB2 << 1)))`
+  - `asm_080c9050` — `sprite_id_delete(gSpriteHandler, *(u32 *)((u8 *)gCurrentSceneVariable + 0x574))`
+  - `asm_0805ab2c` — two `sprite_id_delete` calls at byte offsets 0x94 and 0x98
+- Durable takeaways:
+  - Single-call `sprite_id_delete` wrappers with shift-1 offsets are proven safe
+  - Direct offsets like 0x574 (no shift) also match cleanly
+  - Dual-delete wrappers (R4/R5 preserve, two sequential deletes) follow the same proven pattern as batch 50's `asm_080b0e80`
 
 ## Iteration 50 details
 - Result: match ✅ all 4 accepted
