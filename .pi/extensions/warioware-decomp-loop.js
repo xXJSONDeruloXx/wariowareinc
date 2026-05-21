@@ -235,7 +235,7 @@ export default function wariowareDecompLoop(pi) {
         }),
       ),
     }),
-    async execute({ summary, blocked = false, blockedReason }, _signal, ctx) {
+    async execute(_id, { summary, blocked = false, blockedReason }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const state = loadState(repoRoot);
 

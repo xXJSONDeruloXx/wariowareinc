@@ -185,7 +185,7 @@ function registerCompileAndViewAsm(pi) {
         description: "Complete C code to compile and test against the target",
       }),
     }),
-    async execute({ functionName, cCode }, _signal, ctx) {
+    async execute(_id, { functionName, cCode }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const db = loadDb(repoRoot);
       const fn = findFn(db, functionName);
@@ -290,7 +290,7 @@ function registerGetFunctionContext(pi) {
         description: "Function name (e.g. func_08002468 or asm_08002468)",
       }),
     }),
-    async execute({ functionName }, _signal, ctx) {
+    async execute(_id, { functionName }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const script = path.join(repoRoot, "tools/mizuchi/get-context.sh");
 
@@ -345,7 +345,7 @@ function registerM2cDecompile(pi) {
         description: "Function name (e.g. func_08002468 or asm_08002468)",
       }),
     }),
-    async execute({ functionName }, _signal, ctx) {
+    async execute(_id, { functionName }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const m2cPy = path.join(MIZUCHI_ROOT, "vendor/m2c/m2c.py");
       // setup-m2c.sh creates venv at vendor/m2c/.venv
@@ -464,7 +464,7 @@ function registerQueryCandidates(pi) {
         }),
       ),
     }),
-    async execute({ count = 10, strategy = "smallest", family }, _signal, ctx) {
+    async execute(_id, { count = 10, strategy = "smallest", family }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const db = loadDb(repoRoot);
       if (!db) {
