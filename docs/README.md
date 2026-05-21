@@ -1,65 +1,39 @@
-# WarioWare Inc. decomp tooling assessment
+# WarioWare Inc. decomp docs
 
-This docs set records a real tooling pass over `wariowareinc`, focused on:
+This docs set is now the canonical replacement for the old Ralph task file flow.
+If an agent resumes cold, read these first:
 
-- current decomp progress
-- how `macabeus/mizuchi` fits this repo
-- how `macabeus/kappa` fits this repo
-- what is and is not practical inside the **pi coding agent harness**
-- real smoke-test results, not just theory
+1. `docs/wariowareinc-decomp-scaleup.md` — current baseline, priorities, next queue
+2. `docs/decomp-agent-workflow.md` — exact autonomous workflow and verification loop
+3. `docs/decomp-pattern-library.md` — proven families, code-shaping rules, known traps
+4. `docs/decomp-batch-history.md` — accepted batch history migrated from `.ralph` + session logs
 
-## Latest verified scale-up checkpoint (2026-05-20)
+## Current verified baseline
+- Branch: `docs/macabeus-tooling-assessment`
+- HEAD: `0f121592` (`feat: add batch 48 ...`)
+- `matched_functions`: **1297 / 5957** (**21.772705%**)
+- `matched_code_percent`: **6.285469%**
+- `tools/gen_objdiff.py`: **845 C / 5842 asm-only units**
+- ROM: **`wariowareinc.gba: OK`**
+- 80% target at the current function total: **4766 / 5957**
+- Remaining gap to 80%: **3469 matched functions**
 
-- Clean Docker build: `wariowareinc.gba: OK`
-- `make report`: **1121 / 5961 matched functions = 18.805569%**
-- `matched_code_percent`: **5.986366%**
-- `tools/gen_objdiff.py`: **669 C / 6018 asm-only units**
-- Accepted batch result: **+10 matched functions** and **+10 C units** versus the previous verified baseline (two 5-function batches: `1111 -> 1116 -> 1121`, `659 -> 664 -> 669`)
-- Latest successful pattern: self-contained small-body functions (dec-counter, store-advance, struct-field-arithmetic, mul-acc) with zero extern references
+## How autonomous continuation should work
+- Pifinity / `continue` should keep moving forward without asking for a focus area unless truly blocked.
+- The docs in this directory are the durable memory that should survive context compaction and session changes.
+- Any new durable learning should be written back here before the agent yields.
 
-## Main takeaways
+## Doc map
+### Active operational docs
+- `docs/wariowareinc-decomp-scaleup.md`
+- `docs/decomp-agent-workflow.md`
+- `docs/decomp-pattern-library.md`
+- `docs/decomp-batch-history.md`
 
-1. **The repo builds cleanly and matches the USA ROM today** using a Dockerized `devkitpro/devkitarm` flow plus `pret/agbcc`.
-2. **The latest verified checkpoint says 5.967838% matched code**, which is close to the user estimate, but that is **not the same thing as decompiled C coverage**.
-3. A rough, repo-local heuristic based on current C definitions puts **explicit C function coverage closer to ~2.768% by function count** (`165 / 5961`).
-4. **Mizuchi is the better fit for pi** because it has a real CLI/server workflow.
-5. **Kappa is still useful**, but mostly as:
-   - a source of prompt-builder/indexing ideas
-   - a manual VS Code workflow for a human
-   - not as the primary automation path inside pi
-6. Three real asm→C smoke tests were completed and kept the ROM matching:
-   - `src/memory_heap.c` → `mem_heap_alloc`
-   - `src/beatscript.c` → `func_0800A270`
-7. One standalone asm-only leaf function outside the existing C-scaffold was also converted successfully:
-   - `asm/asm_080f26d0.s` -> `src/asm_080f26d0.c`
-   - this moved the official report from `470` to `471` matched functions and from `18` to `19` C units
-8. A repo-local Mizuchi bootstrap was added:
-   - `mizuchi.yaml`
-   - `tools/mizuchi/export-asm.py`
-   - `tools/mizuchi/get-context.sh`
-   - `tools/mizuchi/compile-in-docker.sh`
+### Reference / historical docs
+- `docs/wariowareinc-decomp-progress-audit.md` — early audit + smoke-test archive; not the live source of truth
+- `docs/macabeus-tools-assessment.md` — tooling assessment notes
+- `docs/mizuchi-workflow.md` — Mizuchi bootstrap notes
 
-## Files in this docs set
-
-- `docs/wariowareinc-decomp-progress-audit.md`
-  - build baseline
-  - progress numbers
-  - smoke-test evidence
-  - Mizuchi smoke-test notes
-- `docs/macabeus-tools-assessment.md`
-  - Kappa vs Mizuchi
-  - pi harness accessibility matrix
-  - recommended happy path
-- `docs/mizuchi-workflow.md`
-  - how to use the added Mizuchi helper files in this repo
-
-## Added project files
-
-- `mizuchi.yaml`
-- `tools/mizuchi/export-asm.py`
-- `tools/mizuchi/get-context.sh`
-- `tools/mizuchi/compile-in-docker.sh`
-
-## Branch used
-
-- `docs/macabeus-tooling-assessment`
+## Legacy note
+The old `.ralph/wariowareinc-decomp-scaleup.md` file should be treated as legacy source material. Keep it only as an archive; continue maintaining the live workflow in `/docs` + `AGENTS.md`.

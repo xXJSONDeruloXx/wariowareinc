@@ -1,5 +1,9 @@
 # `wariowareinc` decomp progress audit and smoke-test log
 
+> Historical archive: this file captures the earlier audit / smoke-test phase.
+> For the live autonomous workflow, current metrics, pattern library, and batch history, start at `docs/README.md` and `docs/wariowareinc-decomp-scaleup.md`.
+
+
 ## Scope
 
 This audit was done against:
