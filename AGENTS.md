@@ -12,9 +12,7 @@ If those docs are not enough, mine prior session history from:
 - `~/.pi/agent/sessions/--Users-kurt-Developer-wariowareinc--/`
 
 ## Autonomous behavior
-- Prefer the repo-local fresh-context tooling in `.pi/extensions/warioware-decomp-loop.js` over Ralph or pifinity.
-- Use `/decomp-next` for a single fresh-context chunk.
-- Use `/decomp-loop start` for repeated fresh-context chunks across new sessions.
+- Treat a bare `continue` or pifinity auto-continue as permission to keep pushing the decomp forward without asking what aspect to focus on.
 - Only stop to ask the user something if you are truly blocked by missing assets, a broken toolchain, contradictory repo state, or a choice that cannot be made safely from the docs/history.
 - If context gets compacted or thin, re-read the docs above and continue.
 - Persist every durable learning back into `/docs` so the next autonomous pass can pick up cold.

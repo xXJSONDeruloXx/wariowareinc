@@ -6,23 +6,20 @@ If an agent resumes cold, read these first:
 1. `docs/wariowareinc-decomp-scaleup.md` — current baseline, priorities, next queue
 2. `docs/decomp-agent-workflow.md` — exact autonomous workflow and verification loop
 3. `docs/decomp-pattern-library.md` — proven families, code-shaping rules, known traps
-4. `docs/decomp-batch-history.md` — accepted batch history + cleanup notes
+4. `docs/decomp-batch-history.md` — accepted batch history migrated from `.ralph` + session logs
 
-## Current baseline
+## Current verified baseline
 - Branch: `docs/macabeus-tooling-assessment`
-- Last ROM-verified milestone: `batch 50` candidate (`sprite_id_delete` byte-offset siblings + helper wrappers)
-- Current report snapshot after repo-state cleanup:
-  - `matched_functions`: **1320 / 5949** (**22.188602%**)
-  - `matched_code_percent`: **6.3567476%**
-  - `tools/gen_objdiff.py`: **868 C / 5820 asm-only units**
-- Clean Docker ROM verification was **not rerun in this cleanup pass** because the current `devkitpro/devkitarm:latest` image lacks `ffmpeg`.
-- 80% target at the current function total: **4760 / 5949**
-- Remaining gap to 80%: **3440 matched functions**
+- Verified working tree: `batch 49` candidate (`sprite_id_delete` byte-offset siblings)
+- `matched_functions`: **1306 / 5957** (**21.923786%**)
+- `matched_code_percent`: **6.3184834%**
+- `tools/gen_objdiff.py`: **854 C / 5833 asm-only units**
+- ROM: **`wariowareinc.gba: OK`**
+- 80% target at the current function total: **4766 / 5957**
+- Remaining gap to 80%: **3460 matched functions**
 
 ## How autonomous continuation should work
-- Prefer the repo-local fresh-context commands over pifinity/Ralph:
-  - `/decomp-next` for one fresh-context chunk
-  - `/decomp-loop start` for repeated fresh-context chunks across new sessions
+- Pifinity / `continue` should keep moving forward without asking for a focus area unless truly blocked.
 - The docs in this directory are the durable memory that should survive context compaction and session changes.
 - Any new durable learning should be written back here before the agent yields.
 
@@ -38,3 +35,5 @@ If an agent resumes cold, read these first:
 - `docs/macabeus-tools-assessment.md` — tooling assessment notes
 - `docs/mizuchi-workflow.md` — Mizuchi bootstrap notes
 
+## Legacy note
+The old `.ralph/wariowareinc-decomp-scaleup.md` file should be treated as legacy source material. Keep it only as an archive; continue maintaining the live workflow in `/docs` + `AGENTS.md`.

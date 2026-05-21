@@ -65,8 +65,6 @@
 - forgetting the linker-script swap breaks standalone TU conversions
 - bare `extern` declarations for g-symbols can fight existing repo types
 - C89 declaration ordering still matters in this repo
-- do not leave placeholder / speculative stubs in `src/decomp/` behind Makefile exclusions; revert them or keep them outside the build until they are ready
-- use `asm/converted/` as the single predictable home for retired asm sources
 
 ## Specific accepted shaping examples
 - gBeatscriptScene second-word access: use `u32 *p = (u32 *)&gBeatscriptScene; p[1]`
