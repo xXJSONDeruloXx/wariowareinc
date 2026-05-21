@@ -5,9 +5,9 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 68` — `func_08016670` IWRAM byte store
-- `matched_functions`: **1341 / 5954** = **22.530%**
-- `matched_code_percent`: **6.4216%**
+- Verified working tree: `batch 69` — `func_0801667C` IWRAM byte load
+- `matched_functions`: **1342 / 5954** = **22.546%**
+- `matched_code_percent`: **6.4228%**
 - `tools/gen_objdiff.py`: **888 C / 5801 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
@@ -19,6 +19,14 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3432** more matched functions
 
 ## What just landed
+### Batch 69 — accepted
+- Metric delta: **1341 → 1342 matched functions** (+1)
+- Matched code: **6.4216% → 6.4228%**
+- Commit: pending
+- Accepted functions:
+  - `asm_0801667C` — IWRAM byte load: returns byte at offset 6 of D_03006518 (struct+offset trick, s32 return)
+- Notes: Sibling of func_08016670 (byte store at offset 5). Same struct+offset trick works for load variant.
+
 ### Batch 68 — accepted
 - Metric delta: **1340 → 1341 matched functions** (+1)
 - Matched code: **6.4204% → 6.4216%**

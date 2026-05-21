@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 69 | `pending` | +1 | `func_0801667C` IWRAM byte load (struct+offset trick) |
 | 68 | `pending` | +1 | `func_08016670` IWRAM byte store (struct+offset trick) |
 | 67 | `pending` | +1 | `func_08004A74` zero-arg wrapper (last of family) |
 | 66 | `pending` | +1 | `func_08004A30` zero-arg wrapper (same family) |
