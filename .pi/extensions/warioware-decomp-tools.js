@@ -73,44 +73,6 @@ function addrFromName(name) {
 
 // ── objdiff JSON parser ───────────────────────────────────────────────────────
 
-function collectMatchPercents(obj, results = [], depth = 0) {
-  if (depth > 15 || !obj || typeof obj !== "object") return results;
-  if (Array.isArray(obj)) {
-    for (const item of obj) collectMatchPercents(item, results, depth + 1);
-    return results;
-  }
-  if ("match_percent" in obj) {
-    results.push({
-      name: obj.name ?? null,
-      matchPercent: Number(obj.match_percent),
-    });
-  }
-  for (const v of Object.values(obj)) {
-    if (v && typeof v === "object") collectMatchPercents(v, results, depth + 1);
-  }
-  return results;
-}
-
-function collectInstrDiffs(obj, diffs = [], depth = 0) {
-  if (depth > 15 || !obj || typeof obj !== "object") return diffs;
-  if (Array.isArray(obj)) {
-    for (const item of obj) collectInstrDiffs(item, diffs, depth + 1);
-    return diffs;
-  }
-  // Instruction diff entry has diff_kind + at least one of left_instr/right_instr
-  if (obj.diff_kind && obj.diff_kind !== "NONE" && obj.diff_kind !== 0) {
-    diffs.push({
-      kind: obj.diff_kind,
-      left: obj.left_instr?.formatted ?? obj.base_instr ?? null,
-      right: obj.right_instr?.formatted ?? obj.target_instr ?? null,
-    });
-  }
-  for (const v of Object.values(obj)) {
-    if (v && typeof v === "object") collectInstrDiffs(v, diffs, depth + 1);
-  }
-  return diffs;
-}
-
 function parseDiffJson(jsonStr, symbolName) {
   let data;
   try {
@@ -119,26 +81,47 @@ function parseDiffJson(jsonStr, symbolName) {
     return { ok: false, error: `JSON parse failed: ${e.message}`, raw: jsonStr.slice(0, 400) };
   }
 
-  // Collect from the `right` side (our compiled code vs target)
-  const rightSide = data.right ?? data;
-  const allPercents = collectMatchPercents(rightSide);
+  // Find the function symbol in both left (target) and right (compiled)
+  const leftSide = data.left ?? {};
+  const rightSide = data.right ?? {};
 
-  // Find the entry that matches our symbol name (THUMB +1 variant too)
-  const hit =
-    allPercents.find((p) => p.name === symbolName) ??
-    allPercents.find((p) => p.name === symbolName + "+1") ??
-    allPercents.find((p) => p.name?.toLowerCase() === symbolName.toLowerCase());
+  const findSym = (side, name) => {
+    for (const s of side.symbols ?? []) {
+      if (s.name === name || s.name === name + "+1" || s.name?.toLowerCase() === name.toLowerCase()) return s;
+    }
+    return null;
+  };
 
-  const matchPercent = hit?.matchPercent ?? (allPercents.length ? Math.min(...allPercents.map((p) => p.matchPercent)) : null);
+  const targetSym = findSym(leftSide, symbolName);
+  const compiledSym = findSym(rightSide, symbolName);
+  const sym = compiledSym || targetSym;
 
-  const instrDiffs = collectInstrDiffs(rightSide).slice(0, 40);
+  const matchPercent = sym?.match_percent ?? 0;
+
+  // Build side-by-side instruction listing
+  const targetInstrs = targetSym?.instructions ?? [];
+  const compiledInstrs = compiledSym?.instructions ?? [];
+  const maxLen = Math.max(targetInstrs.length, compiledInstrs.length);
+
+  const instrList = [];
+  for (let i = 0; i < maxLen; i++) {
+    const t = targetInstrs[i];
+    const c = compiledInstrs[i];
+    const tText = t?.instruction?.formatted ?? "";
+    const cText = c?.instruction?.formatted ?? "";
+    // An instruction differs if diff_kind is set on either side
+    const differs = (t?.diff_kind && t.diff_kind !== "NONE") || (c?.diff_kind && c.diff_kind !== "NONE");
+    instrList.push({ target: tText, compiled: cText, differs });
+  }
 
   return {
     ok: true,
     matchPercent,
-    isPerfectMatch: matchPercent != null && matchPercent >= 100.0,
-    instrDiffs,
-    symbolFound: !!hit,
+    isPerfectMatch: matchPercent >= 100.0,
+    instrList,
+    targetInstrs,
+    compiledInstrs,
+    symbolFound: !!sym,
   };
 }
 
@@ -146,22 +129,33 @@ function formatDiffResult(result, functionName) {
   if (!result.ok) return `Diff parse error: ${result.error}`;
 
   const pct = result.matchPercent != null ? `${result.matchPercent.toFixed(1)}%` : "?%";
-  const header = result.isPerfectMatch
-    ? `✅ PERFECT MATCH (100%) — ${functionName}`
-    : `❌ MISMATCH (${pct}) — ${functionName}`;
 
-  const lines = [header];
-  if (!result.isPerfectMatch && result.instrDiffs.length > 0) {
-    lines.push(`\nInstruction differences (up to 40):`);
-    for (const d of result.instrDiffs) {
-      const left = d.left ?? "(none)";
-      const right = d.right ?? "(none)";
-      lines.push(`  [${d.kind}]  target: ${left}  |  compiled: ${right}`);
+  if (result.isPerfectMatch) {
+    return `✅ PERFECT MATCH (100%) — ${functionName}`;
+  }
+
+  const lines = [`❌ MISMATCH (${pct}) — ${functionName}`];
+
+  if (result.instrList.length > 0) {
+    lines.push(`\nTarget  vs  Compiled  (${result.instrList.length} instrs):`);
+    let diffCount = 0;
+    for (const instr of result.instrList) {
+      if (instr.differs) diffCount++;
+      const marker = instr.differs ? "  ✗" : "  ✓";
+      lines.push(`${marker}  target:    ${instr.target || "(end)"}`);
+      if (instr.differs) {
+        lines.push(`      compiled: ${instr.compiled || "(end)"}`);
+      }
     }
+    lines.push(`\n${diffCount} instruction(s) differ`);
+  } else {
+    lines.push(`\n(No instruction-level diff data — run full Docker build for byte-level comparison)`);
   }
+
   if (!result.symbolFound) {
-    lines.push(`\n(Note: symbol "${functionName}" not found by exact name in diff output; showing overall minimum match.)`);
+    lines.push(`(Note: symbol "${functionName}" not found in diff output)`);
   }
+
   return lines.join("\n");
 }
 
@@ -320,8 +314,25 @@ function registerGetFunctionContext(pi) {
         };
       } catch (err) {
         const stderr = err.stderr?.toString?.() || err.message;
+
+        // Two common failure modes:
+        // 1. rg not installed (get-context.sh uses ripgrep)
+        // 2. Function is a standalone TU (not #include'd from C) — script can't find source
+        const help =
+          stderr.includes("rg: command not found")
+            ? `get-context.sh needs ripgrep. Install:\n  brew install ripgrep\nor alias: alias rg=grep -r\n\nError: ${stderr}`
+            : stderr.includes("Could not find source file")
+              ? `Function "${functionName}" is a standalone asm TU — not #include\'d from a C file.` +
+                `\nThe context script can only gather headers for functions that are stubs inside C files.` +
+                `\nTry reading the asm file directly, or check the include/ directory for shared headers.` +
+                `\n\nError: ${stderr}`
+              : stderr.includes("Could not find asm stub")
+                ? `Function "${functionName}" not found in asm/ directory.` +
+                  `\nThe function may be in a subdirectory (e.g. asm/scenes/main_menu/). Check with ls asm/*/.` +
+                  `\n\nError: ${stderr}`
+                : `Context script failed:\n${stderr}`;
         return {
-          content: [{ type: "text", text: `Context script failed:\n${stderr}` }],
+          content: [{ type: "text", text: help }],
           details: { error: stderr },
         };
       }

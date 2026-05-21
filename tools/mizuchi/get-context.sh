@@ -10,21 +10,46 @@ function_name="$1"
 repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$repo_root"
 
-asm_path="$({
-  rg -l --glob '*.s' "thumb_func_start[[:space:]]+${function_name}\\b" asm || true
-  rg -l --glob '*.s' "arm_func_start[[:space:]]+${function_name}\\b" asm || true
-  rg -l --glob '*.s' "^glabel[[:space:]]+${function_name}\\b" asm || true
-} | head -n 1)"
+# Search for asm file containing the function — fall back from rg to grep
+asm_path=""
+if command -v rg &>/dev/null; then
+  asm_path="$({
+    rg -l --glob '*.s' "thumb_func_start[[:space:]]+${function_name}\\b" asm || true
+    rg -l --glob '*.s' "arm_func_start[[:space:]]+${function_name}\\b" asm || true
+    rg -l --glob '*.s' "^glabel[[:space:]]+${function_name}\\b" asm || true
+  } | head -n 1)"
+else
+  # Fallback: grep + find (slower but no dependency)
+  while IFS= read -r f; do
+    if grep -qE "thumb_func_start[[:space:]]+${function_name}\\b" "$f" 2>/dev/null; then
+      asm_path="$f"
+      break
+    fi
+  done < <(find asm -name '*.s' 2>/dev/null)
+fi
 
 if [ -z "$asm_path" ]; then
   echo "Could not find asm stub for function: $function_name" >&2
   exit 1
 fi
 
-source_file="$(rg -l -F "#include \"${asm_path}\"" src | head -n 1 || true)"
+# Find source file that includes this asm stub
+source_file=""
+if command -v rg &>/dev/null; then
+  source_file="$(rg -l -F "#include \"${asm_path}\"" src | head -n 1 || true)"
+else
+  while IFS= read -r f; do
+    if grep -qF "#include \"${asm_path}\"" "$f" 2>/dev/null; then
+      source_file="$f"
+      break
+    fi
+  done < <(find src -name '*.c' -o -name '*.h' 2>/dev/null)
+fi
 
 if [ -z "$source_file" ]; then
   echo "Could not find source file including stub: $asm_path" >&2
+  echo "Tip: If this is a standalone TU (not #included from C), this script won't work." >&2
+  echo "Try reading the asm file directly or checking include/ for shared headers." >&2
   exit 1
 fi
 
