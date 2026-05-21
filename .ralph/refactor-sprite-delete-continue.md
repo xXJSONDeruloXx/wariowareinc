@@ -4,15 +4,17 @@ Continue decompilation by selecting the next batch from the queue (item 1: more 
 
 ### Completed
 - Fixed linker section discard issue for `func_08002038_c` by adding entry to `wariowareinc.ld`
-- Added `build/src/decomp/asm_08002038_c.c.o(.text*)` to linker script
+- Added `build/asm/asm_08002038.s.o(.text*)` to linker script
 - Committed: `f2fc857b` - "fix: keep func_08002038_c section from being discarded"
 - Build succeeds with 864 C decompiled functions (up from 854)
 - ROM builds successfully
+- Committed: `feat: add 02038_c linker entry and clean asm stubs`
+- 864 C functions decompiled (match confirmed)
 
 ### Current Status
 - 864 C functions decompiled
 - 5824 asm-only stubs
-- Next batch: More conditional byte-check + BL wrappers
+- Next batch: More conditional byte-check + BL wrappers (iteration 5)
 
 ## Current Issues Resolving
 - `wariowareinc.ld` file appears to not contain expected build/src/decomp entries after previous edits
