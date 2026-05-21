@@ -36,7 +36,7 @@ At the current `total_functions` count (`5957`), that means:
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
-| 49 | `pending commit` | +9 | `sprite_id_delete` byte-offset siblings |
+| 49 | `d98c2b49` | +9 | `sprite_id_delete` byte-offset siblings |
 | 48 | `0f121592` | +7 | pair-add, wrappers, gGraphicsBuffer, gCurrentSceneData |
 | 47 | `49223873` | +4 | gCSV byte-- siblings, s8 sign-ext BL, multi-store reload |
 | 46 | `10050330` | +7 | struct init, 4-call wrapper, gCSV byte/word ops, gCurrentSceneData |

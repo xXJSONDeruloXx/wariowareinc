@@ -190,7 +190,7 @@ $(BUILD)/%.mid.o	$(BUILD)/%.mid.h :	%.mid | $(BUILD_DIRS)
 # WAV files
 $(BUILD)/%.pcm : %.wav | $(BUILD_DIRS)
 	$(call print,Converting WAV file to raw PCM audio:,$<,$@)
-	$(V)ffmpeg -y -loglevel quiet -i $< -f s8 $@
+	$(V)python3 tools/wav_to_pcm.py $< $@
 
 #---------------------------------------------------------------------------------
 # C files (agbcc pipeline: cpp -> agbcc -> as)
@@ -253,12 +253,33 @@ print-%: ; $(info $* is a $(flavor $*) variable set to [$($*)]) @true
 
 
 OBJDIFF_VERSION := 3.7.1
-OBJDIFF_CLI := tools/objdiff-cli
+OBJDIFF_OS := $(shell uname -s)
+OBJDIFF_ARCH := $(shell uname -m)
+
+ifeq ($(OBJDIFF_OS),Darwin)
+ifeq ($(OBJDIFF_ARCH),arm64)
+OBJDIFF_ASSET := objdiff-cli-macos-arm64
+else ifeq ($(OBJDIFF_ARCH),x86_64)
+OBJDIFF_ASSET := objdiff-cli-macos-x86_64
+endif
+else ifeq ($(OBJDIFF_OS),Linux)
+ifeq ($(OBJDIFF_ARCH),aarch64)
+OBJDIFF_ASSET := objdiff-cli-linux-aarch64
+else ifeq ($(OBJDIFF_ARCH),x86_64)
+OBJDIFF_ASSET := objdiff-cli-linux-x86_64
+endif
+endif
+
+ifndef OBJDIFF_ASSET
+$(error Unsupported objdiff-cli platform: $(OBJDIFF_OS)/$(OBJDIFF_ARCH))
+endif
+
+OBJDIFF_CLI := tools/$(OBJDIFF_ASSET)
 
 $(OBJDIFF_CLI):
-	curl -L -o $@ https://github.com/encounter/objdiff/releases/download/v$(OBJDIFF_VERSION)/objdiff-cli-linux-x86_64
+	curl -L -o $@ https://github.com/encounter/objdiff/releases/download/v$(OBJDIFF_VERSION)/$(OBJDIFF_ASSET)
 	chmod +x $@
 
-report: $(OBJDIFF_CLI)
+report: $(OFILES) $(OBJDIFF_CLI)
 	python3 tools/gen_objdiff.py
 	$(OBJDIFF_CLI) report generate -o build/report.json

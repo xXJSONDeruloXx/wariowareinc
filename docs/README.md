@@ -19,7 +19,9 @@ If an agent resumes cold, read these first:
 - Remaining gap to 80%: **3460 matched functions**
 
 ## How autonomous continuation should work
-- Pifinity / `continue` should keep moving forward without asking for a focus area unless truly blocked.
+- Prefer the repo-local fresh-context commands over pifinity/Ralph:
+  - `/decomp-next` for one fresh-context chunk
+  - `/decomp-loop start` for repeated fresh-context chunks across new sessions
 - The docs in this directory are the durable memory that should survive context compaction and session changes.
 - Any new durable learning should be written back here before the agent yields.
 
