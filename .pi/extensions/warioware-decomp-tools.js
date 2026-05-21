@@ -71,6 +71,122 @@ function addrFromName(name) {
   return m ? m[1].toLowerCase() : null;
 }
 
+function functionAddr(fn, fallbackName) {
+  return extractAddr(fn?.asmModulePath) || addrFromName(fn?.name) || addrFromName(fallbackName);
+}
+
+function asmRelPath(fn) {
+  const p = fn?.asmModulePath;
+  if (!p) return null;
+  return p.replace(/^\.mizuchi-asm\//, "").replace(/\\/g, "/");
+}
+
+function walkSourceFiles(dir) {
+  if (!fs.existsSync(dir)) return [];
+  const out = [];
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, ent.name);
+    if (ent.isDirectory()) {
+      out.push(...walkSourceFiles(full));
+    } else if (/\.(c|h)$/i.test(ent.name)) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+function findIncludingSource(repoRoot, asmRel) {
+  if (!asmRel) return null;
+  const needle = `#include "${asmRel}"`;
+  for (const file of walkSourceFiles(path.join(repoRoot, "src"))) {
+    let text = "";
+    try {
+      text = fs.readFileSync(file, "utf8");
+    } catch {
+      continue;
+    }
+    if (text.includes(needle)) return path.relative(repoRoot, file).replace(/\\/g, "/");
+  }
+  return null;
+}
+
+function linkerEntryFor(repoRoot, objRel) {
+  if (!objRel) return null;
+  const ldPath = path.join(repoRoot, "wariowareinc.ld");
+  if (!fs.existsSync(ldPath)) return null;
+  const lines = fs.readFileSync(ldPath, "utf8").split("\n");
+  const idx = lines.findIndex((line) => line.includes(objRel));
+  return idx >= 0 ? { lineNumber: idx + 1, text: lines[idx].trim() } : null;
+}
+
+function preflightFunction(repoRoot, fn, fallbackName) {
+  const name = fn?.name ?? fallbackName;
+  const addr = functionAddr(fn, fallbackName);
+  const asmRel = asmRelPath(fn);
+  const asmAbs = asmRel ? path.join(repoRoot, asmRel) : null;
+  const targetObjRel = addr ? `build/asm/asm_${addr}.s.o` : null;
+  const targetObj = targetObjRel ? path.join(repoRoot, targetObjRel) : null;
+  const includingSource = findIncludingSource(repoRoot, asmRel);
+  const linkerEntry = linkerEntryFor(repoRoot, targetObjRel);
+  const decompRel = addr ? `src/decomp/asm_${addr}.c` : null;
+  const convertedAsmRel = addr ? `asm/converted/asm_${addr}.s` : null;
+
+  let conversionMode = "unknown_skip";
+  let safeForAutonomous = false;
+  const reasons = [];
+  const nextSteps = [];
+
+  if (!fn) {
+    reasons.push("function was not found in mizuchi-db.json");
+    nextSteps.push("Run the Mizuchi indexer or pick a candidate from query_candidates.");
+  } else if (includingSource) {
+    conversionMode = "included_stub";
+    reasons.push(`asm stub is included by ${includingSource}`);
+    reasons.push("the generic src/decomp + linker-swap workflow changes object layout for included stubs");
+    nextSteps.push("Skip this candidate for autonomous chunks unless an included-stub-specific workflow is implemented.");
+  } else if (linkerEntry) {
+    conversionMode = "standalone_tu";
+    safeForAutonomous = true;
+    reasons.push(`linker script contains ${targetObjRel}`);
+    nextSteps.push("Use compile_and_view_asm until 100%, then apply_conversion for the mechanical edits and ROM check.");
+  } else {
+    reasons.push("no including C source and no matching linker-script object entry were found");
+    nextSteps.push("Do not mechanically convert this candidate; inspect the build layout first or pick a standalone_tu candidate.");
+  }
+
+  return {
+    name,
+    addr,
+    asmRel,
+    asmExists: asmAbs ? fs.existsSync(asmAbs) : false,
+    targetObjRel,
+    targetObjectExists: targetObj ? fs.existsSync(targetObj) : false,
+    includingSource,
+    linkerEntry,
+    conversionMode,
+    safeForAutonomous,
+    decompRel,
+    convertedAsmRel,
+    reasons,
+    nextSteps,
+  };
+}
+
+function formatPreflight(pf) {
+  const lines = [
+    `Preflight for ${pf.name}: ${pf.conversionMode}${pf.safeForAutonomous ? " ✅" : " ⚠️"}`,
+    `  asm: ${pf.asmRel ?? "?"}${pf.asmExists ? "" : " (missing)"}`,
+    `  target object: ${pf.targetObjRel ?? "?"}${pf.targetObjectExists ? " (exists)" : " (not built/found)"}`,
+    `  including source: ${pf.includingSource ?? "none"}`,
+    `  linker entry: ${pf.linkerEntry ? `${pf.linkerEntry.lineNumber}: ${pf.linkerEntry.text}` : "none"}`,
+    `  planned C: ${pf.decompRel ?? "?"}`,
+    `  planned converted asm: ${pf.convertedAsmRel ?? "?"}`,
+  ];
+  if (pf.reasons.length) lines.push("\nReasons:\n" + pf.reasons.map((r) => `  - ${r}`).join("\n"));
+  if (pf.nextSteps.length) lines.push("\nNext steps:\n" + pf.nextSteps.map((r) => `  - ${r}`).join("\n"));
+  return lines.join("\n");
+}
+
 // ── objdiff JSON parser ───────────────────────────────────────────────────────
 
 function parseDiffJson(jsonStr, symbolName) {
@@ -166,10 +282,10 @@ function registerCompileAndViewAsm(pi) {
     name: "compile_and_view_asm",
     label: "Compile & View ASM Diff",
     description:
-      "Compiles C code for a single function using the project toolchain (Docker + agbcc) and shows the objdiff comparison against the target binary.\n" +
+      "Compiles C code for a single standalone_tu function using the project toolchain (Docker + agbcc) and shows the objdiff comparison against the target binary.\n" +
       "Use this for fast iteration without running a full ROM build.\n" +
       "Returns: match percentage, instruction diffs, and whether it is a perfect match.\n" +
-      "Requires: Docker running, project previously built (build/asm/*.s.o must exist).",
+      "Requires: Docker running and a standalone_tu target object in build/asm. Included stubs are rejected/guided by preflight output.",
     parameters: Type.Object({
       functionName: Type.String({
         description:
@@ -192,16 +308,24 @@ function registerCompileAndViewAsm(pi) {
       }
 
       if (!targetObj || !fs.existsSync(targetObj)) {
+        const pf = preflightFunction(repoRoot, fn, functionName);
+        const guidance =
+          pf.conversionMode === "included_stub"
+            ? "This is an included asm stub, so a full build will not create the flattened build/asm target object. Pick a standalone_tu candidate for the normal autonomous workflow."
+            : pf.conversionMode === "standalone_tu"
+              ? "This is a standalone TU, but the comparison object is missing. Run one clean Docker build to populate build/asm objects, then retry compile_and_view_asm."
+              : "The build layout is unknown for this function. Run preflight_candidate and pick a standalone_tu candidate before iterating.";
         return {
           content: [
             {
               type: "text",
               text:
-                `ERROR: Target object not found: ${targetObj ?? "unknown"}\n` +
-                `Run a Docker build first (make -j4 in devkitpro/devkitarm container) to produce build/asm/ objects.`,
+                `ERROR: Target object not found: ${targetObj ?? "unknown"}\n\n` +
+                `${guidance}\n\n` +
+                formatPreflight(pf),
             },
           ],
-          details: { error: "target_not_found", targetObj },
+          details: { error: "target_not_found", targetObj, preflight: pf },
         };
       }
 
@@ -340,6 +464,33 @@ function registerGetFunctionContext(pi) {
   });
 }
 
+// ── Tool: preflight_candidate ─────────────────────────────────────────────────
+
+function registerPreflightCandidate(pi) {
+  pi.registerTool({
+    name: "preflight_candidate",
+    label: "Preflight Decomp Candidate",
+    description:
+      "Classifies a WarioWare decomp candidate before iteration. " +
+      "Use this immediately after query_candidates. Only conversionMode=standalone_tu is safe for the generic autonomous src/decomp + linker-swap workflow.",
+    parameters: Type.Object({
+      functionName: Type.String({
+        description: "Function name as shown by query_candidates (e.g. func_08006E94)",
+      }),
+    }),
+    async execute(_id, { functionName }, _signal, _onUpdate, ctx) {
+      const repoRoot = findRepoRoot(ctx.cwd);
+      const db = loadDb(repoRoot);
+      const fn = findFn(db, functionName);
+      const pf = preflightFunction(repoRoot, fn, functionName);
+      return {
+        content: [{ type: "text", text: formatPreflight(pf) }],
+        details: pf,
+      };
+    },
+  });
+}
+
 // ── Tool: m2c_decompile ───────────────────────────────────────────────────────
 
 function registerM2cDecompile(pi) {
@@ -347,17 +498,22 @@ function registerM2cDecompile(pi) {
     name: "m2c_decompile",
     label: "m2c Decompile",
     description:
-      "Generates an initial C skeleton from assembly using m2c (a rule-based ARM decompiler).\n" +
-      "The result is usually not a perfect match but gives a useful starting point.\n" +
-      "Requires: m2c submodule initialized in /Users/kurt/Developer/mizuchi/vendor/m2c/\n" +
-      "Setup: cd /Users/kurt/Developer/mizuchi && git submodule update --init vendor/m2c && ./scripts/setup-m2c.sh",
+      "Generates an initial C skeleton from assembly using m2c with the GBA target by default (-t gba). " +
+      "The result is a starting point, not proof of a match; always verify with compile_and_view_asm.",
     parameters: Type.Object({
       functionName: Type.String({
         description: "Function name (e.g. func_08002468 or asm_08002468)",
       }),
+      target: Type.Optional(Type.String({
+        description: "m2c target triple/platform (default: gba; examples: gba, gba-gcc-c, arm-gcc-c)",
+      })),
     }),
-    async execute(_id, { functionName }, _signal, _onUpdate, ctx) {
+    async execute(_id, { functionName, target = "gba" }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
+      const db = loadDb(repoRoot);
+      const fn = findFn(db, functionName);
+      const pf = preflightFunction(repoRoot, fn, functionName);
+
       const m2cPy = path.join(MIZUCHI_ROOT, "vendor/m2c/m2c.py");
       // setup-m2c.sh creates venv at vendor/m2c/.venv
       const venvPython = path.join(MIZUCHI_ROOT, "vendor/m2c/.venv/bin/python3");
@@ -376,19 +532,17 @@ function registerM2cDecompile(pi) {
                 "Then reload the extension with /reload.",
             },
           ],
-          details: { error: "m2c_not_setup" },
+          details: { error: "m2c_not_setup", preflight: pf },
         };
       }
 
       const python = fs.existsSync(venvPython) ? venvPython : "python3";
 
       // Get asm for the function from mizuchi-db.json
-      const db = loadDb(repoRoot);
-      const fn = findFn(db, functionName);
       if (!fn) {
         return {
           content: [{ type: "text", text: `Function "${functionName}" not found in mizuchi-db.json. Run index-codebase first.` }],
-          details: { error: "function_not_found" },
+          details: { error: "function_not_found", preflight: pf },
         };
       }
 
@@ -396,7 +550,7 @@ function registerM2cDecompile(pi) {
       if (!asmContent?.trim()) {
         return {
           content: [{ type: "text", text: `No asm content found for "${functionName}" in the database.` }],
-          details: { error: "no_asm" },
+          details: { error: "no_asm", preflight: pf },
         };
       }
 
@@ -407,13 +561,19 @@ function registerM2cDecompile(pi) {
         asmForM2c = fs.readFileSync(asmFile, "utf8");
       }
 
+      // Mizuchi's sanitized asm snippets may omit the leading syntax marker.
+      // m2c's ARM/GBA parser requires it before Thumb instructions like LSLS.
+      if (!/^\s*\.syntax\s+unified\b/im.test(asmForM2c)) {
+        asmForM2c = `.syntax unified\n.thumb\n${asmForM2c}`;
+      }
+
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ww-m2c-"));
       const asmTmp = path.join(tmpDir, `${functionName}.s`);
 
       try {
         fs.writeFileSync(asmTmp, asmForM2c, "utf8");
 
-        const output = execFileSync(python, [m2cPy, "--arch", "arm", asmTmp], {
+        const output = execFileSync(python, [m2cPy, "-t", target, asmTmp], {
           cwd: repoRoot,
           timeout: 30_000,
           stdio: "pipe",
@@ -423,17 +583,18 @@ function registerM2cDecompile(pi) {
           content: [
             {
               type: "text",
-              text: `m2c initial decompilation of ${functionName}:\n\n${output}\n\n` +
+              text: `m2c initial decompilation of ${functionName} (target: ${target}):\n\n${output}\n\n` +
                 `(This is a rule-based starting point. Use compile_and_view_asm to iterate toward a match.)`,
             },
           ],
-          details: { generatedCode: output },
+          details: { generatedCode: output, target, preflight: pf },
         };
       } catch (err) {
         const stderr = err.stderr?.toString?.() || err.message;
+        const stdout = err.stdout?.toString?.() || "";
         return {
-          content: [{ type: "text", text: `m2c failed:\n${stderr}` }],
-          details: { error: stderr },
+          content: [{ type: "text", text: `m2c failed for target ${target}:\n${stderr || stdout}` }],
+          details: { error: stderr || stdout, target, preflight: pf },
         };
       } finally {
         fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -455,6 +616,7 @@ function registerQueryCandidates(pi) {
       "  families    – functions that share callers/callees with already-matched functions\n" +
       "  address     – ordered by ROM address (useful for sequential batches)\n" +
       "  random      – random sample for exploration\n" +
+      "Default conversionMode is standalone_tu, which excludes included asm stubs that break the generic linker-swap workflow.\n" +
       "Optional `family` filter: only return functions in the same source module (e.g. graphics_table).",
     parameters: Type.Object({
       count: Type.Optional(Type.Number({ description: "How many candidates to return (default 10)" })),
@@ -474,8 +636,14 @@ function registerQueryCandidates(pi) {
           description: "Filter to functions in this source module/folder (e.g. graphics_table, beatscript)",
         }),
       ),
+      conversionMode: Type.Optional(
+        Type.Union(
+          [Type.Literal("standalone_tu"), Type.Literal("included_stub"), Type.Literal("all")],
+          { description: "Filter by safe conversion workflow (default: standalone_tu)" },
+        ),
+      ),
     }),
-    async execute(_id, { count = 10, strategy = "smallest", family }, _signal, _onUpdate, ctx) {
+    async execute(_id, { count = 10, strategy = "smallest", family, conversionMode = "standalone_tu" }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const db = loadDb(repoRoot);
       if (!db) {
@@ -490,15 +658,14 @@ function registerQueryCandidates(pi) {
       // Unmatched = no real C code (empty or asm-only stubs)
       let candidates = allFns.filter((f) => !f.cCode?.trim());
 
-      // Count functions per asm file — standalone functions are in their own .s file.
-      // Shared files contain data labels or multiple embedded functions (not convertible).
+      // Count functions per asm file — one function per .s is a useful first pass,
+      // but not sufficient: many one-function .s files are included stubs inside C TUs.
       const pathCounts = new Map();
       for (const f of candidates) {
         const p = f.asmModulePath;
         if (p) pathCounts.set(p, (pathCounts.get(p) ?? 0) + 1);
       }
 
-      // Only functions from standalone asm files (exact 1 function per .s file)
       candidates = candidates.filter((f) => {
         const count = f.asmModulePath ? (pathCounts.get(f.asmModulePath) ?? 9) : 9;
         return count === 1;
@@ -511,6 +678,17 @@ function registerQueryCandidates(pi) {
           f.asmCode.includes("arm_func_start")
         ),
       );
+
+      const preflights = new Map();
+      const getPreflight = (f) => {
+        if (!preflights.has(f.name)) preflights.set(f.name, preflightFunction(repoRoot, f, f.name));
+        return preflights.get(f.name);
+      };
+
+      // Conversion-mode filter. Autonomous chunks should use standalone_tu only.
+      if (conversionMode !== "all") {
+        candidates = candidates.filter((f) => getPreflight(f).conversionMode === conversionMode);
+      }
 
       // Family filter
       if (family) {
@@ -536,8 +714,8 @@ function registerQueryCandidates(pi) {
         }
         case "address":
           candidates.sort((a, b) => {
-            const aAddr = parseInt(addrFromName(a.name) ?? "0", 16);
-            const bAddr = parseInt(addrFromName(b.name) ?? "0", 16);
+            const aAddr = parseInt(functionAddr(a, a.name) ?? "0", 16);
+            const bAddr = parseInt(functionAddr(b, b.name) ?? "0", 16);
             return aAddr - bAddr;
           });
           break;
@@ -549,22 +727,25 @@ function registerQueryCandidates(pi) {
       const top = candidates.slice(0, count);
 
       const lines = [
-        `Found ${candidates.length} standalone unmatched function candidates. Showing top ${top.length} by "${strategy}"${family ? ` in module "${family}"` : ""}:\n`,
+        `Found ${candidates.length} ${conversionMode} unmatched function candidates. Showing top ${top.length} by "${strategy}"${family ? ` in module "${family}"` : ""}:\n`,
       ];
 
       for (const fn of top) {
-        const addr = addrFromName(fn.name);
+        const pf = getPreflight(fn);
+        const addr = functionAddr(fn, fn.name);
         const asmLines = fn.asmCode?.split("\n").length ?? 0;
-        // Derive the real asm path from the module path
-        const asmSrc = fn.asmModulePath?.replace(".mizuchi-asm/", "") ?? "?";
+        const asmSrc = asmRelPath(fn) ?? "?";
         const targetObj = addr ? `build/asm/asm_${addr}.s.o` : "?";
         const calledMatched = (fn.callsFunctions ?? []).filter(
           (n) => allFns.find((f) => f.name === n)?.cCode?.trim(),
         ).length;
         lines.push(
           `• ${fn.name}  [${asmLines} asm lines]\n` +
+          `  workflow: ${pf.conversionMode}${pf.safeForAutonomous ? " (safe)" : " (skip/default-unsafe)"}\n` +
           `  asm: ${asmSrc}\n` +
-          `  target: ${targetObj}\n` +
+          `  target: ${targetObj}${pf.targetObjectExists ? " (exists)" : " (not built/found)"}\n` +
+          `  included-by: ${pf.includingSource ?? "none"}\n` +
+          `  linker: ${pf.linkerEntry ? `line ${pf.linkerEntry.lineNumber}` : "none"}\n` +
           `  matched-calls: ${calledMatched}/${(fn.callsFunctions ?? []).length}`,
         );
       }
@@ -575,15 +756,167 @@ function registerQueryCandidates(pi) {
           totalCandidates: candidates.length,
           strategy,
           family: family ?? null,
+          conversionMode,
           candidates: top.map((f) => ({
             name: f.name,
             asmLines: f.asmCode?.split("\n").length ?? 0,
             module: f.asmModulePath?.replace(".mizuchi-asm/asm/", "").replace(/\/asm_[^/]+\.s$/, "") ?? null,
             asmCode: f.asmCode ?? null,
             callsFunctions: f.callsFunctions ?? [],
+            preflight: getPreflight(f),
           })),
         },
       };
+    },
+  });
+}
+
+// ── Tool: apply_conversion ────────────────────────────────────────────────────
+
+function restoreFiles(repoRoot, backups) {
+  for (const [rel, content] of [...backups].reverse()) {
+    const abs = path.join(repoRoot, rel);
+    if (content == null) {
+      fs.rmSync(abs, { force: true });
+    } else {
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      fs.writeFileSync(abs, content, "utf8");
+    }
+  }
+}
+
+function registerApplyConversion(pi) {
+  pi.registerTool({
+    name: "apply_conversion",
+    label: "Apply Standalone Decomp Conversion",
+    description:
+      "Mechanically applies a verified standalone-TU conversion: writes src/decomp/asm_xxxxxxxx.c, swaps the linker entry, moves the original asm to asm/converted, and optionally runs a clean Docker ROM build. " +
+      "It refuses included_stub candidates and auto-restores files if verification fails.",
+    parameters: Type.Object({
+      functionName: Type.String({
+        description: "Function name that preflight_candidate classified as standalone_tu",
+      }),
+      cCode: Type.String({
+        description: "Complete C source for src/decomp/asm_xxxxxxxx.c (should already be 100% in compile_and_view_asm)",
+      }),
+      verify: Type.Optional(Type.Boolean({
+        description: "Run clean Docker make -j4 and require wariowareinc.gba: OK (default: true)",
+      })),
+      dryRun: Type.Optional(Type.Boolean({
+        description: "Show the planned edits without changing files (default: false)",
+      })),
+    }),
+    async execute(_id, { functionName, cCode, verify = true, dryRun = false }, _signal, _onUpdate, ctx) {
+      const repoRoot = findRepoRoot(ctx.cwd);
+      const db = loadDb(repoRoot);
+      const fn = findFn(db, functionName);
+      const pf = preflightFunction(repoRoot, fn, functionName);
+
+      if (pf.conversionMode !== "standalone_tu") {
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                `Refusing to apply conversion for ${functionName}: workflow is ${pf.conversionMode}, not standalone_tu.\n\n` +
+                formatPreflight(pf),
+            },
+          ],
+          details: { error: "unsafe_conversion_mode", preflight: pf },
+        };
+      }
+
+      const addr = pf.addr;
+      const asmRel = pf.asmRel;
+      const targetObjRel = pf.targetObjRel;
+      const decompRel = pf.decompRel;
+      const convertedRel = pf.convertedAsmRel;
+      const decompObjRel = `build/src/decomp/asm_${addr}.c.o`;
+
+      const plan = [
+        `write ${decompRel}`,
+        `replace ${targetObjRel} -> ${decompObjRel} in wariowareinc.ld`,
+        `move ${asmRel} -> ${convertedRel}`,
+        verify ? "run clean Docker build and require wariowareinc.gba: OK" : "skip build verification",
+      ];
+
+      if (dryRun) {
+        return {
+          content: [{ type: "text", text: `Dry-run apply_conversion plan for ${functionName}:\n` + plan.map((x) => `  - ${x}`).join("\n") + "\n\n" + formatPreflight(pf) }],
+          details: { dryRun: true, plan, preflight: pf },
+        };
+      }
+
+      const backups = [];
+      const backup = (rel) => {
+        const abs = path.join(repoRoot, rel);
+        backups.push([rel, fs.existsSync(abs) ? fs.readFileSync(abs, "utf8") : null]);
+      };
+
+      try {
+        backup(decompRel);
+        backup("wariowareinc.ld");
+        backup(asmRel);
+        backup(convertedRel);
+
+        fs.mkdirSync(path.dirname(path.join(repoRoot, decompRel)), { recursive: true });
+        fs.writeFileSync(path.join(repoRoot, decompRel), cCode.endsWith("\n") ? cCode : cCode + "\n", "utf8");
+
+        const ldPath = path.join(repoRoot, "wariowareinc.ld");
+        const ldText = fs.readFileSync(ldPath, "utf8");
+        if (!ldText.includes(targetObjRel)) {
+          throw new Error(`linker entry disappeared before edit: ${targetObjRel}`);
+        }
+        fs.writeFileSync(ldPath, ldText.replace(targetObjRel, decompObjRel), "utf8");
+
+        fs.mkdirSync(path.dirname(path.join(repoRoot, convertedRel)), { recursive: true });
+        fs.renameSync(path.join(repoRoot, asmRel), path.join(repoRoot, convertedRel));
+
+        let buildOutput = "";
+        if (verify) {
+          buildOutput = execFileSync(
+            "docker",
+            [
+              "run", "--rm",
+              "-v", `${repoRoot}:/workspace`,
+              "-w", "/workspace",
+              "devkitpro/devkitarm:latest",
+              "bash", "-lc",
+              "set -euo pipefail; rm -rf build; make -j4",
+            ],
+            { cwd: repoRoot, timeout: 600_000, stdio: "pipe" },
+          ).toString();
+          if (!buildOutput.includes("wariowareinc.gba: OK")) {
+            throw new Error("clean Docker build finished without wariowareinc.gba: OK\n" + buildOutput.split("\n").slice(-20).join("\n"));
+          }
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                `✅ Applied standalone conversion for ${functionName}.\n` +
+                plan.map((x) => `  - ${x}`).join("\n") +
+                (verify ? `\n\nBuild tail:\n${buildOutput.split("\n").slice(-6).join("\n")}` : ""),
+            },
+          ],
+          details: { ok: true, plan, preflight: pf, buildOutputTail: buildOutput.split("\n").slice(-20).join("\n") },
+        };
+      } catch (err) {
+        restoreFiles(repoRoot, backups);
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                `❌ apply_conversion failed for ${functionName}; restored edited files.\n\n` +
+                `${err.stderr?.toString?.() || err.message}`,
+            },
+          ],
+          details: { error: err.message, stderr: err.stderr?.toString?.() ?? "", restored: true, preflight: pf },
+        };
+      }
     },
   });
 }
@@ -644,14 +977,13 @@ function registerSetupCommand(pi) {
       const hasBuildObjs =
         fs.existsSync(buildAsmDir) && fs.readdirSync(buildAsmDir).some((f) => f.endsWith(".s.o"));
       check(
-        "build/asm/*.s.o objects (required for compile_and_view_asm)",
+        "build/asm/*.s.o objects (required for standalone_tu compile_and_view_asm)",
         hasBuildObjs,
         "Run Docker build: docker run --rm -v \"$PWD:/workspace\" -w /workspace devkitpro/devkitarm:latest bash -lc 'make -j4'",
       );
 
-      // m2c
       check(
-        "m2c (optional — for initial C skeletons)",
+        "m2c (optional — GBA target skeletons)",
         fs.existsSync(path.join(MIZUCHI_ROOT, "vendor/m2c/m2c.py")),
         "cd /Users/kurt/Developer/mizuchi && git clone https://github.com/matt-kempster/m2c.git vendor/m2c && ./scripts/setup-m2c.sh",
       );
@@ -672,7 +1004,9 @@ function registerSetupCommand(pi) {
 export default function wariowareDecompTools(pi) {
   registerCompileAndViewAsm(pi);
   registerGetFunctionContext(pi);
+  registerPreflightCandidate(pi);
   registerM2cDecompile(pi);
   registerQueryCandidates(pi);
+  registerApplyConversion(pi);
   registerSetupCommand(pi);
 }

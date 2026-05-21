@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 58` — pointer-deref halfword store
-- `matched_functions`: **1332 / 5956** = **22.364%**
-- `matched_code_percent`: **6.406549%**
-- `tools/gen_objdiff.py`: **880 C / 5807 asm-only units**
+- Verified working tree: `batch 60` — `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper
+- `matched_functions`: **1333 / 5956** = **22.381%**
+- `matched_code_percent`: **6.409759%**
+- `tools/gen_objdiff.py`: **881 C / 5806 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -16,9 +16,16 @@ Reach at least **80% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5956`), that means:
 - target: **4765 / 5956** matched functions
-- current gap: **3433** more matched functions
+- current gap: **3432** more matched functions
 
 ## What just landed
+### Batch 60 — accepted
+- Metric delta: **1332 → 1333 matched functions** (**+1**)
+- Matched code: **6.406549% → 6.4097586%**
+- Commit: pending
+- Accepted functions:
+  - `asm_08006e94` — `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper
+
 ### Batch 58 — accepted
 - Metric delta: **1331 → 1332 matched functions** (**+1**)
 - Matched code: **6.4053407% → 6.406549%**
@@ -109,6 +116,7 @@ At the current `total_functions` count (`5956`), that means:
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
+| 60 | pending | +1 | `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper |
 | 58 | `f36b7bd6` | +1 | pointer-deref halfword store (-1 wrapper) |
 | 57 | `b3752d25` | +7 | Small wrapper sweep (SVC, div, HW reg, struct init) |
 | 56 | `4c3f3d3d` | +4 | RSBS mask-clear + s16-indexed byte-store siblings |
@@ -147,6 +155,7 @@ At the current `total_functions` count (`5956`), that means:
 - Use local pointer shaping when literal-pool or offset form matters.
 - Re-check any wrapper that returns with `POP {R1}; BX R1` — this is a frequent trap.
 - Re-check any byte mask using `~N` — agbcc often collapses it to an 8-bit immediate and breaks the match.
+- If a candidate is a mid-file asm include inside a larger C TU, expect standalone-TU conversion to perturb ROM order unless you split the host TU first.
 - Keep C89 declaration ordering clean.
 
 ## What success looks like for the next autonomous pass

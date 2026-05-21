@@ -19,16 +19,18 @@ These commands are preferred over Ralph or pifinity because each chunk starts fr
 1. One function per file in `src/decomp/`
 2. Move accepted asm sources into `asm/converted/`
 3. Update `wariowareinc.ld` for each standalone TU conversion
-4. Require a matching ROM before treating anything as accepted
-5. Rerun report + objdiff after accepted progress
-6. Commit code + docs together
-7. Push immediately after verified progress
+4. Only use the generic conversion workflow when `preflight_candidate` reports `conversionMode=standalone_tu` and `safeForAutonomous=true`
+5. Treat `included_stub` candidates as unsafe for autonomous linker-swap conversion; skip/block unless a dedicated included-stub workflow exists
+6. Require a matching ROM before treating anything as accepted
+7. Rerun report + objdiff after accepted progress
+8. Commit code + docs together
+9. Push immediately after verified progress
 
 ## Required verification commands
 ### Clean Docker build
 ```bash
 docker run --rm -v "$PWD:/workspace" -w /workspace devkitpro/devkitarm:latest \
-  bash -lc 'set -euo pipefail; make clean >/dev/null 2>&1; make -j4 2>&1 | tail -n 3'
+  bash -lc 'set -euo pipefail; rm -rf build; make -j4 2>&1 | tail -n 3'
 ```
 Required success signal:
 - `wariowareinc.gba: OK`
@@ -53,23 +55,25 @@ Track:
 - asm-only units
 
 ## Batch workflow
-1. Select a narrow, sibling-rich candidate set
-2. Explain to yourself why that family is worth testing
-3. Convert the smallest safe subset first if the family is risky
-4. Build in Docker
-5. If mismatch:
+1. Select a narrow, sibling-rich candidate set with `query_candidates` (default `conversionMode=standalone_tu`)
+2. Call `preflight_candidate` before iteration; skip anything that is `included_stub` or `unknown_skip`
+3. Explain to yourself why that family is worth testing
+4. Convert the smallest safe subset first if the family is risky
+5. After a 100% isolated match, prefer `apply_conversion` for mechanical edits and clean Docker verification
+6. Build in Docker
+7. If mismatch:
    - binary-search immediately
    - isolate the exact failing function or spelling
    - revert/fix it in the same pass
    - document the trap
-6. If match:
+8. If match:
    - rerun report
    - rerun objdiff snapshot
    - compare against the last verified baseline
-7. If any tracked metric improved:
+9. If any tracked metric improved:
    - update docs
    - commit + push immediately
-8. If no metric improved but a durable lesson was learned:
+10. If no metric improved but a durable lesson was learned:
    - keep only safe/useful changes
    - document the lesson clearly
    - do not pretend it was progress

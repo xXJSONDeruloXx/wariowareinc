@@ -9,13 +9,13 @@ If an agent resumes cold, read these first:
 4. `docs/decomp-batch-history.md` — accepted batch history
 
 ## Current verified baseline
-- Verified working tree: `batch 58` — pointer-deref halfword store
-- `matched_functions`: **1332 / 5956** (**22.364%**)
-- `matched_code_percent`: **6.406549%**
-- `tools/gen_objdiff.py`: **880 C / 5807 asm-only units**
+- Verified working tree: `batch 60` — `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper
+- `matched_functions`: **1333 / 5956** (**22.381%**)
+- `matched_code_percent`: **6.409759%**
+- `tools/gen_objdiff.py`: **881 C / 5806 asm-only units**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4765 / 5956**
-- Remaining gap to 80%: **3433 matched functions**
+- Remaining gap to 80%: **3432 matched functions**
 
 ## How autonomous continuation should work
 - Prefer the repo-local fresh-context commands over pifinity/Ralph:

@@ -36,7 +36,7 @@ source_file=""
 if command -v rg &>/dev/null; then
   source_file="$(rg -l -F "#include \"${asm_path}\"" src | head -n 1 || true)"
 else
-  source_file="$(find src -name '*.c' -o -name '*.h' -exec grep -lF "#include \"${asm_path}\"" {} \; 2>/dev/null | head -n 1)"
+  source_file="$(find src \( -name '*.c' -o -name '*.h' \) -exec grep -lF "#include \"${asm_path}\"" {} \; 2>/dev/null | head -n 1)"
 fi
 
 if [ -z "$source_file" ]; then

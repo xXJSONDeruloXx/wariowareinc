@@ -35,6 +35,7 @@
 - pair-add / arithmetic helpers
 - small struct-init / zero-init functions
 - gGraphicsBuffer small store pairs / clears
+- `gGraphicsBuffer` 1-bit field writes like `gGraphicsBuffer.unk854_1 = arg0`
 - `gCurrentSceneData` halfword add / shift / store helpers
 - `sprite_id_delete(gSpriteHandler, *(u32*)(gCSV + offset))` siblings
 
@@ -85,6 +86,7 @@
 - grouping multiple functions in one C file breaks matches
 - forgetting to move the old asm file causes duplicate / wildcard collisions
 - forgetting the linker-script swap breaks standalone TU conversions
+- included asm stubs inside an existing C TU (e.g. a mid-file `#include` in `graphics_table.c`) may need the host TU split before a standalone conversion will preserve ROM order
 - bare `extern` declarations for g-symbols can fight existing repo types
 - C89 declaration ordering still matters in this repo
 

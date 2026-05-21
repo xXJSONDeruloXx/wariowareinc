@@ -210,7 +210,7 @@ SECTIONS {
         build/asm/asm_08006cc8.s.o(.text*);
         build/asm/asm_08006ce8.s.o(.text*);
         build/asm/asm_08006db8.s.o(.text*);
-        build/asm/asm_08006e94.s.o(.text*);
+        build/src/decomp/asm_08006e94.c.o(.text*);
         build/asm/asm_08006eb4.s.o(.text*);
         build/asm/asm_08006ee0.s.o(.text*);
         build/asm/asm_08006f04.s.o(.text*);
