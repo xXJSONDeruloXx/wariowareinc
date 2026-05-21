@@ -19,7 +19,7 @@ SECTIONS {
         build/src/palette.c.o(.text);
         build/src/code_08001a70.c.o(.text);
         build/src/audio.c.o(.text);
-        build/asm/asm_0800200c.s.o(.text*);
+        build/src/decomp/asm_0800200c.c.o(.text*);
         build/asm/asm_08002024.s.o(.text*);
         build/asm/asm_08002038.s.o(.text*);
         build/asm/asm_0800204c.s.o(.text*);
