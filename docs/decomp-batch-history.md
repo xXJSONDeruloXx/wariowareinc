@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 67 | `pending` | +1 | `func_08004A74` zero-arg wrapper (last of family) |
 | 66 | `pending` | +1 | `func_08004A30` zero-arg wrapper (same family) |
 | 65 | `pending` | +1 | `func_080049BC` zero-arg wrapper (same family as batch 64) |
 | 64 | `pending` | +1 | `func_08004994` zero-arg wrapper (MOVS R2/R3 #0 + BL, non-void epilogue) |

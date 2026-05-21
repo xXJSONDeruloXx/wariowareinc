@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 66` — `func_08004A30` zero-arg wrapper
-- `matched_functions`: **1339 / 5954** = **22.497%**
-- `matched_code_percent`: **6.4190%**
-- `tools/gen_objdiff.py`: **887 C / 5801 asm-only units**
+- Verified working tree: `batch 67` — `func_08004A74` zero-arg wrapper
+- `matched_functions`: **1340 / 5954** = **22.514%**
+- `matched_code_percent`: **6.4204%**
+- `tools/gen_objdiff.py`: **888 C / 5801 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -19,6 +19,14 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3432** more matched functions
 
 ## What just landed
+### Batch 67 — accepted
+- Metric delta: **1339 → 1340 matched functions** (+1)
+- Matched code: **6.4190% → 6.4204%**
+- Commit: pending
+- Accepted functions:
+  - `asm_08004A74` — zero-arg wrapper calling func_08004A84(arg0, arg1, 0, 0) (non-void return shape)
+- Notes: Last of the zero-arg wrapper family (func_08004994, func_080049BC, func_08004A30, func_08004A74)
+
 ### Batch 66 — accepted
 - Metric delta: **1338 → 1339 matched functions** (+1)
 - Matched code: **6.4176% → 6.4190%**
