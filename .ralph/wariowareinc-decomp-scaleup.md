@@ -4,13 +4,13 @@
 Reach **80% matched/decompiled-function progress** on the `docs/macabeus-tooling-assessment` branch, while preserving a **byte-identical ROM match** at every accepted milestone.
 Target: **4768 / 5961 matched functions**
 
-## Latest Verified Baseline (confirmed 2026-05-21, iterations 23-33)
-- **Matched functions:** 1170 / 5961 = 19.627918%
-- **Matched code percent:** 6.080581%
-- **C units in linker graph:** 718 / 6687
-- **ASM-only units in linker graph:** 5969
+## Latest Verified Baseline (confirmed 2026-05-21, iterations 23-34)
+- **Matched functions:** 1176 / 5961 = 19.725046%
+- **Matched code percent:** 6.095886%
+- **C units in linker graph:** 724 / 6687
+- **ASM-only units in linker graph:** 5963
 - **ROM status:** `wariowareinc.gba: OK`
-- **Gap to target:** 1170 → 4768 = need +3598 more matched functions
+- **Gap to target:** 1176 → 4768 = need +3592 more matched functions
 
 ## Iteration 30 — accepted
 - **Candidate set:** 3-function batch — `asm_0800c764` (LDRSH dealloc), `asm_08016cb0` (R2-arg sound wrapper), `asm_0800418c` (D_ clear+call)
@@ -36,6 +36,13 @@ Target: **4768 / 5961 matched functions**
 - **Metric delta:** matched_functions 1165→1170 (+5), matched_code_percent 6.067691%→6.080581%
 - **Commit:** `448b02bd`, pushed
 - **Learnings:** (1) gCSV deref+call wrapper siblings are the most productive family — once one spelling is validated, siblings are nearly free wins (2) Shift-computed offsets in call wrappers match cleanly (3) Two-pointer wrappers passing `p+offset1, p+offset2` also match (4) `(s8)p[N]` produces LSLS/ASRS sign-extension correctly
+
+## Iteration 34 — accepted
+- **Candidate set:** 6-function batch — `asm_08075e8c`/`asm_080df478` (gCSV word+halfword pair calls), `asm_080c98ec` (two-pointer wrapper), `asm_080da130` (shift-offset call), `asm_08038f6c`/`asm_080421e8` (s8 sign-ext call siblings)
+- **Result:** match ✅
+- **Metric delta:** matched_functions 1170→1176 (+6), matched_code_percent 6.080581%→6.095886%
+- **Commit:** `e40387e4`, pushed
+- **Learnings:** (1) gCSV word+halfword pair calls like `func(*(u32*)(p+off1), *(u16*)(p+off2))` match cleanly (2) More s8 sign-ext call siblings confirmed productive
 
 ## Iteration 29 — accepted
 - **Candidate set:** 5-function batch — `asm_0800d3b8` (two-call R4 wrapper), `asm_0802b4d4` (two-call R4 wrapper sibling), `asm_080cc920` (two-call R4 wrapper sibling), `asm_08005fa0` (double dealloc wrapper), `asm_0800c764` (LDRSH dealloc — REVERTED)
