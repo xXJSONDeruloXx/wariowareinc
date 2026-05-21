@@ -11,6 +11,7 @@
 - simple tail-call wrappers
 - simple void-call wrappers
 - `MOVS R0, #const; BX LR` return-constant helpers
+- zero-arg wrappers: `func(arg0, arg1, 0, 0)` with non-void return type to get `POP {R1}; BX R1` epilogue instead of `POP {R0}; BX R0`
 - pointer-deref halfword store: `*(short *)((int *)a0[3]) = -1;` (generates LDR R1,[R0,#0xC]; MOVS R2,#1; RSBS R2,R2,#0; ADDS R0,R2,#0; STRH R0,[R1]; BX LR)
 
 ### gCurrentSceneVariable / gCSV families
