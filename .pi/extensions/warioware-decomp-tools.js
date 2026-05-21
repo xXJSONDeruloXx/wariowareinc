@@ -348,7 +348,8 @@ function registerM2cDecompile(pi) {
     async execute({ functionName }, _signal, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const m2cPy = path.join(MIZUCHI_ROOT, "vendor/m2c/m2c.py");
-      const venvPython = path.join(os.homedir(), ".cache/mizuchi/python-venv/bin/python3");
+      // setup-m2c.sh creates venv at vendor/m2c/.venv
+      const venvPython = path.join(MIZUCHI_ROOT, "vendor/m2c/.venv/bin/python3");
 
       // Check setup
       if (!fs.existsSync(m2cPy)) {
@@ -359,7 +360,7 @@ function registerM2cDecompile(pi) {
               text:
                 "m2c not set up. To enable:\n" +
                 "  cd /Users/kurt/Developer/mizuchi\n" +
-                "  git submodule update --init vendor/m2c\n" +
+                "  git clone https://github.com/matt-kempster/m2c.git vendor/m2c\n" +
                 "  ./scripts/setup-m2c.sh\n\n" +
                 "Then reload the extension with /reload.",
             },
@@ -626,7 +627,7 @@ function registerSetupCommand(pi) {
       check(
         "m2c (optional — for initial C skeletons)",
         fs.existsSync(path.join(MIZUCHI_ROOT, "vendor/m2c/m2c.py")),
-        "cd /Users/kurt/Developer/mizuchi && git submodule update --init vendor/m2c && ./scripts/setup-m2c.sh",
+        "cd /Users/kurt/Developer/mizuchi && git clone https://github.com/matt-kempster/m2c.git vendor/m2c && ./scripts/setup-m2c.sh",
       );
 
       const all = checks.every((c) => c.ok);
