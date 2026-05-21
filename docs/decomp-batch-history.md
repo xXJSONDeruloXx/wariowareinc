@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 57 | (to be committed) | +7 | Small wrapper sweep (SVC, div, arithmetic, D_ store, byte-write, HW reg, struct init) |
 | 56 | `4c3f3d3d` | +4 | RSBS mask-clear + s16-indexed byte-store siblings |
 | 55 | `c5cbc506` | +0 (exploration) | loop-based sprite_id_delete variants failed to match; identified register allocation mismatch blocker |
 | 54 | `adc5930c` | +1 | gGraphicsBuffer clears + 2-call wrapper |
@@ -39,6 +40,25 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 | 25 | `9796ba11` | +6 | gCSV pointer-deref byte store, gCSV word add/increment, D_ setters |
 | 24 | `fc4f684b` | +5 | D_ stores, struct init, load-word-pair, crossed 6% matched code |
 | 23 | `234220c1` | +5 | BX LR stub, D_ byte setter, gCurrentSceneVariable decrement, pair-add |
+
+## Iteration 57 details
+- Result: match ✅ all 7 accepted
+- Report: **1331 / 5956**, **6.4053407%**
+- Commit: (to be committed)
+- Accepted functions:
+  - `asm_080ee61c` — `SVC #6` BIOS wrapper via inline asm with register constraints
+  - `asm_08089614` — `__divsi3(a2 << 8, a1)` wrapper
+  - `asm_080baef4` — arithmetic: `a0[2] = (a0[1] * a1 >> 8) + a2`
+  - `asm_08005914` — D_03000698[1] store (required adding symbol to `undefined_syms.ld`)
+  - `asm_08003988` — double byte write with pointer increment (`p++` pattern)
+  - `asm_080069F4` — hardware register clear (DISPCNT, BG0HOFS) via volatile pointers
+  - `asm_080e5a18` — 6-field struct init (stores 4 args then zeros 3 fields)
+- Durable takeaways:
+  - GBA BIOS SVC calls work with: `s32 r = a0; asm("svc #6" : "+r"(r) : "r"(a1)); return r;`
+  - D_ symbols in C files also need `undefined_syms.ld` entries (not just `include/undefined_syms.inc`)
+  - Pointer increment `p++` pattern matches where array `p[1]` fails for byte-write sequencing
+  - Hardware registers match cleanly with `*(volatile u16 *)0x4XXXXXX = val;`
+  - Struct init with order-sensitive zeros matches when store order matches the asm
 
 ## Iteration 56 details
 - Result: match ✅ all 4 accepted

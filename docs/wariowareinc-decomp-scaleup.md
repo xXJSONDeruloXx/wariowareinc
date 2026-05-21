@@ -102,6 +102,9 @@ At the current `total_functions` count (`5957`), that means:
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
+| 57 | (to be committed) | +7 | Small wrapper sweep (SVC, div, HW reg, struct init) |
+| 56 | `4c3f3d3d` | +4 | RSBS mask-clear + s16-indexed byte-store siblings |
+| 55 | `c5cbc506` | +0 (explor.) | loop-based sprite_id_delete variant exploration blocked |
 | 54 | `adc5930c` | +1 | gGraphicsBuffer clears + 2-call wrapper |
 | 53 | `80ba7f84` | +1 | conditional 4-delete sprite_id_delete wrapper |
 | 52 | `12cf970c` | +4 | `sprite_id_delete` single shift-2, dual shift-1, dual direct, sign-ext+delete+CDB0 |

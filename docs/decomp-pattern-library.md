@@ -47,6 +47,10 @@
 - `s16-indexed byte-store` pattern: use `a0 = (u32)(s16)a0; a1 += 0x80; a1 += a0; *a1 = value;` to match LSLS/ASRS, ADDS R1 #imm, ADDS R1 R0 instruction order. Using `a1[(s16)a0 + 0x80] = value` or `*(a1 + 0x80 + (s16)a0) = value` generates ADD-to-R0 not ADD-to-R1.
 - for post-BL stores, declare locals before statements and assign after the BL if needed to preserve C89 compliance
 - when the original reuses the same base load for multiple stores, mirror that with a local pointer for the first stores and only fall back to the raw global on the final store if needed
+- For GBA BIOS SVC wrappers: use `s32 result = a0; asm volatile("svc #6" : "+r"(result) : "r"(a1)); return result;` to keep R0=R0 and R1=a1 for the SWI call
+- For hardware register writes: use `*(volatile u16 *)0x4XXXXXXX = val;` to match literal-pool address generation and store
+- For sequential byte writes: use `u8 *p = *a0; *p = byte0; p++; *p = byte1; p++; *a0 = p;` — pointer increment `p++` pattern generates `ADDS R2, #1` matching the original asm, while array indexing `p[0]`/`p[1]` uses different offset forms
+- D_ symbols used in C files need entries in both `include/undefined_syms.inc` (for asm preprocessing) AND `undefined_syms.ld` (for linker resolution from C objects)
 
 ## Known traps
 ### Instruction ordering / code generation traps
