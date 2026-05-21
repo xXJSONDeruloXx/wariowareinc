@@ -354,6 +354,16 @@ export default function wariowareDecompLoop(pi) {
 
   pi.registerCommand("decomp-loop", {
     description: "Manage the WarioWare decomp loop [start|stop|status|reset]",
+    getArgumentCompletions: (prefix) => {
+      const options = [
+        { value: "start",  label: "start  — begin autonomous loop (fresh chunk each iteration)" },
+        { value: "stop",   label: "stop   — halt loop after current chunk" },
+        { value: "status", label: "status — show current loop state" },
+        { value: "reset",  label: "reset  — clear loop state file" },
+      ];
+      const filtered = options.filter((o) => o.value.startsWith(prefix.toLowerCase()));
+      return filtered.length > 0 ? filtered : options;
+    },
     handler: async (args, ctx) => {
       const repoRoot = findRepoRoot(ctx.cwd);
       const state = loadState(repoRoot);
