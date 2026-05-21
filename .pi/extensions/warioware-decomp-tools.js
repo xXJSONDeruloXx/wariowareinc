@@ -207,6 +207,23 @@ function formatPreflight(pf) {
 
 function asmForStandaloneObject(asmCode) {
   let out = asmCode ?? "";
+  // Handle included-stub format: asm("...") C-asm string with possible line continuations
+  // e.g. asm(".syntax unified \n\\\nthumb_func_start ...\n\\\n.syntax divided");
+  const asmStringRe = /^asm\s*\(["']([\s\S]*?)["']\)\s*;?\s*$/m;
+  const asmStringMatch = out.match(asmStringRe);
+  if (asmStringMatch) {
+    out = asmStringMatch[1]
+      // Remove line-continuation backslash+newline sequences
+      .replace(/\\\n/g, "\n")
+      // Unescape \n -> newline
+      .replace(/\\n/g, "\n")
+      // Unescape \t -> tab
+      .replace(/\\t/g, "\t")
+      // Unescape \" -> double-quote
+      .replace(/\\"/g, '"')
+      // Unescape \\ -> backslash
+      .replace(/\\\\/g, "\\");
+  }
   out = out.replace(/^\s*thumb_func_start\s+(\w+)\s*$/gim, ".thumb\n.thumb_func\n.global $1\n$1:");
   out = out.replace(/^\s*arm_func_start\s+(\w+)\s*$/gim, ".arm\n.global $1\n$1:");
   out = out.replace(/^\s*(thumb_func_end|arm_func_end)\s+\w+\s*$/gim, "");
@@ -755,11 +772,13 @@ function registerQueryCandidates(pi) {
         return count === 1;
       });
 
-      // Must be a real function (has thumb_func_start or arm_func_start in asm)
+      // Must be a real function (has a function label in asm)
       candidates = candidates.filter((f) =>
         f.asmCode && (
           f.asmCode.includes("thumb_func_start") ||
-          f.asmCode.includes("arm_func_start")
+          f.asmCode.includes("arm_func_start") ||
+          f.asmCode.includes(".thumb_func") ||
+          f.asmCode.includes("glabel")
         ),
       );
 

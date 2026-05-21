@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 61` — `func_080029D0` byte/halfword mask pair
-- `matched_functions`: **1334 / 5956** = **22.398%**
-- `matched_code_percent`: **6.4118%**
-- `tools/gen_objdiff.py`: **882 C / 5805 asm-only units**
+- Verified working tree: `batch 62` — `func_08002068` conditional sound call wrapper
+- `matched_functions`: **1335 / 5955** = **22.422%**
+- `matched_code_percent`: **6.4136%**
+- `tools/gen_objdiff.py`: **883 C / 5804 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -19,6 +19,13 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3432** more matched functions
 
 ## What just landed
+### Batch 62 — accepted
+- Metric delta: **1334 → 1335 matched functions** (+1)
+- Matched code: **6.4118% → 6.4136%**
+- Commit: pending
+- Accepted functions:
+  - `asm_08002068` — conditional sound call wrapper (LSLS+LSRS+BL pattern)
+
 ### Batch 61 — accepted
 - Metric delta: **1333 → 1334 matched functions** (+1)
 - Matched code: **6.4098% → 6.4118%**
@@ -123,6 +130,7 @@ At the current `total_functions` count (`5956`), that means:
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
+| 62 | pending | +1 | `func_08002068` conditional sound call wrapper |
 | 61 | pending | +1 | `func_080029D0` byte/halfword mask pair (RSBS register pin) |
 | 60 | pending | +1 | `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper |
 | 58 | `f36b7bd6` | +1 | pointer-deref halfword store (-1 wrapper) |

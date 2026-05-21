@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 62 | `pending` | +1 | `func_08002068` conditional sound call wrapper (LSLS+LSRS+BL) |
 | 61 | `pending` | +1 | `func_080029D0` byte `&= ~3` + halfword `&= 3` mask pair (RSBS register pin) |
 | 60 | `7fab3891` | +1 | `gGraphicsBuffer.unk854_1 = arg0` bitfield wrapper |
 | 58 | `f36b7bd6` | +1 | Pointer-deref halfword store (-1 wrapper) |
@@ -258,6 +259,18 @@ This period built the reusable base library of patterns:
 - Outcome: the isolated C spelling matched the target asm, but moving it out of the mid-file include in `src/graphics_table.c` changed ROM ordering; the safe ROM-preserving shape is to keep it as an include-shim until the host TU can be split.
 - Durable takeaway:
   - mid-file asm includes inside a larger C TU are not always safe standalone conversions, even when `compile_and_view_asm` reports a perfect local match
+
+## Iteration 62 details
+- Result: match ✅
+- Report: **1335 / 5955**, **6.4136%**
+- Commit: pending
+- Accepted functions:
+  - `asm_08002068` — conditional sound call wrapper
+- Durable takeaways:
+  - Standalone TU asm objects with size=0 symbols cause objdiff to truncate comparisons at BL boundaries; code is still correct and ROM matches
+  - `apply_conversion` accepts these despite partial objdiff match since the ROM build verifies byte-identity
+  - Tooling fix: `asmForStandaloneObject` now handles C-asm string format (`asm("...")`) used by included stubs; also added `.thumb_func` and `glabel` to the query_candidates filter
+  - Reverted an included_stub conversion attempt — the build system tracks `.s` file deps via C preprocessing, making included_stub conversions fragile without proper dep-file handling
 
 ## Iteration 61 details
 - Result: match ✅
