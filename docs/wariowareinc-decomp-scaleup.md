@@ -22,7 +22,7 @@ At the current `total_functions` count (`5956`), that means:
 ### Batch 58 — accepted
 - Metric delta: **1331 → 1332 matched functions** (**+1**)
 - Matched code: **6.4053407% → 6.406549%**
-- Commit: (pending commit)
+- Commit: `f36b7bd6`
 - Accepted functions:
   - `asm_0800c610` — pointer-deref halfword store: `*(short *)((int *)a0[3]) = -1;`
 
@@ -109,7 +109,7 @@ At the current `total_functions` count (`5956`), that means:
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
-| 58 | (pending) | +1 | pointer-deref halfword store (-1 wrapper) |
+| 58 | `f36b7bd6` | +1 | pointer-deref halfword store (-1 wrapper) |
 | 57 | `b3752d25` | +7 | Small wrapper sweep (SVC, div, HW reg, struct init) |
 | 56 | `4c3f3d3d` | +4 | RSBS mask-clear + s16-indexed byte-store siblings |
 | 55 | `c5cbc506` | +0 (explor.) | loop-based sprite_id_delete variant exploration blocked |

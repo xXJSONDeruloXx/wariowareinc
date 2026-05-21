@@ -6,7 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
-| 58 | (pending) | +1 | Pointer-deref halfword store (-1 wrapper) |
+| 58 | `f36b7bd6` | +1 | Pointer-deref halfword store (-1 wrapper) |
 | 57 | `b3752d25` | +7 | Small wrapper sweep (SVC, div, arithmetic, D_ store, byte-write, HW reg, struct init) |
 | 56 | `4c3f3d3d` | +4 | RSBS mask-clear + s16-indexed byte-store siblings |
 | 55 | `c5cbc506` | +0 (exploration) | loop-based sprite_id_delete variants failed to match; identified register allocation mismatch blocker |
@@ -244,7 +244,7 @@ This period built the reusable base library of patterns:
 ## Iteration 58 details
 - Result: match ✅
 - Report: **1332 / 5956**, **6.406549%**
-- Commit: (pending)
+- Commit: `f36b7bd6`
 - Accepted functions:
   - `asm_0800c610` — pointer-deref halfword store: `*(short *)((int *)a0[3]) = -1;`
 - Durable takeaways:
