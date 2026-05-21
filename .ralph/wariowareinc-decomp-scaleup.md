@@ -12,6 +12,13 @@ Target: **4768 / 5961 matched functions**
 - **ROM status:** `wariowareinc.gba: OK`
 - **Gap to target:** 1149 → 4768 = need +3619 more matched functions
 
+## Iteration 29 — accepted
+- **Candidate set:** 5-function batch — `asm_0800d3b8` (two-call R4 wrapper), `asm_0802b4d4` (two-call R4 wrapper sibling), `asm_080cc920` (two-call R4 wrapper sibling), `asm_08005fa0` (double dealloc wrapper), `asm_0800c764` (LDRSH dealloc — REVERTED)
+- **Result:** match after reverting asm_0800c764 (LDR vs LDRSH type mismatch)
+- **Metric delta:** matched_functions 1149→1153 (+4), matched_code_percent 6.034865%→6.043122%, C units 697→701, asm-only 5990→5986
+- **Commit:** `ae0fc72f`, pushed
+- **Learnings:** (1) Two-call R4-save wrappers of the form `func1(arg0); func2(arg0)` match cleanly across siblings (2) `arg0[0]` with `u32*` produces LDR, not LDRSH — need `*(s16 *)arg0` for halfword loads (3) Double-dealloc wrappers (`mem_heap_dealloc(arg0[0]); mem_heap_dealloc(arg0)`) match cleanly
+
 ## Iteration 23 — accepted
 - **Candidate set:** 5-function batch — `asm_0801e914` (BX LR stub), `asm_08005570` (D_03003FE8 byte setter), `asm_080656e4` (gCurrentSceneVariable decrement), `asm_080da190` (pair-add), `asm_080e5514` (pair-add sibling)
 - **Result:** match (after fixing `asm_08005570` — `u8` param caused unwanted truncation; switched to `u32`)
