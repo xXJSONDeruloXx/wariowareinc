@@ -6,7 +6,7 @@ If an agent resumes cold, read these first:
 1. `docs/wariowareinc-decomp-scaleup.md` — current baseline, priorities, next queue
 2. `docs/decomp-agent-workflow.md` — exact autonomous workflow and verification loop
 3. `docs/decomp-pattern-library.md` — proven families, code-shaping rules, known traps
-4. `docs/decomp-batch-history.md` — accepted batch history migrated from `.ralph` + session logs
+4. `docs/decomp-batch-history.md` — accepted batch history
 
 ## Current verified baseline
 - Branch: `docs/macabeus-tooling-assessment`
@@ -38,4 +38,4 @@ If an agent resumes cold, read these first:
 - `docs/mizuchi-workflow.md` — Mizuchi bootstrap notes
 
 ## Legacy note
-The old `.ralph/wariowareinc-decomp-scaleup.md` file should be treated as legacy source material. Keep it only as an archive; continue maintaining the live workflow in `/docs` + `AGENTS.md`.
+continue maintaining the live workflow in `/docs` + `AGENTS.md`.

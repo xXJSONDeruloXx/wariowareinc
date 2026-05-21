@@ -5,7 +5,7 @@ When resuming cold or after compaction:
 1. Read `docs/wariowareinc-decomp-scaleup.md`
 2. Read `docs/decomp-pattern-library.md`
 3. Read `docs/decomp-batch-history.md` if you need recent examples
-4. Only fall back to `.ralph/` or `~/.pi/agent/sessions/--Users-kurt-Developer-wariowareinc--/` if the docs are missing needed context
+4. Only fall back `~/.pi/agent/sessions/--Users-kurt-Developer-wariowareinc--/` if the docs are missing needed context
 
 ## Preferred fresh-context commands
 - `/decomp-next` starts one fresh-context chunk in a new session.

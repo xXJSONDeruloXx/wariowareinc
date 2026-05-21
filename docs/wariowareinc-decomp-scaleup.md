@@ -1,7 +1,7 @@
 # WarioWare Inc. Decomp Scale-Up
 
 This is the live operational status file for autonomous work in this repo.
-Prefer this file + the other docs in `/docs` over `.ralph/`.
+Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
