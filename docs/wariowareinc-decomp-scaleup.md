@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 54` — gGraphicsBuffer clears + gCurrentSceneVariable deref-load + sprite_delete + func_08001B28
-- `matched_functions`: **1320 / 5957** = **22.159%**
-- `matched_code_percent`: **6.3896456%**
-- `tools/gen_objdiff.py`: **868 C / 5819 asm-only units**
+- Verified working tree: `batch 56` — RSBS mask clear + s16-indexed byte-store siblings
+- `matched_functions`: **1324 / 5957** = **22.226%**
+- `matched_code_percent`: **6.3964925%**
+- `tools/gen_objdiff.py`: **872 C / 5815 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -19,6 +19,16 @@ At the current `total_functions` count (`5957`), that means:
 - current gap: **3460** more matched functions
 
 ## What just landed
+### Batch 56 — accepted
+- Metric delta: **1320 → 1324 matched functions** (**+4**)
+- Matched code: **6.3896456% → 6.3964925%**
+- Commit: `4c3f3d3d`
+- Accepted functions:
+  - `asm_0800ccb4` — `gBeatscriptScene` byte[2] RSBS-mask-clear (mask=2) via local pointer pattern
+  - `asm_0801b194` — `gCurrentSceneVariable` deref byte[0x19] RSBS-mask-clear (mask=3)
+  - `asm_08035194` — `a1[(s16)a0 + 0x80] = 1` via `a0=(u32)(s16)a0; a1+=0x80; a1+=a0` pattern
+  - `asm_080351a4` — sibling, stores 3 instead of 1
+
 ### Batch 55 — exploration (no match)
 - Exploration result: **BLOCKED** on loop-based patterns
 - Commit: `c5cbc506` (docs update only)

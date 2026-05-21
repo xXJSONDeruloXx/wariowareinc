@@ -43,10 +43,17 @@
 - add `#include "scenes.h"` when touching `gCurrentSceneData`
 - use a local pointer variable when `((u32*)&gGlobal)[N]` would otherwise collapse into the wrong literal-pool expression
 - `gCurrentSceneVariable` is a `struct BeatscriptLocalData *`, so raw `gCurrentSceneVariable + N` scales by `sizeof(struct BeatscriptLocalData)`; use `(u8 *)gCurrentSceneVariable + off` for byte offsets, or an intentional typed index like `((u32 *)gCurrentSceneVariable)[N]`
+- For RSBS-mask-clear pattern on a global struct: declare `u8 *p = (u8*)&gSymbol;` then use `p[offset]` to keep the global base in one register and the offset in the instruction; do NOT use `((u8*)&gSymbol)[offset]` directly (agbcc combines into a literal+relocation with zero offset).
+- `s16-indexed byte-store` pattern: use `a0 = (u32)(s16)a0; a1 += 0x80; a1 += a0; *a1 = value;` to match LSLS/ASRS, ADDS R1 #imm, ADDS R1 R0 instruction order. Using `a1[(s16)a0 + 0x80] = value` or `*(a1 + 0x80 + (s16)a0) = value` generates ADD-to-R0 not ADD-to-R1.
 - for post-BL stores, declare locals before statements and assign after the BL if needed to preserve C89 compliance
 - when the original reuses the same base load for multiple stores, mirror that with a local pointer for the first stores and only fall back to the raw global on the final store if needed
 
 ## Known traps
+### Instruction ordering / code generation traps
+- `a0 = (u32)(s16)a0` **before** the pointer constant-add forces the sign-extension instruction first (LSLS/ASRS before ADDS R1, #0x80). Writing `a1 += 0x80; a1 += (s16)a0` reverses the order even though it reads naturally in C.
+- For global byte access via RSBS-mask-clear, use a local pointer `u8 *p = (u8*)&gSymbol` and then `p[offset]` to get `[R2, #offset]` addressing. Writing `((u8*)&gSymbol)[offset]` directly may produce a combined literal with the offset baked in, giving `[R2, #0]` instead.
+- gGraphicsBuffer indexed halfword stores like `*(u16*)((u8*)&gGraphicsBuffer + 0x54 + (u16)a0 * 2)` can produce LDR-before-LSLS or LSLS-before-LDR depending on C form; the exact interleaved original asm pattern is hard to reproduce — leave as asm if the instruction ORDER differs.
+
 ### Header / include traps
 - `gSpriteHandler` is declared in `src/lib_sprite.h` — include as `"src/lib_sprite.h"` (relative to repo root), not `"lib_sprite.h"`
 - Never add a bare `extern void sprite_id_delete(u32, u32)` — it conflicts with the real `struct SpriteHandler *` signature; let lib_sprite.h provide it

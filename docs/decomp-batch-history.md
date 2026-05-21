@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 56 | `4c3f3d3d` | +4 | RSBS mask-clear + s16-indexed byte-store siblings |
 | 55 | `c5cbc506` | +0 (exploration) | loop-based sprite_id_delete variants failed to match; identified register allocation mismatch blocker |
 | 54 | `adc5930c` | +1 | gGraphicsBuffer clears + 2-call wrapper |
 | 53 | `80ba7f84` | +1 | conditional 4-delete sprite_id_delete wrapper |
@@ -38,6 +39,22 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 | 25 | `9796ba11` | +6 | gCSV pointer-deref byte store, gCSV word add/increment, D_ setters |
 | 24 | `fc4f684b` | +5 | D_ stores, struct init, load-word-pair, crossed 6% matched code |
 | 23 | `234220c1` | +5 | BX LR stub, D_ byte setter, gCurrentSceneVariable decrement, pair-add |
+
+## Iteration 56 details
+- Result: match ✅ all 4 accepted
+- Report: **1324 / 5957**, **6.3964925%**
+- Commit: `4c3f3d3d`
+- Accepted functions:
+  - `asm_0800ccb4` — `gBeatscriptScene` byte[2] RSBS-mask-clear (mask=2). Key: use local `u8 *p = (u8*)&gBeatscriptScene` then `p[2]` to avoid combined literal.
+  - `asm_0801b194` — `gCurrentSceneVariable` deref byte[0x19] RSBS-mask-clear (mask=3). Same local-pointer pattern but with double-deref.
+  - `asm_08035194` — s16-indexed byte-store, value=1. Key: `a0=(u32)(s16)a0; a1+=0x80; a1+=a0; *a1=1` forces LSLS/ASRS before ADDS R1,#0x80.
+  - `asm_080351a4` — sibling, value=3. Same pattern.
+- Attempted but deferred:
+  - `asm_0804e290` — gGraphicsBuffer indexed halfword store: `bgPalette[0][(u16)a0]` gets close but LDR comes before LSLS in compiled vs after in original. Instruction scheduling mismatch, leave as asm.
+- Durable takeaways:
+  - RSBS-mask-clear via local pointer: `u8 *p = (u8*)&gSymbol; p[N]` avoids combined literal and gives `[R2, #N]` addressing.
+  - s16-indexed byte-store: must reassign `a0 = (u32)(s16)a0` explicitly to force sign-ext before pointer constant-add.
+  - Instruction ORDER within a function matters for exact byte match; agbcc can reorder independent statements.
 
 ## Iteration 55 details
 - Result: exploration/blocked ❌ (no matches)
