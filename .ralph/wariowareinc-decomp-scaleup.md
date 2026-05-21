@@ -4,13 +4,13 @@
 Reach **80% matched/decompiled-function progress** on the `docs/macabeus-tooling-assessment` branch, while preserving a **byte-identical ROM match** at every accepted milestone.
 Target: **4768 / 5961 matched functions**
 
-## Latest Verified Baseline (confirmed 2026-05-21, iterations 23-28)
-- **Matched functions:** 1149 / 5961 = 19.275464%
-- **Matched code percent:** 6.034865%
-- **C units in linker graph:** 697 / 6687
-- **ASM-only units in linker graph:** 5990
+## Latest Verified Baseline (confirmed 2026-05-21, iterations 23-30)
+- **Matched functions:** 1156 / 5961 = 19.389328%
+- **Matched code percent:** 6.048760%
+- **C units in linker graph:** 704 / 6687
+- **ASM-only units in linker graph:** 5983
 - **ROM status:** `wariowareinc.gba: OK`
-- **Gap to target:** 1149 → 4768 = need +3619 more matched functions
+- **Gap to target:** 1156 → 4768 = need +3612 more matched functions
 
 ## Iteration 29 — accepted
 - **Candidate set:** 5-function batch — `asm_0800d3b8` (two-call R4 wrapper), `asm_0802b4d4` (two-call R4 wrapper sibling), `asm_080cc920` (two-call R4 wrapper sibling), `asm_08005fa0` (double dealloc wrapper), `asm_0800c764` (LDRSH dealloc — REVERTED)
