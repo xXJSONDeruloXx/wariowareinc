@@ -479,13 +479,25 @@ function registerQueryCandidates(pi) {
       // Unmatched = no real C code (empty or asm-only stubs)
       let candidates = allFns.filter((f) => !f.cCode?.trim());
 
-      // Exclude pure data labels (no thumb/arm func marker)
+      // Count functions per asm file — standalone functions are in their own .s file.
+      // Shared files contain data labels or multiple embedded functions (not convertible).
+      const pathCounts = new Map();
+      for (const f of candidates) {
+        const p = f.asmModulePath;
+        if (p) pathCounts.set(p, (pathCounts.get(p) ?? 0) + 1);
+      }
+
+      // Only functions from standalone asm files (exact 1 function per .s file)
+      candidates = candidates.filter((f) => {
+        const count = f.asmModulePath ? (pathCounts.get(f.asmModulePath) ?? 9) : 9;
+        return count === 1;
+      });
+
+      // Must be a real function (has thumb_func_start or arm_func_start in asm)
       candidates = candidates.filter((f) =>
         f.asmCode && (
           f.asmCode.includes("thumb_func_start") ||
-          f.asmCode.includes("arm_func_start") ||
-          f.asmCode.includes("func_") ||
-          f.asmCode.match(/^\s*push\s*\{/m)
+          f.asmCode.includes("arm_func_start")
         ),
       );
 
@@ -526,20 +538,23 @@ function registerQueryCandidates(pi) {
       const top = candidates.slice(0, count);
 
       const lines = [
-        `Found ${candidates.length} unmatched function candidates. Showing top ${top.length} by "${strategy}"${family ? ` in module "${family}"` : ""}:\n`,
+        `Found ${candidates.length} standalone unmatched function candidates. Showing top ${top.length} by "${strategy}"${family ? ` in module "${family}"` : ""}:\n`,
       ];
 
       for (const fn of top) {
         const addr = addrFromName(fn.name);
         const asmLines = fn.asmCode?.split("\n").length ?? 0;
-        const module = fn.asmModulePath?.replace(".mizuchi-asm/asm/", "").replace(/\/asm_[^/]+\.s$/, "") ?? "?";
+        // Derive the real asm path from the module path
+        const asmSrc = fn.asmModulePath?.replace(".mizuchi-asm/", "") ?? "?";
+        const targetObj = addr ? `build/asm/asm_${addr}.s.o` : "?";
         const calledMatched = (fn.callsFunctions ?? []).filter(
           (n) => allFns.find((f) => f.name === n)?.cCode?.trim(),
         ).length;
-        const targetObj = addr ? `build/asm/asm_${addr}.s.o` : "?";
         lines.push(
-          `• ${fn.name}  [${asmLines} asm lines | module: ${module} | matched-calls: ${calledMatched}/${(fn.callsFunctions ?? []).length}]\n` +
-          `  ROM: 0x${addr?.toUpperCase() ?? "?"}  target: ${targetObj}`,
+          `• ${fn.name}  [${asmLines} asm lines]\n` +
+          `  asm: ${asmSrc}\n` +
+          `  target: ${targetObj}\n` +
+          `  matched-calls: ${calledMatched}/${(fn.callsFunctions ?? []).length}`,
         );
       }
 
