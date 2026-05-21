@@ -4,13 +4,34 @@
 Reach **80% matched/decompiled-function progress** on the `docs/macabeus-tooling-assessment` branch, while preserving a **byte-identical ROM match** at every accepted milestone.
 Target: **4768 / 5961 matched functions**
 
-## Latest Verified Baseline (confirmed 2026-05-20, iterations 35-41)
-- **Matched functions:** 1248 / 5957 = 20.9500%
-- **Matched code percent:** 6.160734%
-- **C units in linker graph:** 757 / 6687
-- **ASM-only units in linker graph:** 5930
+## Latest Verified Baseline (confirmed 2026-05-20, iterations 35-44)
+- **Matched functions:** 1271 / 5957 = 21.33%
+- **Matched code percent:** 6.231208%
+- **C units in linker graph:** 780 / 6687
+- **ASM-only units in linker graph:** 5907
 - **ROM status:** `wariowareinc.gba: OK`
-- **Gap to target:** 1248 → 4768 = need +3520 more matched functions
+- **Gap to target:** 1271 → 4768 = need +3497 more matched functions
+
+## Iteration 44 — accepted
+- **Candidate set:** 7-function batch — `asm_0807e1ac`/`asm_0807e350` (sprite_set_enable_updates + LDRSH), `asm_08062430` (shift deref + two BL), `asm_080597a8` (s8 sign-ext + two BL), `asm_0807b044` (gCSV increment + D_ ROM call), `asm_08073660` (func(0) + gCSV large-offset store), `asm_08024480` (gBeatscriptScene[1] with local ptr var)
+- **Result:** match ✅ after fixing asm_08024480 (use local `u32 *p` instead of inline array indexing)
+- **Metric delta:** matched_functions 1264→1271 (+7), matched_code_percent 6.209873%→6.231208%
+- **Commit:** `e0c0f888`, pushed
+- **Learnings:** (1) `((u32*)&gBeatscriptScene)[1]` generates wrong code — use `u32 *p = (u32*)&gBeatscriptScene; p[1]` instead (local var forces base-address load, enables [R, #4] offset form) (2) LDRSH [R1, R2] uses register-offset form — `*(s16*)(p + N)` generates MOVS R2, #N + LDRSH [R1, R2] ✓ (3) `((u8*)gCSV)[N]++` generates ADDS/LDRB/ADDS/STRB correctly
+
+## Iteration 43 — accepted
+- **Candidate set:** 8-sibling family — `func_08026264(N, arg0); gCSV[4] |= M` pattern
+- **Result:** match ✅ (8-for-8)
+- **Metric delta:** matched_functions 1256→1264 (+8), matched_code_percent 6.184095%→6.209873%
+- **Commit:** `36eed474`, pushed
+- **Learnings:** `ADDS R1, R0, #0` (copy arg to different position) generated when const is first arg and variable is second arg in BL call
+
+## Iteration 42 — accepted
+- **Candidate set:** 8-function batch — sct(1) patterns, conditional checks, BL+store combos
+- **Result:** match ✅ after fixing two C89 declaration-before-statement issues
+- **Metric delta:** matched_functions 1248→1256 (+8), matched_code_percent 6.160734%→6.184095%
+- **Commit:** `4218ab64`, pushed
+- **Learnings:** C89 requires all variable declarations before statements; use `u8 *p; BL; p = gCSV;` pattern for post-BL gCSV access
 
 ## Iteration 41 — accepted
 - **Candidate set:** 6-function batch — `asm_0804e6c4` (sprite_id_delete shift 0xD6<<1), `asm_0809cf30` (sct+shift word store), `asm_080b0608` (two-pointer LDR/LDR), `asm_080d28ec` (two-pointer LDR/LDRH), `asm_0805c2d0` (shift-load ASRS call), `asm_080c992c` (two-address call gCSV+0xF4, gCSV+shift)
@@ -191,6 +212,8 @@ python3 tools/gen_objdiff.py
 - No multi-function C files
 - No bare extern for g-symbols
 - Large byte offsets may need pointer shaping for Thumb immediate splitting
+- `((u32*)&gGlobal)[N]` generates `gGlobal+N*4` in literal pool (wrong!) — use local ptr var instead
+- C89: no declarations after statements in same block level
 
 ## Next Candidate Queue
 1. More conditional check patterns (byte compare + BL call)
