@@ -1,32 +1,24 @@
 import fs from "node:fs";
 import path from "node:path";
+import { Type } from "typebox";
 
 const WIDGET_KEY = "warioware-decomp-loop";
 const REFRESH_INTERVAL_MS = 3000;
 const STATE_FILE = path.join(".pi", "decomp-loop-state.json");
 const REPO_SENTINEL = "wariowareinc.ld";
+
+// Text-based fallback markers (used if agent prints text instead of calling the tool)
 const DONE_MARKER = "<DECOMP_CHUNK_DONE>";
 const BLOCKED_MARKER = "<DECOMP_BLOCKED>";
 
-// ── Module-level state (persists via jiti module cache across sessions) ──────
-let latestCtx;    // updated from session_start / agent_end (ExtensionContext)
-let timer;        // shared setInterval handle
+// ── Module-level (fresh per-session due to jiti moduleCache: false) ───────────
+// These are intentionally session-scoped. The loop advances within a single
+// session via pi.sendUserMessage(nextChunkPrompt) — no cross-session state needed.
+let latestCtx;
+let timer;
+let loopPi; // set from the default export; used by timer to send messages
 
-/**
- * Stored newSession function, set from command/withSession contexts
- * (ExtensionCommandContext).  This is the KEY fix: we never call
- * pi.sendUserMessage("/advance") (which sends text to the LLM). Instead we
- * store ctx.newSession here and call it directly from the timer.
- *
- * Lifecycle:
- *   - Set when /decomp-loop start or /decomp-next runs (command ctx).
- *   - Re-set inside withSession callback (ReplacedSessionContext) so the next
- *     session can chain forward.
- *   - Cleared to null on session_shutdown so stale refs are never used.
- */
-let newSessionFn = null;
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function findRepoRoot(startDir) {
   let current = path.resolve(startDir);
@@ -49,6 +41,7 @@ function defaultState() {
     advanceRequested: false,
     lastStatus: "idle",
     lastBlockedReason: "",
+    lastChunkSummary: "",
     updatedAt: new Date().toISOString(),
   };
 }
@@ -78,8 +71,8 @@ function extractAssistantText(messages) {
     const msg = messages[i];
     if (msg?.role !== "assistant" || !Array.isArray(msg.content)) continue;
     return msg.content
-      .filter((part) => part?.type === "text")
-      .map((part) => part.text)
+      .filter((p) => p?.type === "text")
+      .map((p) => p.text)
       .join("\n");
   }
   return "";
@@ -96,51 +89,43 @@ function buildChunkPrompt(chunk) {
     "- docs/decomp-batch-history.md",
     "",
     "## Step 2 — Select a target function",
-    "Use the `query_candidates` tool to find the best next unmatched function.",
-    "Preferred strategy: 'smallest' or 'families'.",
+    "Use the `query_candidates` tool (strategy: 'smallest' or 'families').",
     "One function per chunk.",
     "",
     "## Step 3 — Gather context",
     "Call `get_function_context` with the chosen function name.",
-    "This returns preprocessed headers and type definitions — use them for accurate typing.",
+    "Use the returned headers/typedefs for accurate typing.",
     "",
     "## Step 4 — Get an initial C guess (optional but recommended)",
     "Call `m2c_decompile` for a rule-based starting skeleton.",
-    "If m2c is not set up, write the C code from scratch using the asm in the candidate.",
+    "If m2c is not set up, write C from scratch using the asm in the candidate.",
     "",
     "## Step 5 — Iterate with isolated compile",
-    "Call `compile_and_view_asm` with the function name and your current C code.",
-    "This compiles with agbcc inside Docker and diffs against the target .o — NO full ROM build needed.",
-    "Iterate until match_percent reaches 100% (PERFECT MATCH).",
-    "Do NOT do a full Docker make build during iteration — only after achieving a match.",
+    "Call `compile_and_view_asm` with your current C code.",
+    "Repeat until match_percent = 100% (PERFECT MATCH).",
+    "Do NOT run a full Docker make build during iteration.",
     "",
-    "## Step 6 — Full verification",
-    "Only after compile_and_view_asm reports PERFECT MATCH:",
-    "1. Place the C file at src/decomp/asm_XXXXXXXX.c",
+    "## Step 6 — Full verification (only after PERFECT MATCH)",
+    "1. Place C file at src/decomp/asm_XXXXXXXX.c",
     "2. Update wariowareinc.ld (swap build/asm/asm_XXXXXXXX.s.o → build/src/decomp/asm_XXXXXXXX.c.o)",
     "3. Move asm/asm_XXXXXXXX.s → asm/converted/asm_XXXXXXXX.s",
-    "4. Run full Docker build: docker run --rm -v \"$PWD:/workspace\" -w /workspace devkitpro/devkitarm:latest bash -lc 'make -j4'",
-    "5. Require 'wariowareinc.gba: OK'",
+    "4. Full Docker build: docker run --rm -v \"$PWD:/workspace\" -w /workspace devkitpro/devkitarm:latest bash -lc 'make -j4'",
+    "5. Require: wariowareinc.gba: OK",
     "",
-    "## Step 7 — Commit and report",
-    "After successful full build:",
-    "1. Run: source ~/.zshrc && make report",
-    "2. Run: python3 tools/gen_objdiff.py",
-    "3. Update docs (README.md, scaleup, batch-history, pattern-library if new pattern learned)",
-    "4. Commit code + docs together and push",
+    "## Step 7 — Commit, report, and signal done",
+    "1. source ~/.zshrc && make report",
+    "2. python3 tools/gen_objdiff.py",
+    "3. Update docs (README, scaleup, batch-history, pattern-library if new patterns)",
+    "4. git add -A && git commit -m 'feat: ...' && git push",
+    "5. Call the `decomp_chunk_done` tool with a brief summary.",
+    "   If blocked at any step, call `decomp_chunk_done` with blocked=true and a reason.",
     "",
     "## Rules",
     "- Do not create or rely on Ralph loops.",
-    "- Do not ask the user to choose among reasonable next steps; pick the best default.",
+    "- Do not ask the user to choose; pick the best default and proceed.",
     "- Use compile_and_view_asm for iteration — full builds only for final verification.",
     "- Preserve byte-identical ROM at every accepted milestone.",
-    "- One function per chunk. If you cannot land any function, document why and stop.",
-    "",
-    "## Chunk completion markers",
-    `When done, your final response must end with this exact marker on its own line: ${DONE_MARKER}`,
-    `If truly blocked, end with: ${BLOCKED_MARKER} followed by one short reason line.`,
-    "",
-    "Do not continue indefinitely. One chunk, then stop.",
+    "- You MUST call `decomp_chunk_done` before your final response, whether successful or blocked.",
   ].join("\n");
 }
 
@@ -158,9 +143,45 @@ function applyWidget(ctx, repoRoot) {
   ctx.ui.setWidget(WIDGET_KEY, [formatStatus(state)]);
 }
 
+// ── Advance the loop (same session, fresh prompt) ─────────────────────────────
+//
+// Why same-session instead of ctx.newSession():
+//   jiti loads extensions with moduleCache:false, so every new session gets a
+//   completely fresh module instance. Module-level state (like a stored newSession
+//   function) cannot survive across session boundaries. pi.sendUserMessage()
+//   within the current session is the only reliable advancement mechanism.
+
+function advanceLoop(repoRoot) {
+  const state = loadState(repoRoot);
+  state.advanceRequested = false;
+  state.chunk += 1;
+  state.lastStatus = "advancing";
+  saveState(repoRoot, state);
+  applyWidget(latestCtx, repoRoot);
+
+  const prompt = buildChunkPrompt(state.chunk);
+  try {
+    loopPi.sendUserMessage(prompt);
+  } catch (err) {
+    // If agent is mid-stream, queue it for after
+    try {
+      loopPi.sendUserMessage(prompt, { deliverAs: "followUp" });
+    } catch {
+      // Last resort: re-set the flag and let the timer retry
+      const s = loadState(repoRoot);
+      s.advanceRequested = true;
+      s.chunk -= 1;
+      s.lastStatus = "waiting-to-advance";
+      saveState(repoRoot, s);
+    }
+  }
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+
 function ensureTimer() {
   if (timer) return;
-  timer = setInterval(async () => {
+  timer = setInterval(() => {
     const ctx = latestCtx;
     if (!ctx) return;
     const repoRoot = findRepoRoot(ctx.cwd);
@@ -169,90 +190,134 @@ function ensureTimer() {
 
     if (!state.enabled) return;
     if (!state.advanceRequested) return;
-    if (!newSessionFn) return; // no session fn available yet
     if (!ctx.isIdle()) return;
     if (ctx.hasPendingMessages()) return;
 
-    // Advance: clear request flag, then launch the next chunk directly
-    state.advanceRequested = false;
-    state.lastStatus = "advancing";
-    saveState(repoRoot, state);
-    applyWidget(ctx, repoRoot);
-
-    try {
-      await launchChunk({ repoRoot, enableLoop: true });
-    } catch (err) {
-      const reason = err instanceof Error ? err.message : String(err);
-      const s = loadState(repoRoot);
-      s.enabled = false;
-      s.lastStatus = "error";
-      s.lastBlockedReason = reason;
-      saveState(repoRoot, s);
-      applyWidget(ctx, repoRoot);
-    }
+    advanceLoop(repoRoot);
   }, REFRESH_INTERVAL_MS);
 }
 
-/**
- * Launch one chunk in a fresh session.
- *
- * Uses the module-level `newSessionFn` which was stored from the most recent
- * command or withSession context.  Inside `withSession`, we immediately
- * re-set `newSessionFn` to the NEW session's ctx.newSession so the timer can
- * chain forward into session N+2, N+3, … without ever calling sendUserMessage.
- */
-async function launchChunk({ repoRoot, enableLoop }) {
-  const state = loadState(repoRoot);
-  state.enabled = enableLoop;
-  state.advanceRequested = false;
-  state.chunk += 1;
-  state.lastBlockedReason = "";
-  state.lastStatus = "launching";
-  saveState(repoRoot, state);
-  applyWidget(latestCtx, repoRoot);
-
-  const parentSession = latestCtx?.sessionManager?.getSessionFile?.();
-  const prompt = buildChunkPrompt(state.chunk);
-  const chunkNum = state.chunk;
-
-  // Capture and clear so a double-fire can't happen
-  const fn = newSessionFn;
-  newSessionFn = null;
-
-  await fn({
-    parentSession,
-    withSession: async (newCtx) => {
-      // ── KEY: store newSession from the NEW session's context ──────────────
-      // This lets the timer advance into session N+2 without sendUserMessage.
-      // withSession runs after the new session has started (session_start has
-      // already fired), so setting module-level state here is safe.
-      newSessionFn = (opts) => newCtx.newSession(opts);
-      // ─────────────────────────────────────────────────────────────────────
-
-      newCtx.ui.notify(
-        `Started decomp chunk ${chunkNum}${enableLoop ? " (loop)" : ""}`,
-        "info",
-      );
-      await newCtx.sendUserMessage(prompt);
-    },
-  });
-}
-
-// ── Extension export ─────────────────────────────────────────────────────────
+// ── Extension export ──────────────────────────────────────────────────────────
 
 export default function wariowareDecompLoop(pi) {
+  loopPi = pi;
+
+  // ── Tool: decomp_chunk_done ────────────────────────────────────────────────
+  // The LLM calls this to signal end-of-chunk, replacing the text marker approach.
+  // If enabled, the timer picks up advanceRequested and sends the next chunk prompt.
+
+  pi.registerTool({
+    name: "decomp_chunk_done",
+    label: "Decomp Chunk Done",
+    description:
+      "Signal that this decomp chunk is complete. " +
+      "Call this at the end of every chunk — whether work was done, partially done, or blocked. " +
+      "If the loop is enabled, the next chunk will start automatically.",
+    parameters: Type.Object({
+      summary: Type.String({
+        description: "1-3 sentence summary: what was done, which function(s), current metrics",
+      }),
+      blocked: Type.Optional(
+        Type.Boolean({
+          description: "Set true if you could not make meaningful progress",
+        }),
+      ),
+      blockedReason: Type.Optional(
+        Type.String({
+          description: "If blocked=true, brief reason (e.g. 'no Docker', 'repeated mismatch on all candidates')",
+        }),
+      ),
+    }),
+    async execute({ summary, blocked = false, blockedReason }, _signal, ctx) {
+      const repoRoot = findRepoRoot(ctx.cwd);
+      const state = loadState(repoRoot);
+
+      if (blocked) {
+        state.enabled = false;
+        state.advanceRequested = false;
+        state.lastStatus = "blocked";
+        state.lastBlockedReason = blockedReason || summary;
+        state.lastChunkSummary = summary;
+        saveState(repoRoot, state);
+        applyWidget(latestCtx, repoRoot);
+        if (latestCtx?.hasUI) {
+          latestCtx.ui.notify(
+            `decomp loop blocked: ${blockedReason || summary}`,
+            "warning",
+          );
+        }
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Chunk ${state.chunk} marked blocked. Loop stopped.\nReason: ${blockedReason || summary}`,
+            },
+          ],
+          details: { blocked: true, reason: blockedReason || summary },
+        };
+      }
+
+      // Successful chunk — queue advancement if loop is enabled
+      state.lastChunkSummary = summary;
+      if (state.enabled) {
+        state.advanceRequested = true;
+        state.lastStatus = "waiting-to-advance";
+      } else {
+        state.lastStatus = "done";
+      }
+      saveState(repoRoot, state);
+      applyWidget(latestCtx, repoRoot);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text:
+              `Chunk ${state.chunk} marked complete.\n` +
+              `Summary: ${summary}\n` +
+              (state.enabled
+                ? `Loop will advance to chunk ${state.chunk + 1}.`
+                : `Loop is off — no automatic advancement.`),
+          },
+        ],
+        details: { chunkDone: true, chunkNum: state.chunk, willAdvance: state.enabled },
+      };
+    },
+  });
+
+  // ── Command: /decomp-next ──────────────────────────────────────────────────
+  // Single chunk in a fresh session (one-shot, not part of the continuous loop).
+
   pi.registerCommand("decomp-next", {
-    description: "Start one fresh-context WarioWare decomp chunk",
+    description: "Start one fresh-context WarioWare decomp chunk (no loop)",
     handler: async (_args, ctx) => {
       await ctx.waitForIdle();
       const repoRoot = findRepoRoot(ctx.cwd);
-      newSessionFn = (opts) => ctx.newSession(opts);
-      await launchChunk({ repoRoot, enableLoop: false });
+      const state = loadState(repoRoot);
+      state.chunk += 1;
+      state.enabled = false;
+      state.advanceRequested = false;
+      state.lastStatus = "launching";
+      saveState(repoRoot, state);
+
+      const chunkNum = state.chunk;
+      const prompt = buildChunkPrompt(chunkNum);
+      const parentSession = ctx.sessionManager.getSessionFile();
+
+      await ctx.newSession({
+        parentSession,
+        withSession: async (newCtx) => {
+          newCtx.ui.notify(`Started decomp chunk ${chunkNum} (single)`, "info");
+          await newCtx.sendUserMessage(prompt);
+        },
+      });
     },
   });
 
+  // ── Command: /decomp-loop ──────────────────────────────────────────────────
+
   pi.registerCommand("decomp-loop", {
-    description: "Manage the fresh-context WarioWare decomp loop",
+    description: "Manage the WarioWare decomp loop [start|stop|status|reset]",
     handler: async (args, ctx) => {
       const repoRoot = findRepoRoot(ctx.cwd);
       const state = loadState(repoRoot);
@@ -260,9 +325,16 @@ export default function wariowareDecompLoop(pi) {
 
       if (sub === "start") {
         await ctx.waitForIdle();
-        newSessionFn = (opts) => ctx.newSession(opts);
         ensureTimer();
-        await launchChunk({ repoRoot, enableLoop: true });
+        state.enabled = true;
+        state.chunk += 1;
+        state.advanceRequested = false;
+        state.lastStatus = "launching";
+        saveState(repoRoot, state);
+        applyWidget(ctx, repoRoot);
+        ctx.ui.notify(`Starting decomp loop at chunk ${state.chunk}`, "info");
+        // First chunk in same session — subsequent chunks advance via timer
+        loopPi.sendUserMessage(buildChunkPrompt(state.chunk));
         return;
       }
 
@@ -292,6 +364,8 @@ export default function wariowareDecompLoop(pi) {
     },
   });
 
+  // ── Events ─────────────────────────────────────────────────────────────────
+
   pi.on("session_start", async (_event, ctx) => {
     latestCtx = ctx;
     ensureTimer();
@@ -308,20 +382,24 @@ export default function wariowareDecompLoop(pi) {
       return;
     }
 
+    // Already handled by decomp_chunk_done tool call → nothing to do here
+    if (state.advanceRequested || state.lastStatus === "blocked") {
+      applyWidget(ctx, repoRoot);
+      return;
+    }
+
+    // Fallback: detect text markers in case the agent printed them instead of calling the tool
     const text = extractAssistantText(event.messages);
 
     if (text.includes(BLOCKED_MARKER)) {
       const idx = text.lastIndexOf(BLOCKED_MARKER);
-      const tail =
-        text.slice(idx + BLOCKED_MARKER.length).trim().split(/\r?\n/)[0] ?? "";
+      const tail = text.slice(idx + BLOCKED_MARKER.length).trim().split(/\r?\n/)[0] ?? "";
       state.enabled = false;
-      state.advanceRequested = false;
       state.lastStatus = "blocked";
       state.lastBlockedReason = tail;
       saveState(repoRoot, state);
       applyWidget(ctx, repoRoot);
-      if (ctx.hasUI)
-        ctx.ui.notify(`decomp loop blocked${tail ? `: ${tail}` : ""}`, "warning");
+      if (ctx.hasUI) ctx.ui.notify(`decomp loop blocked: ${tail || "(no reason)"}`, "warning");
       return;
     }
 
@@ -333,17 +411,13 @@ export default function wariowareDecompLoop(pi) {
       return;
     }
 
-    // No marker found — keep loop enabled but flag the missing marker
-    state.lastStatus = "waiting-for-marker";
+    // No signal at all — just update widget
+    state.lastStatus = "no-signal";
     saveState(repoRoot, state);
     applyWidget(ctx, repoRoot);
   });
 
   pi.on("session_shutdown", async () => {
     latestCtx = undefined;
-    // Clear stale newSessionFn so the timer doesn't call a dead reference.
-    // withSession will re-set it after the new session starts if the loop
-    // was advancing (withSession always runs after session_shutdown).
-    newSessionFn = null;
   });
 }
