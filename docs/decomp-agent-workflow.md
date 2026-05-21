@@ -5,13 +5,15 @@ When resuming cold or after compaction:
 1. Read `docs/wariowareinc-decomp-scaleup.md`
 2. Read `docs/decomp-pattern-library.md`
 3. Read `docs/decomp-batch-history.md` if you need recent examples
-4. Only fall back to `.ralph/` or `~/.pi/agent/sessions/--Users-kurt-Developer-wariowareinc--/` if the docs are missing needed context
+4. Only fall back to `~/.pi/agent/sessions/--Users-kurt-Developer-wariowareinc--/` if the docs are missing needed context
 
-## Default behavior for pifinity / `continue`
-- Do not ask what to focus on.
-- Pick the best next batch from the documented queue.
-- Keep moving until you either land verified progress or hit a real blocker.
-- If you learn something durable, write it into `/docs` before yielding.
+## Preferred fresh-context commands
+- `/decomp-next` starts one fresh-context chunk in a new session.
+- `/decomp-loop start` runs repeated fresh-context chunks across new sessions.
+- `/decomp-loop stop` halts the loop.
+- `/decomp-loop status` shows the current loop state.
+
+These commands are preferred over Ralph or pifinity because each chunk starts from the canonical docs with clean context.
 
 ## Hard repo rules
 1. One function per file in `src/decomp/`
@@ -60,6 +62,7 @@ Track:
    - isolate the exact failing function or spelling
    - revert/fix it in the same pass
    - document the trap
+   - do not leave placeholder or build-excluded stubs in `src/decomp/`; either finish them or move/revert them out of the build
 6. If match:
    - rerun report
    - rerun objdiff snapshot

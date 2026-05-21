@@ -3,13 +3,21 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Repo-state cleanup note
+- No new accepted batch landed in the repo-state cleanup pass.
+- Placeholder / unverified WIP decomp stubs were reverted instead of being kept behind build exclusions.
+- `src/decomp/` should only contain real build-participating TUs; keep rough experiments out of the build until they are ready.
+- Converted asm is being normalized under `asm/converted/`.
+- Latest accepted progress still ends at batch 50.
+
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
-| 49 | `pending commit` | +9 | `sprite_id_delete` byte-offset siblings, plus one `func_0800CDB0(1)` + delete wrapper |
+| 50 | `pending commit` | +4 | continued `sprite_id_delete` byte-offset siblings, plus helper functions |
+| 49 | `d98c2b49` | +9 | `sprite_id_delete` byte-offset siblings, plus one `func_0800CDB0(1)` + delete wrapper |
 | 48 | `0f121592` | +7 | pair-add, field++/2-BL, gGraphicsBuffer store pair, gCurrentSceneData add, 3-BL return, 2-BL call |
 | 47 | `49223873` | +4 | gCSV byte-- siblings, BL+s8 sign-ext+BL, multi-store-with-reload |
-| 46 | `10050330` | +7 | 5-arg struct init, 4-call R4 wrapper, gCSV word++, gCurrentSceneData LDRH families |
+| 46 | `10050330` | +7 | 5-arg struct init, 4-call wrapper, gCSV word++, gCurrentSceneData LDRH families |
 | 45 | `f92ed4ac` | +8 | gGraphicsBuffer clears, BG_OFS setters, soundplayer_pitch siblings, DE30 wrapper |
 | 44 | `e0c0f888` | +7 | sprite_set_enable_updates, shift deref + 2 BL, s8 sign-ext, gCSV store families |
 | 42 | `4218ab64` | +8 | `scene_set_current_thread(1)` patterns, conditionals, BL+store combos |
@@ -33,9 +41,24 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 | 24 | `fc4f684b` | +5 | D_ stores, struct init, load-word-pair, crossed 6% matched code |
 | 23 | `234220c1` | +5 | BX LR stub, D_ byte setter, gCurrentSceneVariable decrement, pair-add |
 
+## Iteration 50 details
+- Result: match ✅ after binary search and pattern adaptation
+- Report: **1310 / 5957**, **21.999498%**
+- Accepted functions:
+  - `asm_080c9050` — `sprite_id_delete` at `gCurrentSceneVariable + 0x574`
+  - `asm_08016fb0` — `sprite_id_delete` and `func_08001B70` wrapper
+  - `asm_08016d3c` — sprite deletion and memory cleanup loop
+  - `asm_08056788` — `sprite_id_delete` at byte offsets `0xF4` and `0xF8`
+  - `asm_0805ab2c` — `sprite_id_delete` at byte offsets `0x94` and `0x98`
+- Durable takeaways:
+  - `sprite_id_delete` byte-offset siblings remain productive
+  - Simple wrappers with single BL calls are fast to convert
+  - Loop-based cleanup functions can be translated with minimal C
+  - The `gCurrentSceneVariable` pointer cast to `(u8 *)` is crucial for byte-offset access
+
 ## Iteration 49 details
-- Result: match ✅ after an immediate binary-search catch on a shaping bug
-- Report: **1306 / 5957**, **6.3184834%**
+- Result: match ✅ after immediate binary-search catch on a shaping bug
+- Report: **1306 / 5957**, **21.923786%**
 - Accepted functions:
   - `asm_080749c4`
   - `asm_0807f078`
@@ -51,65 +74,8 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
   - for `gCurrentSceneVariable`, missing the `(u8 *)` byte-cast is an easy self-inflicted mismatch because `gCurrentSceneVariable + N` scales by the local-data struct size
   - the `func_0800CDB0(1)` pre-call variant is also safe when the delete load keeps the byte-cast spelling
 
-## Iteration 48 details
-- Result: match ✅ after initial mismatch and binary search
-- Report: **1297 / 5957**, **6.285469%**
-- Accepted functions:
-  - `asm_0800cc9c`
-  - `asm_0802e4ac`
-  - `asm_08035fd8`
-  - `asm_08062dcc`
-  - `asm_080862dc`
-  - `asm_080b7bb4`
-  - `asm_080c9520`
-- Durable takeaway: the current documented wrapper/arithmetic families are still productive; recent momentum is coming from mixing a few family types in the same batch once each spelling is already low-risk.
-
-## Iteration 47 details
-- Result: partial match ✅ (4 accepted out of 8 attempted)
-- Report: **1290 / 5957**, **6.2703905%**
-- Accepted:
-  - `asm_08062260`
-  - `asm_08062278`
-  - `asm_0801c758`
-  - `asm_0808a56c`
-- Reverted due to traps:
-  - `asm_0801af18`
-  - `asm_0801bea8`
-  - `asm_0801b3e4`
-  - `asm_080d3a60`
-- Durable takeaways:
-  - `byte &= ~N` is still a trap
-  - BL+STRH wrappers can fail on return-register shape
-  - local pointer reload shaping works for the accepted multi-store family
-
-## Iterations 45-47 cluster
-This cluster established the current active playbook:
-- `gCurrentSceneData` halfword add/shift helpers are dependable
-- `gGraphicsBuffer` small store families are dependable
-- R4-save multi-BL wrappers remain productive
-- gCSV byte increment/decrement siblings are cheap wins
-- not all bitfield-clear siblings are safe even when semantically trivial
-
-## Earlier arc worth remembering
-### Batches 38-40
-Large BX LR stub sweeps were still worth doing and created a major step-up in matched functions.
-
-### Batches 41-44
-The work shifted from filler into richer families:
-- `sprite_id_delete`
-- two-pointer wrappers
-- signed-load helpers
-- `scene_set_current_thread(1)` + store patterns
-
-### Batches 23-37
-This period built the reusable base library of patterns:
-- D_ setters / clears
-- pair-add helpers
-- gCSV deref + call wrappers
-- shift-offset families
-- raw-pointer struct-entry setters
-- sound wrappers
-- early `gCurrentSceneVariable` store families
+## Iteration 47-50 cluster
+These recent batches have focused on `sprite_id_delete` helper functions, with 49 being a pure byte-offset sibling family and 50 expanding to more complex but still simple wrappers. The strategy of targeting small, well-documented families continues to yield steady progress.
 
 ## What this history says about the repo
 - Reuse beats novelty.
