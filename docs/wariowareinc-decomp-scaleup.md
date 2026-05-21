@@ -5,21 +5,28 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 56` — RSBS mask clear + s16-indexed byte-store siblings
-- `matched_functions`: **1324 / 5957** = **22.226%**
-- `matched_code_percent`: **6.3964925%**
-- `tools/gen_objdiff.py`: **872 C / 5815 asm-only units**
+- Verified working tree: `batch 58` — pointer-deref halfword store
+- `matched_functions`: **1332 / 5956** = **22.364%**
+- `matched_code_percent`: **6.406549%**
+- `tools/gen_objdiff.py`: **880 C / 5807 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
 
-At the current `total_functions` count (`5957`), that means:
-- target: **4766 / 5957** matched functions
-- current gap: **3460** more matched functions
+At the current `total_functions` count (`5956`), that means:
+- target: **4765 / 5956** matched functions
+- current gap: **3433** more matched functions
 
 ## What just landed
-### Batch 56 — accepted
+### Batch 58 — accepted
+- Metric delta: **1331 → 1332 matched functions** (**+1**)
+- Matched code: **6.4053407% → 6.406549%**
+- Commit: (pending commit)
+- Accepted functions:
+  - `asm_0800c610` — pointer-deref halfword store: `*(short *)((int *)a0[3]) = -1;`
+
+### Batch 57 — accepted
 - Metric delta: **1320 → 1324 matched functions** (**+4**)
 - Matched code: **6.3896456% → 6.3964925%**
 - Commit: `4c3f3d3d`
@@ -102,6 +109,7 @@ At the current `total_functions` count (`5957`), that means:
 ### Recent momentum
 | Batch | Commit | Δ matched | Main theme |
 |---|---|---:|---|
+| 58 | (pending) | +1 | pointer-deref halfword store (-1 wrapper) |
 | 57 | `b3752d25` | +7 | Small wrapper sweep (SVC, div, HW reg, struct init) |
 | 56 | `4c3f3d3d` | +4 | RSBS mask-clear + s16-indexed byte-store siblings |
 | 55 | `c5cbc506` | +0 (explor.) | loop-based sprite_id_delete variant exploration blocked |
