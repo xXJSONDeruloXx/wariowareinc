@@ -9,10 +9,10 @@ If an agent resumes cold, read these first:
 4. `docs/decomp-batch-history.md` — accepted batch history
 
 ## Current verified baseline
-- Verified working tree: `batch 69` — `func_0801667C` IWRAM byte load
-- `matched_functions`: **1342 / 5954** (**22.546%**)
-- `matched_code_percent`: **6.4228%**
-- `tools/gen_objdiff.py`: **890 C / 5797 asm-only units**
+- Verified working tree: `batch 70` — `func_0803DDA4` wrapper (call with -1)
+- `matched_functions`: **1344 / 5954** (**22.579%**)
+- `matched_code_percent`: **6.4244%**
+- `tools/gen_objdiff.py`: **892 C / 5795 asm-only units**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4763 / 5954**
 - Remaining gap to 80%: **3423 matched functions**

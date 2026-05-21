@@ -1045,6 +1045,17 @@ function registerApplyConversion(pi) {
           if (!buildOutput.includes("wariowareinc.gba: OK")) {
             throw new Error("clean Docker build finished without wariowareinc.gba: OK\n" + buildOutput.split("\n").slice(-20).join("\n"));
           }
+
+      // Run make report to regenerate build/report.json for accurate metric tracking
+      execFileSync(
+        "docker",
+        [
+          "run", "--rm", "-v", `${repoRoot}:/workspace`, "-w", "/workspace",
+          "devkitpro/devkitarm:latest", "bash", "-lc",
+          "set -euo pipefail; make report",
+        ],
+        { cwd: repoRoot, timeout: 120_000, stdio: "pipe" },
+      ).toString();
         }
 
         return {

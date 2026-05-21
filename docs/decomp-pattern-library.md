@@ -4,6 +4,7 @@
 - Always verify with Docker before committing: `docker run --rm -v $(pwd):/workspace devkitpro/devkitarm:latest /bin/bash -c "cd /workspace && make -j4"`
 - The local `tools/agbcc/bin/agbcc` is a Linux aarch64 binary and will not run on macOS; Docker is the only valid local build path
 - A chunk is not done until `wariowareinc.gba: OK` is confirmed in the Docker build output
+- `make report` must be run (via Docker) after the ROM build before completing the chunk — this regenerates `build/report.json` which is needed for accurate metric tracking
 
 ## Proven high-yield families
 ### Easy filler / utility
