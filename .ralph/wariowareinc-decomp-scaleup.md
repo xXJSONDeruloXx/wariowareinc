@@ -4,13 +4,56 @@
 Reach **80% matched/decompiled-function progress** on the `docs/macabeus-tooling-assessment` branch, while preserving a **byte-identical ROM match** at every accepted milestone.
 Target: **4768 / 5961 matched functions**
 
-## Latest Verified Baseline (confirmed 2026-05-21, iterations 23-34)
-- **Matched functions:** 1176 / 5961 = 19.725046%
-- **Matched code percent:** 6.095886%
-- **C units in linker graph:** 724 / 6687
-- **ASM-only units in linker graph:** 5963
+## Latest Verified Baseline (confirmed 2026-05-20, iterations 35-41)
+- **Matched functions:** 1248 / 5957 = 20.9500%
+- **Matched code percent:** 6.160734%
+- **C units in linker graph:** 757 / 6687
+- **ASM-only units in linker graph:** 5930
 - **ROM status:** `wariowareinc.gba: OK`
-- **Gap to target:** 1176 → 4768 = need +3592 more matched functions
+- **Gap to target:** 1248 → 4768 = need +3520 more matched functions
+
+## Iteration 41 — accepted
+- **Candidate set:** 6-function batch — `asm_0804e6c4` (sprite_id_delete shift 0xD6<<1), `asm_0809cf30` (sct+shift word store), `asm_080b0608` (two-pointer LDR/LDR), `asm_080d28ec` (two-pointer LDR/LDRH), `asm_0805c2d0` (shift-load ASRS call), `asm_080c992c` (two-address call gCSV+0xF4, gCSV+shift)
+- **Result:** match ✅ (6-for-6)
+- **Metric delta:** matched_functions 1242→1248 (+6), matched_code_percent 6.141803%→6.160734%
+- **Commit:** `40aa7e61`, pushed
+- **Learnings:** (1) `*(s32*)(p + shift) >> 9` generates ASRS R0, R0, #9 correctly (2) two-pointer LDR/LDRH calls with large shift offsets work using ADDS R0, R1, R2 form (3) sprite_id_delete with shift offsets matches ✓ (4) ADDS R2, #N between first and second arg computation correctly captured by compiler
+
+## Iteration 40 — accepted
+- **Candidate set:** 27 BX LR stubs
+- **Result:** match ✅
+- **Metric delta:** matched_functions 1215→1242 (+27), matched_code_percent 6.136365%→6.141803%
+- **Commit:** `702b14cc`, pushed
+
+## Iteration 39 — accepted
+- **Candidate set:** 15 BX LR stubs
+- **Result:** match ✅
+- **Metric delta:** matched_functions 1200→1215 (+15), matched_code_percent 6.133345%→6.136365%
+- **Commit:** `be5cdc3f`, pushed
+
+## Iteration 38 — accepted
+- **Candidate set:** 12 BX LR stubs
+- **Result:** match ✅
+- **Metric delta:** matched_functions 1188→1200 (+12) — crossed 1200 milestone!
+- **Commit:** `75dd08ae`, pushed
+
+## Iteration 37 — accepted
+- **Candidate set:** 6-function batch — `asm_080aac74` (sprite_id_delete direct offset 0x1C), `asm_080ac524` (sprite_id_delete ADDS 0xE0), `asm_080cc884` (sprite_id_delete ADDS 0xFC), `asm_080adac0` (conditional byte check), `asm_080d9dd4` (two-call R4 wrapper), `asm_08058a5c` (sct+BL+gCSV store)
+- **Result:** match ✅ (6-for-6)
+- **Metric delta:** matched_functions 1182→1188 (+6), matched_code_percent 6.112803%→6.130928%
+- **Commit:** `44d082bc`, pushed
+
+## Iteration 36 — accepted
+- **Candidate set:** 2-function batch — `asm_0804e594` (sprite_id_delete gCSV+0x84), `asm_080d4fe8` (gCSV+8 ptr + void call + byte store)
+- **Result:** match ✅ after fixing offset (0x1C→0x84) and signature issues
+- **Metric delta:** matched_functions 1182→1182 (batch 35 already in; +2 vs batch 35 baseline)
+- **Commit:** `c1cacf3f`, pushed
+- **Learnings:** (1) sprite_id_delete takes `struct SpriteHandler *` not u32 cast (2) When gCSV+N > 124, agbcc uses ADDS form; for small offsets [R, #N] form (3) `func_080D2F10()` takes void — callers pass no args (4) `u8 *p = (u8*)gCSV + 8` keeps R4=gCSV+8 for subsequent STRB [R4, #offset]
+
+## Iteration 35 — accepted
+- **Candidate set:** 4-function batch — `asm_0809ced4` (shift-offset deref+call siblings), `asm_080cf804`/`asm_080cf820` (gCSV offset call siblings), `asm_080de130` (conditional byte-check call)
+- **Result:** match ✅ (committed as `30f3b829`)
+- **Metric delta:** matched_functions 1176→1182 (+6 combined with iteration 36)
 
 ## Iteration 30 — accepted
 - **Candidate set:** 3-function batch — `asm_0800c764` (LDRSH dealloc), `asm_08016cb0` (R2-arg sound wrapper), `asm_0800418c` (D_ clear+call)
@@ -95,7 +138,7 @@ Target: **4768 / 5961 matched functions**
 - **Learnings:** (1) POP {R1}/BX R1 trap still catches zero-pad wrapper siblings — need to check POP pattern before attempting conversion (2) -1 in C compiles as MOVS+NEGS not MOVS+RSBS — another known trap reconfirmed (3) D_ with non-zero offsets like `[R0,#6]` produce different machine code than C absolute address + [R0,#0]
 
 ## Checklist (next batch priorities)
-- [ ] Select next 5-function candidate batch from proven sibling families
+- [ ] Select next 6-8 function candidate batch from proven sibling families
 - [ ] Preflight candidates at object-file level
 - [ ] Run clean Docker build, verify `wariowareinc.gba: OK`
 - [ ] Run `make report` and `gen_objdiff.py`, compare vs baseline
@@ -126,7 +169,7 @@ python3 tools/gen_objdiff.py
 ```
 
 ## Proven Pattern Families (reuse aggressively)
-- empty BX LR stubs
+- empty BX LR stubs (all 58 converted!)
 - simple tail-call / void call wrappers
 - `gCurrentSceneVariable` setters and pointer-deref helpers
 - `scene_set_current_thread(1)` + byte/word store wrappers
@@ -136,6 +179,10 @@ python3 tools/gen_objdiff.py
 - tiny sound wrappers with absolute-address casts
 - bitfield extract (shift-pair, NOT AND), bit-clear, zero-init
 - dec-counter, store-advance, mul-acc small-body functions
+- sprite_id_delete(gSpriteHandler, *(u32*)(gCSV + offset)) siblings (ADDS for offset>124, LDR[N] for small)
+- two-pointer calls: (*(u32*)(p+shift), *(u32/u16*)(p+shift+N)) — both large/small offset forms
+- gCSV + shift offset + ASRS/>> shift for signed values
+- `u8 *p = (u8*)gCSV + N` + void-arg call + store at p[M]
 
 ## Known Traps
 - No AND masks for bitfield extraction (use shift-pair)
@@ -146,8 +193,10 @@ python3 tools/gen_objdiff.py
 - Large byte offsets may need pointer shaping for Thumb immediate splitting
 
 ## Next Candidate Queue
-1. More complex `D_03006520` wrappers that load gCurrentSceneVariable before BL call
-2. Continue mining sibling-rich `gCurrentSceneVariable` families
-3. BX LR empty stubs and return-constant functions as filler
-4. Small-body functions (3-7 instructions, 0-1 branches, 0-2 BL calls)
-5. `LDR global; LDR/LDRB/LDRH` getter chains
+1. More conditional check patterns (byte compare + BL call)
+2. More shift-offset + store wrappers
+3. More sprite_id_delete siblings from the remaining list
+4. Two-pointer call variants with different shift patterns
+5. Functions with ADDS R0, R1, R2 three-reg form + multiple BL calls
+6. Functions with sct(1) + shift-store (proven family)
+7. Search for MOVS R0/#const + BL wrappers (const-arg call patterns)
