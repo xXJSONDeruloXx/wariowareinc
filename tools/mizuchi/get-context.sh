@@ -20,12 +20,10 @@ if command -v rg &>/dev/null; then
   } | head -n 1)"
 else
   # Fallback: grep + find (slower but no dependency)
-  while IFS= read -r f; do
-    if grep -qE "thumb_func_start[[:space:]]+${function_name}\\b" "$f" 2>/dev/null; then
-      asm_path="$f"
-      break
-    fi
-  done < <(find asm -name '*.s' 2>/dev/null)
+  # Search for thumb_func_start, arm_func_start, or glabel variants
+  asm_path="$(find asm -name '*.s' -exec grep -lE \
+    "(thumb_func_start|arm_func_start)[[:space:]]+${function_name}\\b|^glabel[[:space:]]+${function_name}\\b" \
+    {} \; 2>/dev/null | head -n 1)"
 fi
 
 if [ -z "$asm_path" ]; then
@@ -38,12 +36,7 @@ source_file=""
 if command -v rg &>/dev/null; then
   source_file="$(rg -l -F "#include \"${asm_path}\"" src | head -n 1 || true)"
 else
-  while IFS= read -r f; do
-    if grep -qF "#include \"${asm_path}\"" "$f" 2>/dev/null; then
-      source_file="$f"
-      break
-    fi
-  done < <(find src -name '*.c' -o -name '*.h' 2>/dev/null)
+  source_file="$(find src -name '*.c' -o -name '*.h' -exec grep -lF "#include \"${asm_path}\"" {} \; 2>/dev/null | head -n 1)"
 fi
 
 if [ -z "$source_file" ]; then
