@@ -4,13 +4,38 @@
 Reach **80% matched/decompiled-function progress** on the `docs/macabeus-tooling-assessment` branch, while preserving a **byte-identical ROM match** at every accepted milestone.
 Target: **4768 / 5961 matched functions**
 
-## Latest Verified Baseline (confirmed 2026-05-21, iterations 23-30)
-- **Matched functions:** 1156 / 5961 = 19.389328%
-- **Matched code percent:** 6.048760%
-- **C units in linker graph:** 704 / 6687
-- **ASM-only units in linker graph:** 5983
+## Latest Verified Baseline (confirmed 2026-05-21, iterations 23-33)
+- **Matched functions:** 1170 / 5961 = 19.627918%
+- **Matched code percent:** 6.080581%
+- **C units in linker graph:** 718 / 6687
+- **ASM-only units in linker graph:** 5969
 - **ROM status:** `wariowareinc.gba: OK`
-- **Gap to target:** 1156 → 4768 = need +3612 more matched functions
+- **Gap to target:** 1170 → 4768 = need +3598 more matched functions
+
+## Iteration 30 — accepted
+- **Candidate set:** 3-function batch — `asm_0800c764` (LDRSH dealloc), `asm_08016cb0` (R2-arg sound wrapper), `asm_0800418c` (D_ clear+call)
+- **Result:** match ✅
+- **Metric delta:** matched_functions 1153→1156 (+3), matched_code_percent 6.043122%→6.048760%
+- **Commit:** `9c7de76e`, pushed
+
+## Iteration 31 — accepted
+- **Candidate set:** 4-function batch — `asm_080f30e0`/`asm_080f30f0`/`asm_080f3100` (shift-extract siblings), `asm_08024298` (gBeatscriptScene deref wrapper)
+- **Result:** match after reverting asm_08016670 (struct access linker error)
+- **Metric delta:** matched_functions 1156→1160 (+4), matched_code_percent 6.048760%→6.055608%
+- **Commit:** `9a35ff76`, pushed
+
+## Iteration 32 — accepted
+- **Candidate set:** 5-function batch — `asm_08023350`/`asm_08024024` (gCSV deref+call), `asm_0801b250`/`asm_0801b268` (gCSV offset deref+call), `asm_08061034` (gCSV s8 sign-ext call)
+- **Result:** match ✅ (5-for-5 on first try!)
+- **Metric delta:** matched_functions 1160→1165 (+5), matched_code_percent 6.055608%→6.067691%
+- **Commit:** `45a3ea2e`, pushed
+
+## Iteration 33 — accepted
+- **Candidate set:** 5-function batch — `asm_08019aa4`/`asm_08019ac0` (gCSV shift-offset deref+call), `asm_08088b9c`/`asm_0808949c` (gCSV shift-offset+call), `asm_080c9534` (gCSV two-pointer wrapper)
+- **Result:** match ✅ (5-for-5 on first try!)
+- **Metric delta:** matched_functions 1165→1170 (+5), matched_code_percent 6.067691%→6.080581%
+- **Commit:** `448b02bd`, pushed
+- **Learnings:** (1) gCSV deref+call wrapper siblings are the most productive family — once one spelling is validated, siblings are nearly free wins (2) Shift-computed offsets in call wrappers match cleanly (3) Two-pointer wrappers passing `p+offset1, p+offset2` also match (4) `(s8)p[N]` produces LSLS/ASRS sign-extension correctly
 
 ## Iteration 29 — accepted
 - **Candidate set:** 5-function batch — `asm_0800d3b8` (two-call R4 wrapper), `asm_0802b4d4` (two-call R4 wrapper sibling), `asm_080cc920` (two-call R4 wrapper sibling), `asm_08005fa0` (double dealloc wrapper), `asm_0800c764` (LDRSH dealloc — REVERTED)
