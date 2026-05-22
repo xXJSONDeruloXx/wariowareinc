@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 79 | `pending` | +1 | 1 included_stub: GBA virtual→physical address dereference (0800210C) |
 | 78 | `pending` | +5 | 5 included_stubs: BICS pattern (08002584), conditional struct-store (08001B04), conditional indexed-return (08001DE0), literal-pool AND+OR gGraphicsBuffer (0800BEF4), literal-pool AND+OR D_03004004 (0800BF60) |
 | 77 | `pending` | +11 | 11 included_stubs: 3 RSBS mask-clear+call (080109CC/080144BC/08014A0C), conditional-call D_03006518 (08012C64), bit-test+call (0800BC90), switch-2 (080118C4), conditional-return (0801274C), for-loop+C7A4 (08014354), D_03004004 hw-write (0800BF44), 5+2-call (080113BC), do-while+BLE (080117FC) |
 | 76 | `pending` | +16 | 16 included_stubs: 3 gGraphicsBuffer bit-ops (0800BF20/BFC8/BFDC), 3 RSBS mask-clears (0800A3BC/080121B8/08013114), 2 shift-OR-set (0800A200/0800A3A4), beatscript indexed bit-set (0800A280), D_03006518 zero-clear (080109B4), scene_set+store (08014428), 4-const-arg (08013E44), alloc+init (08002568), byte+2-call (080143A0), scene_paused (080114E4), literal-offset load (0800A050) |

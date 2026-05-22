@@ -20,6 +20,14 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 79 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4327%**
+- Commit: pending
+- Accepted functions:
+  - `asm_0800210c` GBA virtual→physical address dereference: if arg0 < 0 (negative = upper bit set), mask with 0x7FFFFFFF to clear bit 31 (converting 0x8XXXXXXX → 0x0XXXXXXX), then dereference the resulting address. Otherwise return arg0 as-is. Pattern: `if (arg0 < 0) { addr = arg0 & 0x7FFFFFFF; result = *(s32 *)addr; }`
+- Notes: This is a GBA memory-mapping helper — ROM at 0x08XXXXXX maps to 0x0XXXXXX, IWRAM at 0x03XXXXXX. The literal-pool constant 0x7FFFFFFF generates `LDR R0, .literal; ANDS R0, R1`.
+
 ### Batch 78 — accepted
 - Metric delta: **+5 matched functions** (net: -1 from batch 77 due to objdiff recount)
 - Matched code: **6.4327%**
