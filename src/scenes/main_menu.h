@@ -45,6 +45,7 @@ struct Unk03006518 {
 
 // DATA
 extern struct Unk03006518 D_03006518;
+extern u8 D_03004154[];
 extern struct Vector2 D_083AB2CC[2];
 extern struct GraphicsTable D_083A9BC0[];
 

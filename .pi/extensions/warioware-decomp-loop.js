@@ -117,6 +117,7 @@ function buildChunkPrompt(chunk) {
     "",
     "## Step 7 — Commit, report, and signal done",
     "1. docker run --rm -v \"$PWD:/workspace\" -w /workspace devkitpro/devkitarm:latest bash -lc 'make report'",
+    "   On macOS do NOT run local make/make report for verification; use Docker because tools/agbcc in-repo is not a reliable host-native path.",
     "2. python3 tools/gen_objdiff.py",
     "3. Count src/decomp/*.c separately so docs keep standalone_tu vs included_stub progress distinct from linked C TU coverage",
     "4. Update docs (README, scaleup, batch-history, pattern-library if new patterns)",
@@ -134,10 +135,25 @@ function buildChunkPrompt(chunk) {
   ].join("\n");
 }
 
+function getLoopPower(state) {
+  return state.enabled
+    ? { label: "on", color: "success" }
+    : { label: "off", color: "dim" };
+}
+
+function getChunkActivity(state) {
+  if (state.lastStatus === "launching" || state.lastStatus === "running" || state.lastStatus === "advancing" || state.lastStatus === "compacting") {
+    return { label: "in progress", color: "accent" };
+  }
+  if (state.advanceRequested || state.lastStatus === "waiting-to-advance") {
+    return { label: "queued", color: "accent" };
+  }
+  return { label: "idle", color: "muted" };
+}
+
 function getLoopPhase(state) {
   if (state.lastStatus === "blocked") return { label: "blocked", color: "error" };
   if (state.lastStatus === "no-signal") return { label: "stale", color: "warning" };
-  if (!state.enabled) return { label: "off", color: "dim" };
   if (state.lastStatus === "advancing" || state.lastStatus === "compacting") {
     return { label: state.lastStatus, color: "accent" };
   }
@@ -149,8 +165,10 @@ function getLoopPhase(state) {
 }
 
 function formatStatus(state) {
+  const power = getLoopPower(state);
+  const activity = getChunkActivity(state);
   const phase = getLoopPhase(state);
-  const bits = [`loop ${phase.label}`, `chunk ${state.chunk}`];
+  const bits = [`loop ${power.label}`, `chunk ${state.chunk}`, activity.label, `state ${phase.label}`];
   if (state.advanceRequested) bits.push("advance pending");
   if (state.lastStatus === "no-signal") bits.push("last run ended without decomp_chunk_done");
   if (state.lastStatus === "blocked" && state.lastBlockedReason) bits.push(state.lastBlockedReason);
@@ -158,22 +176,37 @@ function formatStatus(state) {
 }
 
 function buildLoopLines(theme, width, state) {
+  const power = getLoopPower(state);
+  const activity = getChunkActivity(state);
   const phase = getLoopPhase(state);
+  const divider = theme.fg("borderMuted", "─".repeat(Math.max(0, width)));
   const header = [
     theme.fg("accent", theme.bold("↻ Decomp Loop")),
-    theme.fg(phase.color, phase.label.toUpperCase()),
+    theme.fg(power.color, power.label.toUpperCase()),
     theme.fg("muted", `chunk ${state.chunk}`),
+    theme.fg(activity.color, activity.label.toUpperCase()),
   ];
-  if (state.advanceRequested) header.push(theme.fg("accent", "advance pending"));
 
-  const lines = [truncateToWidth(header.join(` ${theme.fg("dim", "·")} `), width)];
+  const lines = [
+    divider,
+    truncateToWidth(header.join(` ${theme.fg("dim", "·")} `), width),
+  ];
 
+  let detail = `state: ${phase.label}`;
+  let detailColor = phase.color;
+  if (state.advanceRequested) {
+    detail += " · advance pending";
+  }
   if (state.lastStatus === "no-signal") {
-    lines.push(truncateToWidth(theme.fg("warning", "stale: last run ended without decomp_chunk_done"), width));
-  } else if (state.lastStatus === "blocked" && state.lastBlockedReason) {
+    detail += " · last run ended without decomp_chunk_done";
+  }
+  lines.push(truncateToWidth(theme.fg(detailColor, detail), width));
+
+  if (state.lastStatus === "blocked" && state.lastBlockedReason) {
     lines.push(truncateToWidth(theme.fg("error", state.lastBlockedReason), width));
   }
 
+  lines.push(divider);
   return lines;
 }
 

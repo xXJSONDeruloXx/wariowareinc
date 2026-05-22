@@ -2,9 +2,10 @@
 
 ## Build / verification rule (critical)
 - Always verify with Docker before committing: `docker run --rm -v $(pwd):/workspace devkitpro/devkitarm:latest /bin/bash -c "cd /workspace && make -j4"`
-- The local `tools/agbcc/bin/agbcc` is a Linux aarch64 binary and will not run on macOS; Docker is the only valid local build path
+- The local `tools/agbcc/bin/agbcc` is not a reliable macOS host-native path; Docker is the only supported local verification path for this repo
 - A chunk is not done until `wariowareinc.gba: OK` is confirmed in the Docker build output
 - `make report` must be run (via Docker) after the ROM build before completing the chunk — this regenerates `build/report.json` which is needed for accurate matched-function / matched-code tracking
+- Convenience commands: `/decomp-verify` runs clean Docker build + Docker report + objdiff refresh; `/decomp-report` runs Docker report + objdiff refresh
 - `python3 tools/gen_objdiff.py` tracks **linked** unit coverage only; `included_stub` conversions do not increase linked C TU counts
 - count `src/decomp/*.c` separately when you want total decompiled function-file coverage (`standalone_tu` + `included_stub`)
 - **agbcc requires `-mthumb-interwork`** to generate interwork-safe epilogues (`POP {R0}; BX R0` or `POP {R1}; BX R1`). Without it, agbcc generates `POP {PC}` which is NOT interwork-safe and does NOT match the original. The Makefile passes `-mthumb-interwork` via `CFLAGS`. When doing isolated agbcc testing, always include this flag.

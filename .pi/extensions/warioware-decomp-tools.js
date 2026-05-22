@@ -18,6 +18,7 @@ import { Type } from "typebox";
 const REPO_SENTINEL = "wariowareinc.ld";
 const DB_FILE = "mizuchi-db.json";
 const MIZUCHI_ROOT = "/Users/kurt/Developer/mizuchi";
+const DOCKER_IMAGE = "devkitpro/devkitarm:latest";
 
 // ── Repo root ─────────────────────────────────────────────────────────────────
 
@@ -29,6 +30,21 @@ function findRepoRoot(startDir) {
     if (parent === cur) return path.resolve(startDir);
     cur = parent;
   }
+}
+
+function runDockerShell(repoRoot, shellCommand, timeout = 600_000) {
+  return execFileSync(
+    "docker",
+    [
+      "run", "--rm",
+      "-v", `${repoRoot}:/workspace`,
+      "-w", "/workspace",
+      DOCKER_IMAGE,
+      "bash", "-lc",
+      shellCommand,
+    ],
+    { cwd: repoRoot, timeout, stdio: "pipe" },
+  ).toString();
 }
 
 // ── Mizuchi DB ────────────────────────────────────────────────────────────────
@@ -1170,6 +1186,77 @@ function registerSetupCommand(pi) {
   });
 }
 
+function registerVerifyCommands(pi) {
+  pi.registerCommand("decomp-verify", {
+    description: "Run clean Docker build, Docker make report, and objdiff refresh",
+    handler: async (_args, ctx) => {
+      const repoRoot = findRepoRoot(ctx.cwd);
+      try {
+        const buildOutput = runDockerShell(repoRoot, "set -euo pipefail; rm -rf build; make -j4", 600_000);
+        if (!buildOutput.includes("wariowareinc.gba: OK")) {
+          throw new Error("clean Docker build finished without wariowareinc.gba: OK");
+        }
+
+        const reportOutput = runDockerShell(repoRoot, "set -euo pipefail; make report", 180_000);
+        const objdiffOutput = execFileSync("python3", ["tools/gen_objdiff.py"], {
+          cwd: repoRoot,
+          timeout: 120_000,
+          stdio: "pipe",
+        }).toString();
+
+        const report = JSON.parse(fs.readFileSync(path.join(repoRoot, "build", "report.json"), "utf8"));
+        const measures = report?.measures ?? {};
+
+        ctx.ui.notify(
+          [
+            "✅ Docker verify complete",
+            `matched_functions: ${measures.matched_functions}/${measures.total_functions} (${Number(measures.matched_functions_percent ?? 0).toFixed(3)}%)`,
+            `matched_code: ${Number(measures.matched_code_percent ?? 0).toFixed(4)}%`,
+            ...objdiffOutput.trim().split(/\r?\n/).slice(-2),
+          ].join("\n"),
+          "info",
+        );
+      } catch (err) {
+        ctx.ui.notify(
+          `❌ /decomp-verify failed\n${err.stderr?.toString?.() || err.message}`,
+          "warning",
+        );
+      }
+    },
+  });
+
+  pi.registerCommand("decomp-report", {
+    description: "Run Docker make report and refresh objdiff metrics",
+    handler: async (_args, ctx) => {
+      const repoRoot = findRepoRoot(ctx.cwd);
+      try {
+        const reportOutput = runDockerShell(repoRoot, "set -euo pipefail; make report", 180_000);
+        const objdiffOutput = execFileSync("python3", ["tools/gen_objdiff.py"], {
+          cwd: repoRoot,
+          timeout: 120_000,
+          stdio: "pipe",
+        }).toString();
+        const report = JSON.parse(fs.readFileSync(path.join(repoRoot, "build", "report.json"), "utf8"));
+        const measures = report?.measures ?? {};
+        ctx.ui.notify(
+          [
+            "✅ Docker report refreshed",
+            `matched_functions: ${measures.matched_functions}/${measures.total_functions} (${Number(measures.matched_functions_percent ?? 0).toFixed(3)}%)`,
+            `matched_code: ${Number(measures.matched_code_percent ?? 0).toFixed(4)}%`,
+            ...objdiffOutput.trim().split(/\r?\n/).slice(-2),
+          ].join("\n"),
+          "info",
+        );
+      } catch (err) {
+        ctx.ui.notify(
+          `❌ /decomp-report failed\n${err.stderr?.toString?.() || err.message}`,
+          "warning",
+        );
+      }
+    },
+  });
+}
+
 // ── Export ────────────────────────────────────────────────────────────────────
 
 export default function wariowareDecompTools(pi) {
@@ -1180,4 +1267,5 @@ export default function wariowareDecompTools(pi) {
   registerQueryCandidates(pi);
   registerApplyConversion(pi);
   registerSetupCommand(pi);
+  registerVerifyCommands(pi);
 }

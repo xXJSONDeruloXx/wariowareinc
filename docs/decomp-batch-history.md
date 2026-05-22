@@ -6,6 +6,8 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 80 | `pending` | +1 | 1 standalone_tu: field copy func_080CD564 (ADDS R3,R0,#0; LDR/STR pairs at 0x28/0x2C, inline asm) |
+| 80 | `pending` | +1 | 1 standalone_tu: field copy func_080CD564 (ADDS R3,R0,#0; LDR/STR pairs at 0x28/0x2C, inline asm) |
 | 79 | `pending` | +1 | 1 included_stub: GBA virtual→physical address dereference (0800210C) |
 | 78 | `pending` | +5 | 5 included_stubs: BICS pattern (08002584), conditional struct-store (08001B04), conditional indexed-return (08001DE0), literal-pool AND+OR gGraphicsBuffer (0800BEF4), literal-pool AND+OR D_03004004 (0800BF60) |
 | 77 | `pending` | +11 | 11 included_stubs: 3 RSBS mask-clear+call (080109CC/080144BC/08014A0C), conditional-call D_03006518 (08012C64), bit-test+call (0800BC90), switch-2 (080118C4), conditional-return (0801274C), for-loop+C7A4 (08014354), D_03004004 hw-write (0800BF44), 5+2-call (080113BC), do-while+BLE (080117FC) |

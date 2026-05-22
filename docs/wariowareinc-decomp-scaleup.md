@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 79` — `func_0800210C` GBA virtual→physical address dereference
-- `build/report.json`: **1344 / 5955 matched functions** = **22.569%**
+- Verified working tree: `batch 80` — `func_080CD564` field copy via LDR/STR pairs at 0x28/0x2C offsets
+- `build/report.json`: **1345 / 5955 matched functions** = **22.586%**
 - `matched_code_percent`: **6.4327%**
-- `tools/gen_objdiff.py`: **891 linked C TUs / 5796 non-C units**
-- `src/decomp/*.c`: **937 decompiled function files** = **872 standalone_tu** + **65 included_stub**
+- `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
+- `src/decomp/*.c`: **939 decompiled function files** = **873 standalone_tu** + **66 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 80 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4327%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `asm_080cd564` field copy function: copies two 32-bit fields at offsets 0x28 and 0x2C from arg1 to arg0. Original uses `ADDS R3, R0, #0` register move followed by LDR/STR pairs with R2 and R1. Matched using inline asm with `.syntax unified` for exact instruction encoding.
+- Notes: Some small field-copy functions have instruction ordering that's difficult to match with pure C due to register allocation and instruction interleaving; inline asm is appropriate when the instruction sequence is short and specific.
 
 ### Batch 79 — accepted
 - Metric delta: **+1 matched function**

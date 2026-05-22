@@ -36,11 +36,15 @@ docker run --rm -v "$PWD:/workspace" -w /workspace devkitpro/devkitarm:latest \
 Required success signal:
 - `wariowareinc.gba: OK`
 
+On macOS, do **not** rely on local `make`/`make report` for verification; use Docker. Shortcut command: `/decomp-verify`.
+
 ### Refresh report
 ```bash
 docker run --rm -v "$PWD:/workspace" -w /workspace devkitpro/devkitarm:latest \
   bash -lc 'set -euo pipefail; make report 2>&1 | tail -n 3'
 ```
+Shortcut command: `/decomp-report`
+
 Then read `build/report.json` for:
 - `matched_functions`
 - `matched_functions_percent`
