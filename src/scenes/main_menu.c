@@ -331,7 +331,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_08014440.s"
 
-#include "asm/scenes/main_menu/asm_08014490.s"
+#include "../decomp/asm_08014490.c"
 
 #include "../decomp/asm_080144bc.c"
 

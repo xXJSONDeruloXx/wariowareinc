@@ -5,9 +5,9 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 94` — `sprite_get_anim_duration` lib_sprite animation helper
-- `build/report.json`: **1349 / 5956 matched functions** = **22.6326%**
-- `matched_code_percent`: **6.4355%**
+- Verified working tree: `batch 95` — `func_08014490` main_menu scene wrapper
+- `build/report.json`: **1350 / 5956 matched functions** = **22.6494%**
+- `matched_code_percent`: **6.4360%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
 - `src/decomp/*.c`: **952 decompiled function files** = **873 standalone_tu** + **79 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**

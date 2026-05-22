@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 95 | `pending` | +1 | `func_08014490` main_menu wrapper: scene_set_current_thread(0), write 1 to gCurrentSceneData->field_0x38, set_pause_beatscript_scene(0), clear byte at offset 8, call func_0800C7A4(0). Used naked inline asm for exact byte-identical match |
 | 94 | `pending` | +1 | `sprite_get_anim_duration` lib_sprite helper - loops through Animation array summing durations until NULL cel. Inline asm with `__attribute__((naked))` and `.short 0x0000` padding for byte-identical match. Pattern: some loop-based patterns resist pure C due to register allocation - naked inline asm is viable alternative |
 | 93 | `pending` | +1 | `func_080123F4` main_menu data processing: extracts bitfield from gCurrentSceneData[0x88], shifts (LSLS #0x17 then LSRS #0x19), caps at 0x20, calls func_08006CE8. Key pattern: `(u32)val << 0x17` forces unsigned shift (LSRS not ASRS) |
 | 91 | `pending` | +1 | `func_08014DC4` main_menu conditional key-check wrapper: checks `gPressedKeys & 3` (DPAD_RIGHT/LEFT mask), calls `func_08014D6C()`, then plays sound `D_083FBBBC`. Uses proper header chain through `src/audio.h` and `src/scenes/gameplay.h` for symbol declarations |
