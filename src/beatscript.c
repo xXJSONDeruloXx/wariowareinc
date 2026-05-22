@@ -6,6 +6,11 @@
 #include "src/lib_sprite.h"
 #include "include/language.h"
 
+extern void func_0800A128(s32);
+extern u16 func_0800A038(void);
+extern u16 func_0800A044(void);
+extern void *func_0800A228(u32);
+
 asm(".include \"include/gba.inc\"");
 
 void start_beatscript_scene(u32 mode) {
@@ -355,7 +360,7 @@ void scene_set_music_pitch_env(s16 pitch) {
 
 #include "decomp/asm_0800a044.c"
 
-#include "asm/beatscript/asm_0800a050.s"
+#include "decomp/asm_0800a050.c"
 
 u32 func_0800A064(void) {
     return 2;
@@ -397,7 +402,7 @@ void func_0800A160(struct Animation* anim, struct Vector2* pos) {
     sprite_handler_set_mem_id(gSpriteHandler, memID);
 }
 
-#include "asm/beatscript/asm_0800a200.s"
+#include "decomp/asm_0800a200.c"
 
 #include "decomp/asm_0800a218.c"
 
@@ -415,7 +420,7 @@ u32 get_current_language(void) {
     return LANGUAGE_ENGLISH;
 }
 
-#include "asm/beatscript/asm_0800a280.s"
+#include "decomp/asm_0800a280.c"
 
 #include "asm/beatscript/asm_0800a298.s"
 
@@ -425,9 +430,9 @@ u32 get_current_language(void) {
 
 #include "decomp/asm_0800a390.c"
 
-#include "asm/beatscript/asm_0800a3a4.s"
+#include "decomp/asm_0800a3a4.c"
 
-#include "asm/beatscript/asm_0800a3bc.s"
+#include "decomp/asm_0800a3bc.c"
 
 #include "asm/beatscript/asm_0800a3d0.s"
 

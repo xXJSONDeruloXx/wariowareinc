@@ -9,10 +9,10 @@ If an agent resumes cold, read these first:
 4. `docs/decomp-batch-history.md` — accepted batch history
 
 ## Current verified baseline
-- Verified working tree: `batch 75` — 17 functions: conditional-call wrappers, gCurrentSceneData shift-offset loads, gGraphicsBuffer bit-OR, D_0300400C indexed halfword stores, 6-field struct init, language-indexed lookup, two-call wrappers
+- Verified working tree: `batch 76` — 16 functions: gGraphicsBuffer bit-ops, RSBS mask-clears, shift-OR-set pattern, gBeatscriptScene indexed bit-set, D_03006518 zero-clear, scene_set_current_thread+store, four-const-arg wrapper, alloc+init, byte-load+2-call, scene_paused
 - `matched_functions`: **1345 / 5955** (**22.585%**)
-- `matched_code_percent`: **6.4267%**
-- `tools/gen_objdiff.py`: **908 C / 5779 asm-only units**
+- `matched_code_percent`: **6.4305%**
+- `tools/gen_objdiff.py`: **920 C / 5767 asm-only units**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4764 / 5955**
 - Remaining gap to 80%: **3420 matched functions**

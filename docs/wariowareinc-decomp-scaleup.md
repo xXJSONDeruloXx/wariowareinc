@@ -20,6 +20,29 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 76 — accepted
+- Metric delta: **+16 matched functions**
+- Matched code: **6.4305%**
+- Commit: pending
+- Accepted functions:
+  - `asm_0800bf20` gGraphicsBuffer.DISPCNT &= ~(0x100 << arg0) bit-AND-clear (BICS)
+  - `asm_0800bfc8` gGraphicsBuffer.DISPCNT |= 0x1000 const bit-OR-set (local var for reg alloc)
+  - `asm_0800bfdc` gGraphicsBuffer.DISPCNT &= 0xEFFF literal-pool AND mask clear
+  - `asm_080109b4` D_03006518 6-byte bulk zero-clear (byte ptr array form)
+  - `asm_0800a3bc` gCurrentSceneData byte &= ~3 RSBS mask-clear (register pin R0, load-first)
+  - `asm_080121b8` gCurrentSceneData + 0xDD byte &= ~3 RSBS mask-clear
+  - `asm_08013114` gCurrentSceneData + 0xDD byte &= ~9 RSBS mask-clear
+  - `asm_0800a050` gCurrentSceneData byte load at literal-pool offset 0x173
+  - `asm_0800a280` gBeatscriptScene array indexed byte |= 0x80 (load-base-first trick)
+  - `asm_0800a200` gCurrentSceneData shift-OR-set at offset 5 (u32 shifted local for instr order)
+  - `asm_0800a3a4` gCurrentSceneData shift-OR-set at offset 6 (same pattern)
+  - `asm_08013e44` four const-arg sequential calls to func_0800C7A4
+  - `asm_080143a0` byte load from gCurrentSceneData+0xFD + 2-call wrapper
+  - `asm_080114e4` main_menu_scene_paused: 4 sequential calls with gCurrentSceneData offset
+  - `asm_08002568` mem_heap_alloc(0x5C) + func_08002124 init + return ptr
+  - `asm_08014428` scene_set_current_thread(0) + D_03006518.unk1 = 4
+- Notes: Critical new learnings: (1) **RSBS register pin instruction order matters** — `register u32 m asm("r0"); val = ptr[7]; m = 3; m = -m; m = val & m;` produces LDRB BEFORE MOVS, matching the original. Without loading the byte first into a separate local, the compiler puts MOVS/NEG before LDRB, producing different bytes. (2) **Shift-OR-set instruction interleaving** — the `arg0 << 7` shift must be in a `u32 shifted` local declared BEFORE `ptr`, so the compiler interleaves LSLS between the LDR and LDRB. Without this, the compiler either puts LSLS first or after ANDS. (3) **Literal-pool AND mask** — `gGraphicsBuffer.DISPCNT &= 0xEFFF` compound assignment produces the right register allocation (R0 for result). Using a local variable produces wrong registers. (4) `.syntax divided` makes `mov`/`neg`/`and` equivalent to `movs`/`rsbs`/`ands` at the encoding level, but instruction ORDER is still critical for byte-identical matching. (5) Forward declarations in beatscript.c fix implicit-declaration type mismatch warnings.
+
 ### Batch 75 — accepted
 - Metric delta: **+17 matched functions**
 - Matched code: **6.4267%** (small increase due to small function sizes)

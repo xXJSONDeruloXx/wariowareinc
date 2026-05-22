@@ -85,13 +85,17 @@
 - semantically identical C can still miss due to register allocation differences
 - Zero-init store order depends on C source statement order: `a0[1]=0; a0[0]=0; a0[2]=0;` generates `STR [R0,#4]; STR [R0]; STR [R0,#8]` (matching the original's non-sequential pattern), while `a0[0]=0; a0[1]=0; a0[2]=0;` generates sequential stores
 - Included stubs in the same TU don't need extern declarations for functions already defined in the host C file
+- **Instruction ORDER is critical for byte-identical matching**, not just instruction choice. `.syntax divided` makes `mov`/`neg`/`and` encode identically to `movs`/`rsbs`/`ands`, but the compiler may reorder instructions differently from the original. For example, `MOVS R0,#3; RSBS R0,R0,#0; ANDS R0,R1` and `LDRB R1; MOVS R0,#3; RSBS R0,R0,#0; ANDS R0,R1` produce different bytes even though the same instructions are present — the LDRB position in the instruction stream matters.
 
 ### Bitfield / mask traps
 - do not replace bitfield extraction with AND masks when the original is a shift-pair
 - `byte &= ~N` is dangerous when `(~N & 0xFF)` fits in 8 bits; agbcc tends to emit `MOVS #imm8; ANDS` instead of `MOVS #N; RSBS; ANDS`
 - `-1` / other negative immediates can pick `NEGS`, `RSBS`, or literal-pool forms differently than expected
 - some OR/bit-clear forms need a very specific spelling to avoid extra `ADDS`
-- **register-pinning workaround**: when `&= ~3` must emit `MOVS R1,#3; RSBS R1,R1,#0; ANDS R1,R2` but agbcc prefers `MOVS R1,#0xFC; ANDS`, pin the mask variable to a register: `register u8 m asm("r1"); m = 3; m = -m; m = v & m;`
+- **register-pinning workaround**: when `&= ~3` must emit `MOVS R0,#3; RSBS R0,R0,#0; ANDS R0,R1` but agbcc prefers `MOVS #0xFC; ANDS`, pin the mask variable to R0: `register u32 m asm("r0"); val = ptr[7]; m = 3; m = -m; m = val & m; ptr[7] = m;`. **CRITICAL**: load the byte into a separate `val` local BEFORE creating the mask, so the compiler puts LDRB before MOVS/RSBS. Without this, the compiler may put MOVS/NEG before LDRB, producing different byte order.
+- **Shift-OR-set instruction interleaving**: for `ptr[N] = (ptr[N] & 0x7F) | (arg0 << 7)`, declare `u32 shifted` as a local variable BEFORE `ptr`, and compute `shifted = arg0 << 7` after loading `ptr`. This forces the compiler to interleave `LSLS R0, #7` between `LDR R3` and `LDRB R2`, matching the original. Writing `arg0 = arg0 << 7` before loading `ptr` puts LSLS before LDR, which is wrong.
+- **Literal-pool AND mask** — `gGraphicsBuffer.DISPCNT &= 0xEFFF` compound assignment produces the right register allocation. Using a local `u16 val; val = ...; val &= ...; gGraphicsBuffer.DISPCNT = val;` produces wrong register allocation (AND result in R1 instead of R0).
+- **Const bit-OR-set**: `gGraphicsBuffer.DISPCNT |= 0x1000` needs a local variable `u16 val; val = gGraphicsBuffer.DISPCNT; val |= 0x80 << 5; gGraphicsBuffer.DISPCNT = val;` to get the right register allocation (OR into R1, not R0).
 
 ### Addressing / literal-pool traps
 - D_ absolute-address access is known-good mainly at offset `0`; non-zero offsets often drift

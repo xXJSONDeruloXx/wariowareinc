@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 76 | `pending` | +16 | 16 included_stubs: 3 gGraphicsBuffer bit-ops (0800BF20/BFC8/BFDC), 3 RSBS mask-clears (0800A3BC/080121B8/08013114), 2 shift-OR-set (0800A200/0800A3A4), beatscript indexed bit-set (0800A280), D_03006518 zero-clear (080109B4), scene_set+store (08014428), 4-const-arg (08013E44), alloc+init (08002568), byte+2-call (080143A0), scene_paused (080114E4), literal-offset load (0800A050) |
 | 75 | `pending` | +17 | 17 included_stubs: 6 conditional-call wrappers (08012CB4/0801364C/08014B44/08014DE8/080153E0/08015930), 4 gCurrentSceneData shift-offset loads (0800A024/0800A138/0800A14C/0800A390), scene_stop+const-arg+2-call+lookup (08011764/08013AE0/0800A228/0800BBB4), bit-OR+hw-pair+struct-init (0800BF0C/0800BF34/080024D0) |
 | 74 | `pending` | +8 | 8 included_stubs: struct zero-inits (08002470/08002600/08002614), gBeatscriptScene getters (0800A038/0800A044), const-arg+2-call wrappers (08013B88/0800A128/0800A218) |
 | 73 | `pending` | +5 | `func_080025F8`/`0800260C` 3-word struct stores + 3 BX LR leaves (08013184/08013624/08014FF4) |
