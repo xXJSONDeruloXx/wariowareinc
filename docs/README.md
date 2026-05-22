@@ -9,10 +9,10 @@ If an agent resumes cold, read these first:
 4. `docs/decomp-batch-history.md` — accepted batch history
 
 ## Current verified baseline
-- Verified working tree: `batch 77` — 11 functions: RSBS mask-clear+call wrappers, bit-test conditional calls, switch/case dispatchers, conditional returns, do-while loops, D_03004004 indexed halfword writes, multi-call scene wrappers
-- `matched_functions`: **1345 / 5955** (**22.585%**)
-- `matched_code_percent`: **6.4324%**
-- `tools/gen_objdiff.py`: **931 C / 5756 asm-only units**
+- Verified working tree: `batch 78` — 5 functions: BICS pattern (1 & ~byte), conditional struct-store + return, conditional indexed-return, literal-pool AND+OR halfword writes (load-halfword-before-mask instruction ordering)
+- `matched_functions`: **1344 / 5955** (**22.584%**)
+- `matched_code_percent`: **6.4327%**
+- `tools/gen_objdiff.py`: **936 C / 5751 asm-only units**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4764 / 5955**
 - Remaining gap to 80%: **3420 matched functions**

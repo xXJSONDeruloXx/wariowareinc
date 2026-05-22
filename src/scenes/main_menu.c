@@ -9,6 +9,9 @@
 extern void scene_set_current_thread(u32);
 extern void func_0801208C(void);
 
+extern void scene_set_current_thread(u32);
+extern void func_0801208C(void);
+
 asm(".include \"include/gba.inc\"");
 
 void main_menu_scene_run(void) {

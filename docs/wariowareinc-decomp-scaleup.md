@@ -20,6 +20,18 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 78 — accepted
+- Metric delta: **+5 matched functions** (net: -1 from batch 77 due to objdiff recount)
+- Matched code: **6.4327%**
+- Commit: pending
+- Accepted functions:
+  - `asm_08002584` BICS pattern: `result = 1; result &= ~val;` generates `MOVS R0,#1; BICS R0,R1`
+  - `asm_08001b04` conditional struct-store: BL + CMP + BLT + indexed store with R4 save
+  - `asm_08001de0` conditional indexed-return: `if (arg0 < 0) return 0; return base + (arg0 << 3)` with LSLS-before-LDR instruction ordering
+  - `asm_0800bef4` gGraphicsBuffer DISPCNT literal-pool AND+OR: load halfword BEFORE assigning mask constant to get correct instruction order (`LDRH R2; LDR R1,=0xFFF8` not `LDR R1; LDRH R2`)
+  - `asm_0800bf60` D_03004004 indexed halfword literal-pool AND+OR: same load-halfword-before-mask trick
+- Notes: (1) **Instruction ordering trap for literal-pool AND+OR**: When writing `gGraphicsBuffer.DISPCNT = (DISPCNT & mask) | val`, the C statement order matters. `mask = 0xFFF8; loaded = base[0]` produces `LDR R1,=mask; LDRH R2,[R3]` (load mask first), but the original has `LDRH R2,[R3]; LDR R1,=mask` (load halfword first). To get the correct order, assign the halfword to a local BEFORE assigning the mask constant: `loaded = base[0]; mask = 0xFFF8;`. (2) **LSLS-before-LDR**: For `base + (arg0 << N)`, declare `shifted = arg0 << N` as a local BEFORE loading the base pointer. (3) **Register allocation mismatches**: Several candidates (080024E4, 080024FC, 08002514, 08014490) matched at the agbcc assembly instruction level but produced different machine code in the linked ROM due to register allocation differences (e.g., R1 vs R3 for loop pointer, R0 vs R1 for STRH target). Isolated agbcc testing is necessary but NOT sufficient — the final linked ROM is the real gate.
+
 ### Batch 77 — accepted
 - Metric delta: **+11 matched functions**
 - Matched code: **6.4324%**

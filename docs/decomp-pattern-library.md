@@ -104,6 +104,11 @@
 - large byte offsets may need pointer shaping so Thumb uses the same split (`+8` then `[+0x1E]`, etc.)
 - `((u32*)&gGlobal)[N]` may compile to a symbol+offset literal relocation instead of base-load + offset addressing
 - raw relocatable object bytes can mislead; final linked ROM is the real gate
+- **Isolated agbcc assembly match ≠ ROM match**: Register allocation differences (e.g., R1 vs R3 for a loop pointer, R0 vs R1 for a STRH target) produce semantically identical but byte-different machine code. The linked ROM is the only reliable gate. Always verify with a full Docker build, not just agbcc output comparison.
+- **Literal-pool AND+OR instruction ordering**: For `gGraphicsBuffer.DISPCNT = (DISPCNT & mask) | val`, the C declaration order matters. `loaded = base[0]; mask = 0xFFF8` produces `LDRH R2; LDR R1,=mask` (halfword first then mask), while `mask = 0xFFF8; loaded = base[0]` produces `LDR R1,=mask; LDRH R2` (mask first then halfword). The original typically loads the halfword first, so declare `loaded` before `mask`.
+- **LSLS-before-LDR**: For `base + (arg0 << N)`, declare `shifted = arg0 << N` as a local BEFORE loading the base pointer to get `LSLS; LDR` ordering. Loading base first produces `LDR; LSLS`.
+- **BICS pattern**: `result = 1; result &= ~val` generates `MOVS R0,#1; BICS R0,R1`. Writing `1 & ~val` or `~val & 1` generates `MVN; AND` instead.
+- **Pointer-to-global vs global-value**: `base = &gCurrentSceneData` generates `LDR R4, .literal` (loads address into R4), while `base = gCurrentSceneData` generates `LDR R0, .literal; LDR R4, [R0]` (loads value into R4). Use `&gCurrentSceneData` when the original keeps the global's address in a register and dereferences it multiple times.
 
 ### Repo integration traps
 - grouping multiple functions in one C file breaks matches
