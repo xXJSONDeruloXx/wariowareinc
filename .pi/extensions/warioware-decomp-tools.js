@@ -216,7 +216,51 @@ function linkerEntryFor(repoRoot, objRel) {
   return idx >= 0 ? { lineNumber: idx + 1, text: lines[idx].trim() } : null;
 }
 
-function preflightFunction(repoRoot, fn, fallbackName) {
+/** Extract function calls from asm code by looking for BL instructions */
+function extractCallsFromAsm(asmCode) {
+  if (!asmCode) return [];
+  const calls = [];
+  // Match patterns like: BL func_080024D0 or BL func_080024D0-0x4
+  const blRegex = /\bBL\s+(func_[0-9a-fA-F]{8})(?:-\w+)?/g;
+  let match;
+  while ((match = blRegex.exec(asmCode)) !== null) {
+    calls.push(match[1].toLowerCase());
+  }
+  return [...new Set(calls)]; // deduplicate
+}
+
+/** Check if any of the function's callees have been converted to C (have cCode in mizuchi-db) */
+function hasConvertedCallees(db, fn) {
+  const allFns = db?.decompFunctions || [];
+  // Use callsFunctions from db if available, otherwise extract from asmCode
+  const calleeNames = fn?.callsFunctions?.length
+    ? new Set(fn.callsFunctions)
+    : new Set(extractCallsFromAsm(fn?.asmCode));
+  for (const f of allFns) {
+    if (calleeNames.has(f.name.toLowerCase()) && f.cCode?.trim()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Get list of callees that have been converted to C */
+function getConvertedCallees(db, fn) {
+  const allFns = db?.decompFunctions || [];
+  // Use callsFunctions from db if available, otherwise extract from asmCode
+  const calleeNames = fn?.callsFunctions?.length
+    ? new Set(fn.callsFunctions)
+    : new Set(extractCallsFromAsm(fn?.asmCode));
+  const converted = [];
+  for (const f of allFns) {
+    if (calleeNames.has(f.name.toLowerCase()) && f.cCode?.trim()) {
+      converted.push(f.name);
+    }
+  }
+  return converted;
+}
+
+function preflightFunction(repoRoot, fn, fallbackName, db) {
   const name = fn?.name ?? fallbackName;
   const addr = functionAddr(fn, fallbackName);
   const asmRel = asmRelPath(fn);
@@ -236,6 +280,8 @@ function preflightFunction(repoRoot, fn, fallbackName) {
   let safeForAutonomous = false;
   const reasons = [];
   const nextSteps = [];
+  let calleeRisk = false;
+  let convertedCallees = [];
 
   if (!fn) {
     reasons.push("function was not found in mizuchi-db.json");
@@ -249,14 +295,31 @@ function preflightFunction(repoRoot, fn, fallbackName) {
     nextSteps.push("Refresh the Mizuchi index before using this function again; do not select it for a new chunk.");
   } else if (includingSource) {
     conversionMode = "included_stub";
+    // Check for callee risk
+    convertedCallees = getConvertedCallees(db, fn);
+    calleeRisk = convertedCallees.length > 0;
+    // Still autonomous-safe, but with a warning about callee risk
     safeForAutonomous = true;
     reasons.push(`asm stub is included by ${includingSource}`);
     reasons.push("use include-shim conversion: replace the asm include with a guarded src/decomp C include so code stays in the original host TU order");
+    if (calleeRisk) {
+      reasons.push(`⚠️ CALLEE RISK: calls already-converted C functions: ${convertedCallees.slice(0, 3).join(", ")}${convertedCallees.length > 3 ? "..." : ""}`);
+      reasons.push("Isolated compile_and_view_asm may show 100% match, but ROM can mismatch due to register allocation differences with C callees");
+      nextSteps.push("Consider decompiling the callees first (strategy: callees), or verify at linked ROM level only");
+    }
     nextSteps.push("Use compile_and_view_asm until 100%, then apply_conversion; it will use the included-stub shim workflow automatically.");
   } else if (linkerEntry) {
     conversionMode = "standalone_tu";
+    // Check for callee risk
+    convertedCallees = getConvertedCallees(db, fn);
+    calleeRisk = convertedCallees.length > 0;
     safeForAutonomous = true;
     reasons.push(`linker script contains ${targetObjRel}`);
+    if (calleeRisk) {
+      reasons.push(`⚠️ CALLEE RISK: calls already-converted C functions: ${convertedCallees.slice(0, 3).join(", ")}${convertedCallees.length > 3 ? "..." : ""}`);
+      reasons.push("Isolated compile_and_view_asm may show 100% match, but ROM can mismatch due to register allocation differences with C callees");
+      nextSteps.push("Consider decompiling the callees first (strategy: callees), or verify at linked ROM level only");
+    }
     nextSteps.push("Use compile_and_view_asm until 100%, then apply_conversion for the mechanical edits and ROM check.");
   } else {
     reasons.push("no including C source and no matching linker-script object entry were found");
@@ -275,6 +338,8 @@ function preflightFunction(repoRoot, fn, fallbackName) {
     decompLinkerEntry,
     conversionMode,
     safeForAutonomous,
+    calleeRisk,
+    convertedCallees,
     decompRel,
     convertedAsmRel,
     reasons,
@@ -283,8 +348,9 @@ function preflightFunction(repoRoot, fn, fallbackName) {
 }
 
 function formatPreflight(pf) {
+  const calleeRiskTag = pf.calleeRisk ? " ⚠️ (callee-risk)" : "";
   const lines = [
-    `Preflight for ${pf.name}: ${pf.conversionMode}${pf.safeForAutonomous ? " ✅" : " ⚠️"}`,
+    `Preflight for ${pf.name}: ${pf.conversionMode}${pf.safeForAutonomous ? " ✅" : " ⚠️"}${calleeRiskTag}`,
     `  asm: ${pf.asmRel ?? "?"}${pf.asmExists ? "" : " (missing)"}`,
     `  target object: ${pf.targetObjRel ?? "?"}${pf.targetObjectExists ? " (exists)" : " (not built/found)"}`,
     `  including source: ${pf.includingSource ?? "none"}`,
@@ -477,7 +543,7 @@ function registerCompileAndViewAsm(pi) {
       }
 
       if (!targetObj || !fs.existsSync(targetObj)) {
-        const pf = preflightFunction(repoRoot, fn, functionName);
+        const pf = preflightFunction(repoRoot, fn, functionName, db);
         if (pf.conversionMode === "included_stub" && fn?.asmCode?.trim()) {
           generatedTargetDir = fs.mkdtempSync(path.join(os.tmpdir(), "ww-included-target-"));
           targetObj = path.join(generatedTargetDir, `${functionName}.target.o`);
@@ -664,7 +730,7 @@ function registerPreflightCandidate(pi) {
           fn = { name: functionName, asmModulePath: `.mizuchi-asm/asm/asm_${addr}.s`, callsFunctions: [] };
         }
       }
-      const pf = preflightFunction(repoRoot, fn, functionName);
+      const pf = preflightFunction(repoRoot, fn, functionName, db);
       return {
         content: [{ type: "text", text: formatPreflight(pf) }],
         details: pf,
@@ -893,7 +959,7 @@ function registerQueryCandidates(pi) {
 
       const preflights = new Map();
       const getPreflight = (f) => {
-        if (!preflights.has(f.name)) preflights.set(f.name, preflightFunction(repoRoot, f, f.name));
+        if (!preflights.has(f.name)) preflights.set(f.name, preflightFunction(repoRoot, f, f.name, db));
         return preflights.get(f.name);
       };
 
@@ -968,14 +1034,16 @@ function registerQueryCandidates(pi) {
         const calledMatched = (fn.callsFunctions ?? []).filter(
           (n) => allFns.find((f) => f.name === n)?.cCode?.trim(),
         ).length;
+        const calleeRiskTag = pf.calleeRisk ? " ⚠️ CALLEE-RISK" : "";
         lines.push(
-          `• ${fn.name}  [${asmLines} asm lines]\n` +
+          `• ${fn.name}  [${asmLines} asm lines]${calleeRiskTag}\n` +
           `  workflow: ${pf.conversionMode}${pf.safeForAutonomous ? " (supported)" : " (research/manual)"}\n` +
           `  asm: ${asmSrc}\n` +
           `  target: ${targetObj}${pf.targetObjectExists ? " (exists)" : " (not built/found)"}\n` +
           `  included-by: ${pf.includingSource ?? "none"}\n` +
           `  linker: ${pf.linkerEntry ? `line ${pf.linkerEntry.lineNumber}` : "none"}\n` +
-          `  matched-calls: ${calledMatched}/${(fn.callsFunctions ?? []).length}`,
+          `  matched-calls: ${calledMatched}/${(fn.callsFunctions ?? []).length}` +
+          `${pf.calleeRisk ? `\n  ⚠️ calls converted: ${pf.convertedCallees?.slice(0, 2).join(", ")}${(pf.convertedCallees?.length ?? 0) > 2 ? "..." : ""}` : ""}`,
         );
       }
 
@@ -1048,7 +1116,7 @@ function registerApplyConversion(pi) {
           fn = { name: functionName, asmModulePath: `.mizuchi-asm/asm/asm_${addr}.s`, callsFunctions: [] };
         }
       }
-      const pf = preflightFunction(repoRoot, fn, functionName);
+      const pf = preflightFunction(repoRoot, fn, functionName, db);
 
       if (!["standalone_tu", "included_stub"].includes(pf.conversionMode)) {
         return {
@@ -1567,7 +1635,7 @@ function registerDecompSiblings(pi) {
       ];
 
       for (const fn of finalSiblings) {
-        const fPf = preflightFunction(repoRoot, fn, fn.name);
+        const fPf = preflightFunction(repoRoot, fn, fn.name, db);
         const addr = functionAddr(fn, fn.name);
         const asmLines = fn.asmCode?.split("\n").length ?? 0;
         const asmSrc = asmRelPath(fn) ?? "?";
@@ -1575,9 +1643,10 @@ function registerDecompSiblings(pi) {
         const calledMatched = (fn.callsFunctions ?? []).filter(
           (n) => allFns.find((f) => f.name === n)?.cCode?.trim(),
         ).length;
+        const calleeRiskTag = fPf.calleeRisk ? " ⚠️ CALLEE-RISK" : "";
 
         lines.push(
-          `• ${fn.name}  [${asmLines} asm lines]
+          `• ${fn.name}  [${asmLines} asm lines]${calleeRiskTag}
 ` +
           `  workflow: ${fPf.conversionMode}${fPf.safeForAutonomous ? " (supported)" : " (research/manual)"}
 ` +
@@ -1587,7 +1656,8 @@ function registerDecompSiblings(pi) {
 ` +
           `  matched-calls: ${calledMatched}/${(fn.callsFunctions ?? []).length}
 ` +
-          `  calls: ${(fn.callsFunctions ?? []).slice(0, 3).join(", ")}${(fn.callsFunctions?.length ?? 0) > 3 ? "..." : ""}`,
+          `  calls: ${(fn.callsFunctions ?? []).slice(0, 3).join(", ")}${(fn.callsFunctions?.length ?? 0) > 3 ? "..." : ""}${fPf.calleeRisk ? `
+  callee-risk: calls ${fPf.convertedCallees?.slice(0, 2).join(", ") || "unknown C functions"}${(fPf.convertedCallees?.length ?? 0) > 2 ? "..." : ""}` : ""}`,
         );
       }
 

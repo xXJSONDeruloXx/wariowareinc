@@ -61,6 +61,15 @@ start:
 - `gCurrentSceneData` halfword add / shift / store helpers
 - `sprite_id_delete(gSpriteHandler, *(u32*)(gCSV + offset))` siblings
 
+## **NEVER decompile callers of already-converted C functions**
+A 100% isolated compile match with `compile_and_view_asm` does **NOT** guarantee a final ROM match when the callee has already been converted to C. The isolated test compares your new C code against the **original asm callee**, but the linked ROM uses the **converted C callee** with potentially different register allocation for the call.
+
+Example trap: `func_08002514` calls `func_080024D0`. Both were originally asm. `func_080024D0` was converted to C. Isolated testing of `func_08002514` used the original asm `func_080024D0`, producing a 100% match. But linking with the C `func_080024D0` changed the register allocation, causing ROM mismatch.
+
+**Mitigation**: Use `decomp_siblings` with `strategy: callees` to check if any callees are already converted. If so, either:
+1. Choose a different standalone function whose callees are all in asm
+2. Or accept that the conversion requires manual verification beyond isolated testing
+
 ## Code-shaping rules that have proven important
 - `#include "global.h"` in every decomp TU
 - add `#include "types.h"` when touching g-symbols declared there
