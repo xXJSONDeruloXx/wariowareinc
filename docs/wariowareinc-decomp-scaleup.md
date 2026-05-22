@@ -5,8 +5,8 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 96` — `func_080113EC` main_menu conditional bit-test wrapper
-- `build/report.json`: **1351 / 5956 matched functions** = **22.6655%**
+- Verified working tree: `batch 97` — `func_08001DFC` array counter loop with BLS branch
+- `build/report.json`: **1352 / 5956 matched functions** = **22.6998%**
 - `matched_code_percent`: **6.4366%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
 - `src/decomp/*.c`: **954 decompiled function files** = **873 standalone_tu** + **81 included_stub**
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 97 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4366%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_08001DFC` array counter loop: counts non-zero bytes in D_03000118[0..0x1F]. Uses `u32 i` for loop counter to get `BLS` (unsigned lower-or-same) branch instead of `BLE` (signed less-or-equal).
+- Notes: **BLS vs BLE**: The original uses `CMP R1, #0x1F; BLS` for the loop condition. Using `u32 i` generates `BLS` (unsigned comparison), while `s32 i` generates `BLE` (signed comparison). Instruction order and branch type must match exactly for byte-identical ROM.
 
 ### Batch 96 — accepted
 - Metric delta: **+1 matched function**
