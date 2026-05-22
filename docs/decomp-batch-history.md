@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 91 | `pending` | +1 | `func_08014DC4` main_menu conditional key-check wrapper: checks `gPressedKeys & 3` (DPAD_RIGHT/LEFT mask), calls `func_08014D6C()`, then plays sound `D_083FBBBC`. Uses proper header chain through `src/audio.h` and `src/scenes/gameplay.h` for symbol declarations |
 | 90 | `pending` | +1 | `func_0800A3D0` texture loader callback setup: starts texture loader task then schedules callback via `run_func_after_task(task, func_0800A3BC + 1, 0)`. Uses proper TaskFinalFunc cast for callback. Sets bit in gCurrentSceneData[7] after setup |
 | 89 | `pending` | +1 | `func_0800A000` soundplayer volume setter: stores arg0 at gBeatscriptScene offset 0x1C58, then calls `set_soundplayer_volume(gBeatscriptScene.musicPlayer, arg0)`. Uses load-base-first pattern to match LDR R2/R3 literal-pool sequence |
 | 88 | `pending` | +1 | `start_load_gfx_table_task` graphics table task launcher: stack-allocated array pattern for passing args to `start_new_task`. Array-based layout matches original `sub sp, #0xc` + sequential stores |

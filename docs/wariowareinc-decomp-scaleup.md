@@ -5,8 +5,8 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 90` — `func_0800A3D0` texture loader callback setup
-- `build/report.json`: **1349 / 5956 matched functions** = **22.634%**
+- Verified working tree: `batch 91` — `func_08014DC4` main_menu conditional key-check wrapper
+- `build/report.json`: **1346 / 5956 matched functions** = **22.599%**
 - `matched_code_percent`: **6.4355%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
 - `src/decomp/*.c`: **948 decompiled function files** = **873 standalone_tu** + **75 included_stub**
