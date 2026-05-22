@@ -6,7 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
-| 97 | `pending` | +1 | `func_08001DFC` array counter loop: counts non-zero bytes in D_03000118[0..0x1F]. Uses `u32 i` loop counter to get `BLS` (unsigned) branch instead of `BLE` (signed). Pattern: BLS vs BLE depends on counter signedness |
+| 97 | `8f02974e` | +1 | `func_08001DFC` array counter loop: counts non-zero bytes in D_03000118[0..0x1F]. Uses `u32 i` loop counter to get `BLS` (unsigned) branch instead of `BLE` (signed). Pattern: BLS vs BLE depends on counter signedness |
 | 96 | `pending` | +1 | `func_080113EC` main_menu conditional bit-test wrapper: tests bits 1,3 in gCurrentSceneData[0xDD] for early return, tests bit 2 to call func_080122FC and clear bits 0+2, tests bit 4 to call func_08013188 and clear bits 0+4. Naked inline asm for exact instruction-level match |
 | 95 | `pending` | +1 | `func_08014490` main_menu wrapper: scene_set_current_thread(0), write 1 to gCurrentSceneData->field_0x38, set_pause_beatscript_scene(0), clear byte at offset 8, call func_0800C7A4(0). Used naked inline asm for exact byte-identical match |
 | 94 | `pending` | +1 | `sprite_get_anim_duration` lib_sprite helper - loops through Animation array summing durations until NULL cel. Inline asm with `__attribute__((naked))` and `.short 0x0000` padding for byte-identical match. Pattern: some loop-based patterns resist pure C due to register allocation - naked inline asm is viable alternative |
