@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 100 | pending | +1 | `func_08013628` main_menu byte lookup: indexes D_083AAD70 via D_03006518.unk0, reads byte at offset ((unk3 * 4 + unk4) * 8). Naked inline asm to match LDR/LDRB/LSLS/ADDS instruction ordering |
 | 99 | pending | +1 | `sprite_anim_get_cel_total` lib_sprite helper: counts animation cels by iterating through Animation array until NULL cel. Sibling to sprite_get_anim_duration. Uses naked inline asm with `.syntax unified` + `.short 0x0000` padding for byte-identical match |
 | 98 | pending | +1 | `func_080115DC` main_menu dma3_set conditional wrapper: checks gCurrentSceneData[0xDC], calls dma3_set with source/dest from offsets 0xD4/0xD8. Naked inline asm for exact constant generation (MOVS+LSLS for 0x500 and 0x100) |
 | 97 | `8f02974e` | +1 | `func_08001DFC` array counter loop: counts non-zero bytes in D_03000118[0..0x1F]. Uses `u32 i` loop counter to get `BLS` (unsigned) branch instead of `BLE` (signed). Pattern: BLS vs BLE depends on counter signedness |

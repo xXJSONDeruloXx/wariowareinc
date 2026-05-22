@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 99` — `sprite_anim_get_cel_total` lib_sprite helper
-- `build/report.json`: **1354 / 5956 matched functions** = **22.7334%**
+- Verified working tree: `batch 100` — `func_08013628` main_menu table lookup
+- `build/report.json`: **1355 / 5956 matched functions** = **22.7498%**
 - `matched_code_percent`: **6.4373%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **957 decompiled function files** = **873 standalone_tu** + **84 included_stub**
+- `src/decomp/*.c`: **958 decompiled function files** = **873 standalone_tu** + **85 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 100 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4373%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_08013628` main_menu byte lookup: indexes D_083AAD70 via D_03006518.unk0, then reads byte at offset ((unk3 * 4 + unk4) * 8) from the dereferenced pointer. Uses naked inline asm to match exact instruction sequence with LSLS/ADDS patterns.
+- Notes: Complex pointer arithmetic with literal-pool loads (D_083AAD70, D_03006518), indexed loads with byte offsets 0, 3, 4 from D_03006518, then scaled offset calculation. Pure C couldn't match the precise LDR/LDRB/LSLS/ADDS instruction ordering.
 
 ### Batch 99 — accepted
 - Metric delta: **+1 matched function**
