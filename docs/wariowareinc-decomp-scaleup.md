@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 95` — `func_08014490` main_menu scene wrapper
-- `build/report.json`: **1350 / 5956 matched functions** = **22.6494%**
-- `matched_code_percent`: **6.4360%**
+- Verified working tree: `batch 96` — `func_080113EC` main_menu conditional bit-test wrapper
+- `build/report.json`: **1351 / 5956 matched functions** = **22.6655%**
+- `matched_code_percent`: **6.4366%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **952 decompiled function files** = **873 standalone_tu** + **79 included_stub**
+- `src/decomp/*.c`: **954 decompiled function files** = **873 standalone_tu** + **81 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,21 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 96 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4366%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_080113EC` main_menu conditional bit-test wrapper: tests bits 1,3 in gCurrentSceneData[0xDD] for early return, tests bit 2 to call func_080122FC then clear bits 0+2 (RSBS mask pattern), tests bit 4 to call func_08013188 then clear bits 0+4. Naked inline asm with `.syntax unified` to match exact instruction sequence and register allocation
+- Notes: Multi-path conditional function with LSLS sign-bit tests, conditional calls, and RSBS mask clears. Original pure C attempts failed due to register allocation differences and redundant reload elimination in early returns. Naked inline asm is the appropriate tool for complex multi-branch patterns with specific register requirements.
+
+### Batch 95 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4355%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_08014490` main_menu scene wrapper: scene_set_current_thread(0), write 1 to gCurrentSceneData->field_0x38, set_pause_beatscript_scene(0), clear byte at offset 8, call func_0800C7A4(0). Used naked inline asm for exact byte-identical match
 
 ### Batch 94 — accepted
 - Metric delta: **+1 matched function**

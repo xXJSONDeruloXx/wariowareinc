@@ -50,7 +50,7 @@ void func_08010BE0(void) {
 
 #include "../decomp/asm_080113bc.c"
 
-#include "asm/scenes/main_menu/asm_080113ec.s"
+#include "../decomp/asm_080113ec.c"
 
 extern void func_08012CB4(void);
 extern void func_0801364C(void);
