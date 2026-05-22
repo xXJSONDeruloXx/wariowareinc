@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 81 | `ac30fda5` | +1 | `func_080024E4` graphics_table loop wrapper - forward-loop through GraphicsTable entries (while(ptr->src != NULL) ptr += 0xC), then tail-call func_0800247C. Key: register `asm("r2")` + goto loop/start pattern preserves the `ADDS R2,#0xC` in original instruction order |
 | 80 | `pending` | +1 | 1 standalone_tu: field copy func_080CD564 (ADDS R3,R0,#0; LDR/STR pairs at 0x28/0x2C, inline asm) |
 | 79 | `pending` | +1 | 1 included_stub: GBA virtual→physical address dereference (0800210C) |
 | 78 | `pending` | +5 | 5 included_stubs: BICS pattern (08002584), conditional struct-store (08001B04), conditional indexed-return (08001DE0), literal-pool AND+OR gGraphicsBuffer (0800BEF4), literal-pool AND+OR D_03004004 (0800BF60) |
