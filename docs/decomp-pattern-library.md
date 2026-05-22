@@ -195,6 +195,39 @@ Example trap: `func_08002514` calls `func_080024D0`. Both were originally asm. `
 - For simple BX LR leaf functions, `void func(void) {}` produces `BX LR + NOP` which matches in the final linked ROM even when the original object has `BX LR + .short 0x0000` — the linker resolves the alignment padding correctly
 - Object-level NOP differences (`0xC046` vs `0x0000`) do NOT cause ROM-level mismatches for simple leaf functions
 
+### Loop-based patterns that resist pure C
+- Some loop-based patterns (like `sprite_get_anim_duration`) resist matching in pure C due to register allocation and instruction ordering that agbcc cannot replicate
+- When goto labels, register pinning (`register type asm("rN")`), and other C shaping tricks fail, use `__attribute__((naked))` with inline assembly:
+  ```c
+  __attribute__((naked))
+  s16 sprite_get_anim_duration(struct Animation *anim) {
+      asm volatile(
+          ".syntax unified\n"
+          "push {lr}\n"
+          "adds r1, r0, #0\n"  // mov r1, r0 (ptr = arg)
+          "movs r2, #0\n"      // sum = 0
+          "b 1f\n"             // branch to check
+          "2:\n"               // loop body
+          "ldrb r0, [r1, #4]\n"  // load duration
+          "adds r0, r2, r0\n"    // sum += duration
+          "lsls r0, r0, #0x10\n" // shift left
+          "lsrs r2, r0, #0x10\n" // shift right (u16 cast)
+          "adds r1, #8\n"        // ptr++ (sizeof Animation)
+          "1:\n"                 // check
+          "ldr r0, [r1]\n"
+          "cmp r0, #0\n"
+          "bne 2b\n"            // if (ptr->cel != NULL) loop
+          "adds r0, r2, #0\n"   // return sum
+          "pop {r1}\n"
+          "bx r1\n"
+          ".short 0x0000\n"      // padding
+          ".syntax divided\n"
+      );
+  }
+  ```
+- Use this sparingly — it's a fallback when pure C shaping fails after reasonable attempts
+- Always include trailing `.short 0x0000` if the original has padding bytes
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers

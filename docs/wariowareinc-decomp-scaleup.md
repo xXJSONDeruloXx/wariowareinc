@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 93` — `func_080123F4` main_menu data processing
-- `build/report.json`: **1348 / 5956 matched functions** = **22.6326%**
+- Verified working tree: `batch 94` — `sprite_get_anim_duration` lib_sprite animation helper
+- `build/report.json`: **1349 / 5956 matched functions** = **22.6326%**
 - `matched_code_percent`: **6.4355%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **951 decompiled function files** = **873 standalone_tu** + **78 included_stub**
+- `src/decomp/*.c`: **952 decompiled function files** = **873 standalone_tu** + **79 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 94 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4355%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `sprite_get_anim_duration` — sums animation cel durations until NULL cel encountered. Loops through Animation entries (8 bytes each: pointer + u8 duration + padding). Used by sprite system for timing calculations.
+- Notes: Simple loop-based pattern with goto labels was difficult to match in pure C due to register allocation and instruction ordering. Used inline asm with `.syntax unified` + `__attribute__((naked))` to preserve exact instruction sequence including trailing `.short 0x0000` padding.
 
 ### Batch 93 — accepted
 - Metric delta: **+1 matched function**
