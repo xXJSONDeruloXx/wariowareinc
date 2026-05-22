@@ -1,0 +1,16 @@
+#if __INCLUDE_LEVEL__ > 0
+#include "global.h"
+
+extern void func_080024A4(void *);
+
+void func_080024FC(void *arg0) {
+    register char *r3 asm("r3") = arg0;
+    goto start;
+loop:
+    r3 += 0xC;
+start:
+    if (*(void **)r3 != NULL)
+        goto loop;
+    func_080024A4(r3);
+}
+#endif
