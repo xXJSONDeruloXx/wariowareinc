@@ -336,7 +336,7 @@ void sprite_id_set_data(struct SpriteHandler *handler, u32 memID, u32 targetData
     }    
 }
 
-#include "asm/lib_sprite/asm_080ef998.s"
+#include "decomp/asm_080ef998.c"
 
 void sprite_handler_set_mem_id(struct SpriteHandler *handler, u32 memID) {
     handler->memID = memID;

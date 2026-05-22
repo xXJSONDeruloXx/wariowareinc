@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 85` — `func_080109EC` scene setup wrapper with texture loader + callback
-- `build/report.json`: **1346 / 5955 matched functions** = **22.603%**
-- `matched_code_percent`: **6.4345%**
+- Verified working tree: `batch 86` — `func_080EF998` sprite field increment with overflow guard (0x100 cap)
+- `build/report.json`: **1347 / 5956 matched functions** = **22.615%**
+- `matched_code_percent`: **6.4347%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **940 decompiled function files** = **873 standalone_tu** + **67 included_stub**
+- `src/decomp/*.c`: **944 decompiled function files** = **873 standalone_tu** + **71 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 86 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4347%**
+- Commit: pending
+- Accepted functions:
+  - `func_080EF998` sprite field increment with overflow guard: increments field at offset 0x20, wraps to 0x100 if overflowed. Uses `__attribute__((section(".text"))) const u8 _pad[]` for trailing alignment padding to match original `.short 0x0000`.
+- Notes: Trailing padding in included_stub conversions requires `__attribute__((section(".text")))` to place in text section, avoiding `mov r8, r8` NOPs.
 
 ### Batch 85 — accepted
 - Metric delta: **+1 matched function**
