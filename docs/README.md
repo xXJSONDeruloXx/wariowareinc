@@ -7,12 +7,13 @@ If an agent resumes cold, read these first:
 2. `docs/decomp-agent-workflow.md` — exact autonomous workflow and verification loop
 3. `docs/decomp-pattern-library.md` — proven families, code-shaping rules, known traps
 4. `docs/decomp-batch-history.md` — accepted batch history
+5. `docs/decomp-tooling-feedback.md` — tooling gaps, workarounds, and improvement notes
 
 ## Current verified baseline
-- Verified working tree: `batch 108` — func_08014C6C: main_menu scene wrapper
-- `build/report.json`: **1346 / 5956 matched functions** (**22.5991%**) · **6.43997%** matched code
+- Verified working tree: `batch 109` — main_menu linked pair (`func_08014E88`, `func_080152A0`)
+- `build/report.json`: **1346 / 5956 matched functions** (**22.5991%**) · **6.44129%** matched code
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **966 decompiled function files** = **873 standalone_tu** + **93 included_stub**
+- `src/decomp/*.c`: **968 decompiled function files** = **873 standalone_tu** + **95 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4765 / 5956**
 - Remaining gap to 80%: **3409 matched functions**
@@ -41,6 +42,7 @@ If an agent resumes cold, read these first:
 - `docs/decomp-agent-workflow.md`
 - `docs/decomp-pattern-library.md`
 - `docs/decomp-batch-history.md`
+- `docs/decomp-tooling-feedback.md`
 
 ### Reference / historical docs
 - `docs/wariowareinc-decomp-progress-audit.md` — early audit + smoke-test archive; not the live source of truth

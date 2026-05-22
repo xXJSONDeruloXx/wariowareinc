@@ -383,7 +383,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_08014e38.s"
 
-#include "asm/scenes/main_menu/asm_08014e88.s"
+#include "../decomp/asm_08014e88.c"
 
 #include "asm/scenes/main_menu/asm_08014ebc.s"
 
@@ -397,7 +397,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_0801522c.s"
 
-#include "asm/scenes/main_menu/asm_080152a0.s"
+#include "../decomp/asm_080152a0.c"
 
 #include "asm/scenes/main_menu/asm_080152d4.s"
 

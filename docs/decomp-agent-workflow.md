@@ -30,18 +30,20 @@ Notes:
 - On macOS, do **not** rely on local `make` / `make report`; use Docker verification.
 
 ## Hard repo rules
-1. One function per file in `src/decomp/`
-2. Move accepted asm sources into `asm/converted/`
-3. Update `wariowareinc.ld` for each standalone TU conversion
-4. Use supported mechanical workflows when `preflight_candidate` reports `safeForAutonomous=true`
-5. Supported workflows: `standalone_tu` (src/decomp + linker swap) and `included_stub` (guarded include-shim inside the host C TU)
-6. Treat `unknown_skip` and `already_converted` as research/manual candidates; do not force generic linker-swap conversion onto them
-7. Require a matching ROM before treating anything as accepted
-8. **Avoid decompiling callers of already-converted C functions**: A 100% isolated compile match does NOT guarantee ROM match when the callee has been converted to C. The isolated test compares against original asm, but the linked ROM uses the converted C callee with potentially different register allocation. Use `decomp_siblings` with `strategy: callees` to check if callees are already converted; if so, prefer `standalone_tu` candidates or verify at linked ROM level.
-9. **Preflight "already_converted" false positive**: If `apply_conversion` fails and auto-restores files, `preflight_candidate` may report `already_converted` on the next attempt because it checks for files before checking mizuchi-db. The files were restored but mizuchi-db still lists the function as unmatched. **Fix**: Run a manual `git commit` to actually land the changes, then refresh mizuchi-db with index-codebase, or ignore the preflight warning and proceed if you know the conversion is valid.
-8. Rerun report + objdiff after accepted progress
-9. Commit code + docs together
-10. Push immediately after verified progress
+1. One function per file in `src/decomp/`.
+2. A chunk may convert a small linked batch when that is safer than a single function, especially in the remaining `included_stub` era. Keep each converted function in its own `src/decomp/asm_xxxxxxxx.c` file.
+3. Move accepted asm sources into `asm/converted/`.
+4. Update `wariowareinc.ld` for each standalone TU conversion.
+5. Use supported mechanical workflows when `preflight_candidate` reports `safeForAutonomous=true`.
+6. Supported workflows: `standalone_tu` (src/decomp + linker swap) and `included_stub` (guarded include-shim inside the host C TU).
+7. Treat `unknown_skip` and `already_converted` as research/manual candidates; do not force generic linker-swap conversion onto them.
+8. Require a matching ROM before treating anything as accepted.
+9. **Avoid decompiling callers of already-converted C functions blindly**: A 100% isolated compile match does NOT guarantee ROM match when the callee has been converted to C. The isolated test compares against original asm, but the linked ROM uses the converted C callee with potentially different register allocation. Prefer callee-before-caller mini-batches, and verify the ROM after each applied function or after the smallest reversible subgroup.
+10. **Clean-worktree check before diagnosing callee-risk**: If a 100% isolated match fails final ROM verification, run `git status --short` before assuming the candidate is bad. Revert unrelated manual edits and retry once; dirty edits can create false ROM mismatches.
+11. **Preflight "already_converted" false positive**: If `apply_conversion` fails and auto-restores files, `preflight_candidate` may report `already_converted` on the next attempt because it checks for files before checking mizuchi-db. The files were restored but mizuchi-db still lists the function as unmatched. **Fix**: Run a manual `git commit` to actually land the changes, then refresh mizuchi-db with index-codebase, or ignore the preflight warning and proceed if you know the conversion is valid.
+12. Rerun report + objdiff after accepted progress.
+13. Commit code + docs together.
+14. Push immediately after verified progress.
 
 ## Required verification commands
 ### Clean Docker build
@@ -84,36 +86,46 @@ Track:
 - included_stub files
 
 ## Batch workflow
-1. Select a narrow, sibling-rich candidate set with `query_candidates` (default `conversionMode=recommended`)
-2. `recommended` includes `standalone_tu` and `included_stub` candidates that the tools can apply mechanically
-3. Call `preflight_candidate` before iteration; proceed when `safeForAutonomous=true`
-4. **After matching a function**, use `decomp_siblings` to find similar functions for batch conversion:
+1. Select a narrow, sibling-rich candidate set with `query_candidates` (default `conversionMode=recommended`).
+2. `recommended` includes `standalone_tu` and `included_stub` candidates that the tools can apply mechanically.
+3. In the current post-standalone phase, assume **one function per chunk is no longer always optimal**. Prefer a tiny linked batch when a caller/callee pair is obvious, when callee-first conversion reduces risk, or when a dirty-worktree false mismatch would otherwise burn repeated chunks.
+4. Call `preflight_candidate` before iteration; proceed when `safeForAutonomous=true` for each function in the proposed batch.
+5. **After matching a function**, use `decomp_siblings` to find similar functions for batch conversion:
    - `strategy: same_file` – Functions in same asm file (best for family conversion)
    - `strategy: same_module` – Functions in same source module (e.g., graphics_table)
    - `strategy: callers` – Functions that call the matched one
    - `strategy: callees` – Functions called by the matched one
    - `strategy: pattern` – Functions with similar instruction patterns (loops, conditionals, etc.)
-4. If only `unknown_skip`/manual candidates remain, use `conversionMode=all` diagnostically and pick a small promising target only when you can explain the integration path
-5. Explain to yourself why that family is worth testing
-6. Convert the smallest safe subset first if the family is risky
-7. After a 100% isolated match, prefer `apply_conversion` for mechanical edits and clean Docker verification
-8. Build in Docker
-9. If mismatch:
+6. If only `unknown_skip`/manual candidates remain, use `conversionMode=all` diagnostically and pick a small promising target only when you can explain the integration path.
+7. Explain why that family is worth testing and what the dependency order is.
+8. Convert the smallest safe subset first if the family is risky. For linked included stubs, apply the callee first, then the immediate caller.
+9. After a 100% isolated match, prefer `apply_conversion` for mechanical edits and clean Docker verification. For a batch, calling `apply_conversion` once per function is acceptable; keep the subgroup small enough to revert immediately.
+10. Build in Docker.
+11. If mismatch:
    - binary-search immediately
    - isolate the exact failing function or spelling
    - revert/fix it in the same pass
    - document the trap
-10. If match:
+12. If match:
    - rerun report
    - rerun objdiff snapshot
    - compare against the last verified baseline
-11. If any tracked metric improved:
+13. If any tracked metric improved (matched code, linked C TUs, or `src/decomp/*.c` included_stub coverage):
    - update docs
    - commit + push immediately
-12. If no metric improved but a durable lesson was learned:
+14. If no metric improved but a durable lesson was learned:
    - keep only safe/useful changes
    - document the lesson clearly
    - do not pretend it was progress
+
+## End-of-chunk tooling reflection
+Before ending any chunk, briefly assess whether the current tools helped or failed:
+- Did `query_candidates`/`preflight_candidate` surface the real integration risk?
+- Did `compile_and_view_asm` give a useful isolated signal, or did final ROM verification expose a gap?
+- Did `apply_conversion` restore cleanly after failure?
+- Was a manual workaround needed?
+
+Record durable tool/workflow observations in `docs/decomp-tooling-feedback.md`. Do not reduce existing tool scope or bypass clean ROM verification; use the notes to improve future automation and candidate selection.
 
 ## Documentation contract
 On every accepted batch, update at least:

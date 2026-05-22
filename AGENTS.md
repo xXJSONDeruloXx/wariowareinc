@@ -23,6 +23,7 @@ If those docs are not enough, mine prior session history from:
 - Preserve a byte-identical ROM at every accepted milestone.
 - Push matched-function progress upward from the latest verified baseline documented in `docs/wariowareinc-decomp-scaleup.md`.
 - Prefer small, sibling-rich batches that can be verified and committed quickly.
+- In the remaining included-stub-heavy phase, one function per chunk is no longer mandatory when a tiny linked batch is safer; keep one function per `src/decomp/` file and verify ROM identity after each applied function or smallest reversible subgroup.
 
 ## Tool restrictions
 
@@ -37,13 +38,15 @@ Always use synchronous `bash` tool calls with explicit build verification. The d
 
 ## Non-negotiable workflow rules
 1. One function per file in `src/decomp/`.
-2. Move converted asm files into `asm/converted/`.
-3. Update `wariowareinc.ld` for every standalone TU conversion.
-4. After any candidate batch, run the clean Docker build and require `wariowareinc.gba: OK`.
-5. After any accepted batch, rerun `make report` and `python3 tools/gen_objdiff.py`.
-6. Update `/docs` before ending the successful pass.
-7. Commit code + docs together and push immediately after verified progress.
-8. If a batch mismatches, binary-search it immediately, revert/fix the bad function(s), and document the trap.
+2. Small linked batches are allowed when they reduce caller/callee risk; do not bundle unrelated functions just for volume.
+3. Move converted asm files into `asm/converted/`.
+4. Update `wariowareinc.ld` for every standalone TU conversion.
+5. After any candidate batch, run the clean Docker build and require `wariowareinc.gba: OK`.
+6. After any accepted batch, rerun `make report` and `python3 tools/gen_objdiff.py`.
+7. Update `/docs` before ending the successful pass.
+8. Commit code + docs together and push immediately after verified progress.
+9. If a batch mismatches, first check `git status --short` for unrelated edits, then binary-search/revert/fix the bad function(s), and document the trap.
+10. Before ending a chunk, assess whether the tools/workflow helped or missed something; log durable observations in `docs/decomp-tooling-feedback.md`.
 
 ## Candidate selection bias
 Prioritize:

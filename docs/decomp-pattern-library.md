@@ -149,12 +149,14 @@ Example trap: `func_08002514` calls `func_080024D0`. Both were originally asm. `
 - **Pointer-to-global vs global-value**: `base = &gCurrentSceneData` generates `LDR R4, .literal` (loads address into R4), while `base = gCurrentSceneData` generates `LDR R0, .literal; LDR R4, [R0]` (loads value into R4). Use `&gCurrentSceneData` when the original keeps the global's address in a register and dereferences it multiple times.
 
 ### Repo integration traps
-- grouping multiple functions in one C file breaks matches
+- grouping multiple functions in one C file breaks matches; for batches, still create one `src/decomp/asm_xxxxxxxx.c` per function
 - forgetting to move the old asm file causes duplicate / wildcard collisions
 - forgetting the linker-script swap breaks standalone TU conversions
 - included asm stubs inside an existing C TU (e.g. a mid-file `#include` in `graphics_table.c`) may need the host TU split before a standalone conversion will preserve ROM order
 - bare `extern` declarations for g-symbols can fight existing repo types
 - C89 declaration ordering still matters in this repo
+- **Dirty-worktree false mismatches**: A manual edit left over from a failed attempt can make every later `apply_conversion` look like a candidate ROM mismatch. Before concluding callee-risk, run `git status --short` and revert unrelated edits. Batch 109 confirmed this: a lingering `func_08015A88` signature/call edit in `src/decomp/asm_08012c64.c` caused several false mismatches until it was reverted.
+- **Included-stub linked mini-batches can be safe**: when a caller depends on a small callee, convert the callee first, verify ROM OK, then convert the caller in the same chunk. Batch 109 converted `func_08014E88` before its caller `func_080152A0`; both used naked inline asm and preserved ROM identity.
 
 ## Specific accepted shaping examples
 - gBeatscriptScene second-word access: use `u32 *p = (u32 *)&gBeatscriptScene; p[1]`

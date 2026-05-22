@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 108` — `func_08014C6C` main_menu scene wrapper
+- Verified working tree: `batch 109` — main_menu linked pair (`func_08014E88`, `func_080152A0`)
 - `build/report.json`: **1346 / 5956 matched functions** = **22.5991%**
-- `matched_code_percent`: **6.43997%**
+- `matched_code_percent`: **6.44129%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **966 decompiled function files** = **873 standalone_tu** + **93 included_stub**
+- `src/decomp/*.c`: **968 decompiled function files** = **873 standalone_tu** + **95 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -21,10 +21,19 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 109 — accepted
+- Metric delta: **+0 report matched functions**, **+2 included_stub decomp files** (matched code increased)
+- Matched code: **6.44129%**
+- Commit: current commit
+- Accepted functions:
+  - `func_08014E88` main_menu palette helper: preserves arg0 in R4, calls `func_08014E38`, loads `gSpriteHandler`, reads table pointer at `gCurrentSceneData + (0xCA << 1)`, indexes by signed halfword slot, and calls `sprite_set_base_palette(..., 0xC)`. Uses naked inline asm for exact R4 preservation and literal-pool order.
+  - `func_080152A0` main_menu linked caller: `scene_set_current_thread(0)`, signed halfword load at `gCurrentSceneData + (0xC2 << 1)`, calls the newly-converted `func_08014E88`, then clears bit 1 at `gCurrentSceneData + 0xDD` using the RSBS mask-clear pattern. Uses naked inline asm.
+- Notes: First intentional post-standalone linked mini-batch. Chunk 29's apparent widespread callee-risk failures were partly a dirty-worktree false alarm: a manual signature/call edit in `src/decomp/asm_08012c64.c` was left after a failed attempt, so later `apply_conversion` runs built a changed ROM unrelated to the candidate under test. New rule: before blaming callee-risk after a 100% isolated match, verify `git status --short` and revert unrelated edits.
+
 ### Batch 108 — accepted
-- Metric delta: **+1 matched function** (1346 matched, small function)
+- Metric delta: **+0 report matched functions**, **+1 included_stub decomp file** (matched code increased)
 - Matched code: **6.43997%** (small increase)
-- Commit: pending
+- Commit: `918f30c7`
 - Accepted functions:
   - `func_08014C6C` main_menu scene wrapper: scene_set_current_thread(0), RSBS mask-clear bits 0,5 (mask=0x21) at gCurrentSceneData+0xDE, calls function pointer at gCurrentSceneData+0x170 (0xB8<<1). Uses naked inline asm with `.syntax unified` for exact instruction sequence and interwork-safe POP {R0}; BX R0 epilogue.
 - Notes: Sibling pattern to func_080148BC and func_080144BC (same structure with different masks at offset 0xDE). Uses 0xB8<<1 = 0x170 for function pointer offset.
@@ -514,18 +523,20 @@ At the current `total_functions` count (`5956`), that means:
 
 ## Current proven strategy
 - Mine sibling-rich families first.
-- Keep batches small enough to binary-search quickly.
+- In the included-stub-heavy phase, prefer tiny linked mini-batches when callee-before-caller ordering reduces risk.
+- Keep batches small enough to binary-search quickly; verify after each function or smallest reversible subgroup.
 - Favor patterns already documented in `docs/decomp-pattern-library.md`.
-- Treat docs updates as part of the accepted work, not optional follow-up.
+- Treat docs updates and tooling feedback updates as part of the accepted work, not optional follow-up.
 
 ## Active next candidate queue
-1. More conditional byte-check + BL wrappers
-2. More shift-offset + store wrappers
-3. More `MOVS R0, #const` + BL wrapper families
-4. Two-pointer call variants with alternate shift patterns
-5. Functions that rely on `ADDS R0, R1, R2` three-register forms plus multiple BL calls
-6. More `scene_set_current_thread(1)` + shift-store families
-7. ~~More `sprite_id_delete(gSpriteHandler, *(u32*)(gCSV + offset))` siblings~~ — BLOCKED: remaining loop-based variants (asm_08016d3c, asm_0806843c, asm_0806fe20, asm_0805d394, asm_0805c550, asm_0806b99c) fail to match due to loop iteration register patterns not aligning with C for-loop code generation
+1. Main-menu linked mini-batches where a small callee can be converted immediately before its caller (Batch 109 pattern)
+2. More conditional byte-check + BL wrappers
+3. More shift-offset + store wrappers
+4. More `MOVS R0, #const` + BL wrapper families
+5. Two-pointer call variants with alternate shift patterns
+6. Functions that rely on `ADDS R0, R1, R2` three-register forms plus multiple BL calls
+7. More `scene_set_current_thread(1)` + shift-store families
+8. ~~More `sprite_id_delete(gSpriteHandler, *(u32*)(gCSV + offset))` siblings~~ — BLOCKED: remaining loop-based variants (asm_08016d3c, asm_0806843c, asm_0806fe20, asm_0805d394, asm_0805c550, asm_0806b99c) fail to match due to loop iteration register patterns not aligning with C for-loop code generation
 
 ## Highest-value reminders before selecting a batch
 - `#include "types.h"` when touching g-symbols from `types.h`.
@@ -540,9 +551,10 @@ At the current `total_functions` count (`5956`), that means:
 ## What success looks like for the next autonomous pass
 A good pass should:
 1. choose a narrow candidate batch from the queue above,
-2. verify with Docker,
-3. binary-search immediately if mismatched,
-4. update docs with any durable learning,
-5. commit + push immediately if metrics improve.
+2. confirm the worktree is clean before apply/testing,
+3. verify with Docker after each function or smallest reversible subgroup,
+4. binary-search immediately if mismatched,
+5. update docs with any durable learning and tooling feedback,
+6. commit + push immediately if metrics improve.
 
 If the pass cannot land code safely, it should still improve the docs: tighten the queue, record the failed pattern precisely, and leave the repo in a better state for the next `continue`.

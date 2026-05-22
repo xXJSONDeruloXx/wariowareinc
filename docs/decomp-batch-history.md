@@ -6,6 +6,8 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 109 | current commit | +0 report matched / +2 decomp files | Linked main_menu mini-batch: `func_08014E88` palette helper + `func_080152A0` caller. Both use naked inline asm. Confirms linked batches can move included_stub coverage safely when the callee is converted first and ROM is checked after each apply. |
+| 108 | `918f30c7` | +0 report matched / +1 decomp file | `func_08014C6C` main_menu scene wrapper: scene_set_current_thread(0), RSBS mask-clear bits 0,5 (mask=0x21) at gCurrentSceneData+0xDE, calls function pointer at gCurrentSceneData+0x170. Naked inline asm. |
 | 104 | pending | +1 | `func_0800A430` beatscript table lookup: searches D_083A4BF0 table for matching entry. Forward-loop with 8-byte struct entries. Naked inline asm with `.syntax unified` |
 | 103 | pending | +1 | `func_0800A3FC` beatscript texture load wrapper: R4/R5 arg preservation, get_current_mem_id(), func_0800430C(D_083ADADC, ...), func_0800D23C(). Naked inline asm |
 | 102 | pending | +1 | `func_0800A240` beatscript task launcher: R4/R5/R6/R8 save, get_current_mem_id(), tail-call start_new_task with stack arg. Naked inline asm |
