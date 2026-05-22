@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 103` — `func_0800A3FC` beatscript texture load wrapper
-- `build/report.json`: **1358 / 5956 matched functions** = **22.8005%**
+- Verified working tree: `batch 104` — `func_0800A430` beatscript table lookup
+- `build/report.json`: **1359 / 5956 matched functions** = **22.8180%**
 - `matched_code_percent`: **6.4379%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **961 decompiled function files** = **873 standalone_tu** + **88 included_stub**
+- `src/decomp/*.c`: **962 decompiled function files** = **873 standalone_tu** + **89 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 104 — accepted
+- Metric delta: **+1 matched function** (1358 → 1359)
+- Matched code: **6.4379%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_0800A430` beatscript table lookup: searches D_083A4BF0 table for matching entry. Forward-loop with 8-byte struct entries (unk0 key, unk4 value). Returns value if key matches, returns 0x8C if terminator (NULL) reached. Uses naked inline asm with `.syntax unified` to match exact forward-loop structure with `ADDS R1, #8` pointer advance.
+- Notes: Simple table lookup pattern common in beatscript command dispatch. Sibling to other beatscript utility functions. The loop structure `ldr r0, [r1]; cmp r0, #0; bne check_match` uses forward-goto pattern for correct instruction ordering.
 
 ### Batch 103 — accepted
 - Metric delta: **+1 matched function**

@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 104 | pending | +1 | `func_0800A430` beatscript table lookup: searches D_083A4BF0 table for matching entry. Forward-loop with 8-byte struct entries. Naked inline asm with `.syntax unified` |
 | 103 | pending | +1 | `func_0800A3FC` beatscript texture load wrapper: R4/R5 arg preservation, get_current_mem_id(), func_0800430C(D_083ADADC, ...), func_0800D23C(). Naked inline asm |
 | 102 | pending | +1 | `func_0800A240` beatscript task launcher: R4/R5/R6/R8 save, get_current_mem_id(), tail-call start_new_task with stack arg. Naked inline asm |
 | 101 | pending | +1 | `func_080148BC` main_menu wrapper: scene_set_current_thread(0), RSBS-mask-clear bits 0,1,4 at gCurrentSceneData+0xDE (mask=0x11), then call function pointer at gCurrentSceneData+0x144. Naked inline asm. Sibling to func_080144BC |

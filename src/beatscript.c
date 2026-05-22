@@ -438,7 +438,7 @@ u32 get_current_language(void) {
 
 #include "decomp/asm_0800a3fc.c"
 
-#include "asm/beatscript/asm_0800a430.s"
+#include "decomp/asm_0800a430.c"
 
 struct Beatscript *beatscript_skip_to_else_or_endif(struct Beatscript *currentCmd) {
     s32 depth = 0;
