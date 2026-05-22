@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 80` — `func_080CD564` field copy via LDR/STR pairs at 0x28/0x2C offsets
-- `build/report.json`: **1345 / 5955 matched functions** = **22.586%**
-- `matched_code_percent`: **6.4327%**
+- Verified working tree: `batch 85` — `func_080109EC` scene setup wrapper with texture loader + callback
+- `build/report.json`: **1346 / 5955 matched functions** = **22.603%**
+- `matched_code_percent`: **6.4345%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **939 decompiled function files** = **873 standalone_tu** + **66 included_stub**
+- `src/decomp/*.c`: **940 decompiled function files** = **873 standalone_tu** + **67 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 85 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4345%**
+- Commit: pending
+- Accepted functions:
+  - `asm_080109ec` main_menu scene setup wrapper: `scene_set_current_thread(0)`, `get_current_mem_id()`, `start_new_texture_loader(memID, D_083A9C14)`, `run_func_after_task(task, func_080109CC, 0)`
+- Notes: Simple 4-call wrapper with interwork-safe epilogue (`POP {R0}; BX R0`). The pattern of scene setup → texture loader → callback registration is common in scene initialization.
 
 ### Batch 80 — accepted
 - Metric delta: **+1 matched function**

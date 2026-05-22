@@ -27,7 +27,7 @@ void main_menu_scene_run(void) {
 
 #include "../decomp/asm_080109cc.c"
 
-#include "asm/scenes/main_menu/asm_080109ec.s"
+#include "../decomp/asm_080109ec.c"
 
 #include "asm/scenes/main_menu/asm_08010a18.s"
 
