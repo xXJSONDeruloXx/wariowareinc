@@ -22,7 +22,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "decomp/asm_080024fc.c"
 
-#include "decomp/asm_08002514.c"
+#include "asm/graphics_table/asm_08002514.s"
 
 #include "asm/graphics_table/asm_08002530.s"
 
