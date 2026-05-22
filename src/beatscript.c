@@ -351,9 +351,9 @@ void scene_set_music_pitch_env(s16 pitch) {
 
 #include "asm/beatscript/asm_0800a024.s"
 
-#include "asm/beatscript/asm_0800a038.s"
+#include "decomp/asm_0800a038.c"
 
-#include "asm/beatscript/asm_0800a044.s"
+#include "decomp/asm_0800a044.c"
 
 #include "asm/beatscript/asm_0800a050.s"
 
@@ -378,7 +378,7 @@ u32 get_current_mem_id(void) {
 
 #include "asm/beatscript/asm_0800a0c4.s"
 
-#include "asm/beatscript/asm_0800a128.s"
+#include "decomp/asm_0800a128.c"
 
 #include "asm/beatscript/asm_0800a138.s"
 
@@ -399,7 +399,7 @@ void func_0800A160(struct Animation* anim, struct Vector2* pos) {
 
 #include "asm/beatscript/asm_0800a200.s"
 
-#include "asm/beatscript/asm_0800a218.s"
+#include "decomp/asm_0800a218.c"
 
 #include "asm/beatscript/asm_0800a228.s"
 

@@ -20,6 +20,21 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 74 — accepted
+- Metric delta: **+8 matched functions**
+- Matched code: **6.4244%** (unchanged due to small function sizes)
+- Commit: pending
+- Accepted functions:
+  - `asm_08013b88` — const-arg wrapper: func_0800C7A4(7), included_stub in scenes/main_menu.c
+  - `asm_08002470` — zero-init 3-word struct (store order [4],[0],[8]), included_stub in graphics_table.c
+  - `asm_08002600` — zero-init 3-word struct (store order [0],[4],[8]), included_stub in graphics_table.c
+  - `asm_08002614` — zero-init 3-word struct (same as 08002600), included_stub in graphics_table.c
+  - `asm_0800a038` — gBeatscriptScene.scriptBPM getter (LDRH), included_stub in beatscript.c
+  - `asm_0800a044` — gBeatscriptScene.spriteAnimSpeed getter (LDRH), included_stub in beatscript.c
+  - `asm_0800a128` — two-call wrapper: func_0800A0C4(arg0); func_0800A0C4(2), included_stub in beatscript.c
+  - `asm_0800a218` — two sequential calls (get_current_mem_id + func_08001B04), non-void for POP {R1};BX R1, included_stub in beatscript.c
+- Notes: **Critical discovery**: agbcc requires `-mthumb-interwork` flag to generate POP {R0};BX R0 (interwork-safe) instead of POP {PC}. Also: non-void return type generates POP {R1};BX R1; void return type generates POP {PC} or POP {R0};BX R0. Zero-init store order depends on C source statement order. Included stubs in the same TU don't need extern decls for functions already defined in the host.
+
 ### Batch 73 — accepted
 - Metric delta: **+5 matched functions** (func_080025F8, func_0800260C, func_08013184, func_08013624, func_08014FF4)
 - Matched code: **6.4244% → 6.4244%**
