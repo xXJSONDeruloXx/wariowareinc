@@ -20,6 +20,18 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 73 — accepted
+- Metric delta: **+5 matched functions** (func_080025F8, func_0800260C, func_08013184, func_08013624, func_08014FF4)
+- Matched code: **6.4244% → 6.4244%**
+- Commit: pending
+- Accepted functions:
+  - `asm_080025f8` — 3-word struct store (STR R1/R2/R3 into [R0]/[R0+4]/[R0+8]), included_stub in graphics_table.c
+  - `asm_0800260c` — identical 3-word struct store, included_stub in graphics_table.c
+  - `asm_08013184` — BX LR leaf, included_stub in scenes/main_menu.c
+  - `asm_08013624` — BX LR leaf, included_stub in scenes/main_menu.c
+  - `asm_08014ff4` — BX LR leaf, included_stub in scenes/main_menu.c
+- Notes: agbcc generates separate STR instructions for `a0[0]=a1; a0[1]=a2; a0[2]=a3` while devkitARM gcc uses STMIA. BX LR leaves match despite object-level NOP padding differences (0x0000 vs 0xC046). Subdirectory includes need `../decomp/` prefix.
+
 ### Batch 72 — accepted
 - Metric delta: **1344 → 1345 matched functions** (+1)
 - Matched code: **6.4244% → 6.4244%**

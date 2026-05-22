@@ -8,8 +8,9 @@
 
 ## Proven high-yield families
 ### Easy filler / utility
-- standalone `BX LR` leaves
+- standalone `BX LR` leaves (simple `void func(void) {}` matches in final linked ROM despite object-level NOP padding diff 0x0000 vs 0xC046)
 - simple tail-call wrappers
+- 3-word struct stores: `a0[0] = a1; a0[1] = a2; a0[2] = a3;` — agbcc generates separate STR instructions (matching the original), while devkitARM gcc uses STMIA. **Must verify with the agbcc toolchain or the full Docker build, not devkitARM gcc alone**
 - simple void-call wrappers
 - `MOVS R0, #const; BX LR` return-constant helpers
 - zero-arg wrappers: `func(arg0, arg1, 0, 0)` with non-void return type to get `POP {R1}; BX R1` epilogue instead of `POP {R0}; BX R0`

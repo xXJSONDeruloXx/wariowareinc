@@ -9,10 +9,10 @@ If an agent resumes cold, read these first:
 4. `docs/decomp-batch-history.md` — accepted batch history
 
 ## Current verified baseline
-- Verified working tree: `batch 72` — `func_08012274` BX LR leaf (included_stub)
+- Verified working tree: `batch 73` — func_080025F8 + func_0800260C (3-word struct stores) + 3 BX LR leaves
 - `matched_functions`: **1345 / 5955** (**22.585%**)
 - `matched_code_percent`: **6.4244%**
-- `tools/gen_objdiff.py`: **892 C / 5795 asm-only units**
+- `tools/gen_objdiff.py`: **897 C / 5790 asm-only units**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4764 / 5955**
 - Remaining gap to 80%: **3420 matched functions**

@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 73 | `pending` | +5 | `func_080025F8`/`0800260C` 3-word struct stores + 3 BX LR leaves (08013184/08013624/08014FF4) |
 | 72 | `pending` | +1 | `func_08012274` BX LR leaf (included_stub, noreturn trap, subdir include path) |
 | 71 | `pending` | +1 | `func_08002468` bit-extract (LSLS+LSRS, inline asm, first included_stub) |
 | 70 | `pending` | +2 | `func_0803DDA4` wrapper call with -1 + .short padding |
