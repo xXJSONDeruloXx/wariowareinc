@@ -1,38 +1,26 @@
 #if __INCLUDE_LEVEL__ > 0
 #include "global.h"
+#include "src/code_08000f10.h"
 
-__attribute__((naked))
+extern void *gCurrentSceneData;
+
 void func_080115DC(void) {
-    asm volatile(
-        ".syntax unified\n"
-        "push {lr}\n"
-        "sub sp, #4\n"
-        "ldr r0, =gCurrentSceneData\n"
-        "ldr r1, [r0]\n"
-        "adds r0, r1, #0\n"
-        "adds r0, #0xDC\n"
-        "ldrb r0, [r0]\n"
-        "cmp r0, #0\n"
-        "beq 1f\n"
-        "adds r0, r1, #0\n"
-        "adds r0, #0xD4\n"
-        "ldr r0, [r0]\n"
-        "adds r1, #0xD8\n"
-        "ldr r1, [r1]\n"
-        "movs r2, #0xA0\n"
-        "lsls r2, r2, #3\n"
-        "movs r3, #0x80\n"
-        "lsls r3, r3, #1\n"
-        "str r3, [sp]\n"
-        "movs r3, #0x20\n"
-        "bl dma3_set\n"
-        "1:\n"
-        "add sp, #4\n"
-        "pop {r0}\n"
-        "bx r0\n"
-        ".balign 4, 0\n"
-        ".ltorg\n"
-        ".syntax divided\n"
-    );
+    register u8 *data asm("r1");
+    register u8 *check asm("r0");
+    register const void *src asm("r0");
+    register void *dest asm("r1");
+    register u32 size asm("r2");
+    register u32 unit asm("r3");
+
+    data = gCurrentSceneData;
+    check = data;
+    check += 0xDC;
+    if (*check != 0) {
+        src = *(void **)(data + 0xD4);
+        dest = *(void **)(data + 0xD8);
+        size = 0xA0 << 3;
+        unit = 0x80 << 1;
+        dma3_set(src, dest, size, 0x20, unit);
+    }
 }
 #endif
