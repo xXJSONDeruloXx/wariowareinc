@@ -52,8 +52,16 @@ Then read `build/report.json` for:
 python3 tools/gen_objdiff.py
 ```
 Track:
-- C units
-- asm-only units
+- linked C TUs
+- non-C units
+
+### Refresh decomp-file coverage
+Count `src/decomp/*.c` separately.
+This is a different metric from objdiff unit coverage because `included_stub` conversions live in `src/decomp/` but do **not** create new linked C translation units.
+Track:
+- total decompiled function files
+- standalone_tu files
+- included_stub files
 
 ## Batch workflow
 1. Select a narrow, sibling-rich candidate set with `query_candidates` (default `conversionMode=recommended`)

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { truncateToWidth } from "@earendil-works/pi-tui";
 
 const WIDGET_KEY = "warioware-progress";
 const REFRESH_INTERVAL_MS = 15000;
@@ -18,8 +19,17 @@ function safePercent(part, total) {
   return (part / total) * 100;
 }
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
 function formatPercent(value) {
   return value == null || !Number.isFinite(value) ? "--" : `${value.toFixed(2)}%`;
+}
+
+function formatRatio(part, total) {
+  if (!Number.isFinite(part) || !Number.isFinite(total) || total <= 0) return `${part}/--`;
+  return `${part}/${total}`;
 }
 
 function findRepoRoot(startDir) {
@@ -56,6 +66,7 @@ function readUnitCoverage(repoRoot) {
   const seen = new Set();
   let totalUnits = 0;
   let cUnits = 0;
+  let standaloneDecompUnits = 0;
 
   for (const line of fs.readFileSync(ldFile, "utf8").split(/\r?\n/)) {
     const match = OBJECT_RE.exec(line);
@@ -65,32 +76,161 @@ function readUnitCoverage(repoRoot) {
     seen.add(objPath);
     totalUnits += 1;
     if (objPath.startsWith("build/src/")) cUnits += 1;
+    if (objPath.startsWith("build/src/decomp/")) standaloneDecompUnits += 1;
   }
 
-  const asmUnits = totalUnits - cUnits;
+  const nonCUnits = totalUnits - cUnits;
   return {
     cUnits,
-    asmUnits,
+    nonCUnits,
     totalUnits,
+    standaloneDecompUnits,
     cUnitsPercent: safePercent(cUnits, totalUnits),
     fileMtimeMs: fs.statSync(ldFile).mtimeMs,
   };
 }
 
-function buildLines(snapshot) {
+function readDecompCoverage(repoRoot, report, units) {
+  const decompDir = path.join(repoRoot, "src", "decomp");
+  if (!fs.existsSync(decompDir)) return null;
+
+  const decompFiles = fs.readdirSync(decompDir).filter((name) => name.endsWith(".c")).length;
+  const standaloneFiles = units?.standaloneDecompUnits ?? 0;
+  const includedStubFiles = Math.max(0, decompFiles - standaloneFiles);
+  const totalFunctions = report?.totalFunctions ?? null;
+
+  return {
+    decompFiles,
+    standaloneFiles,
+    includedStubFiles,
+    decompFilesPercent: safePercent(decompFiles, totalFunctions),
+    totalFunctions,
+  };
+}
+
+function buildPlainLines(snapshot) {
   const lines = [];
-  const reportLine = snapshot.report
-    ? `decomp report: ${formatPercent(snapshot.report.matchedFunctionsPercent)} fn (${snapshot.report.matchedFunctions}/${snapshot.report.totalFunctions}) · ${formatPercent(snapshot.report.matchedCodePercent)} code`
-    : "decomp report: unavailable (run make report)";
-  lines.push(reportLine);
+
+  if (snapshot.report) {
+    const reportPrefix = snapshot.reportFresh ? "match progress" : "match progress (cached)";
+    lines.push(
+      `${reportPrefix}: ${formatPercent(snapshot.report.matchedFunctionsPercent)} fn (${snapshot.report.matchedFunctions}/${snapshot.report.totalFunctions}) · ${formatPercent(snapshot.report.matchedCodePercent)} code`,
+    );
+  } else {
+    lines.push("match progress: unavailable (run Docker make report)");
+  }
+
+  if (snapshot.decomp) {
+    const percentText = formatPercent(snapshot.decomp.decompFilesPercent);
+    const ratio = formatRatio(snapshot.decomp.decompFiles, snapshot.decomp.totalFunctions);
+    lines.push(
+      `decomp files: ${percentText} of fn total (${ratio}) · ${snapshot.decomp.standaloneFiles} standalone · ${snapshot.decomp.includedStubFiles} included_stub`,
+    );
+  } else {
+    lines.push("decomp files: unavailable");
+  }
 
   if (snapshot.units) {
     lines.push(
-      `C units: ${formatPercent(snapshot.units.cUnitsPercent)} (${snapshot.units.cUnits}/${snapshot.units.totalUnits}) · asm stubs: ${snapshot.units.asmUnits}`,
+      `linked C TUs: ${formatPercent(snapshot.units.cUnitsPercent)} (${snapshot.units.cUnits}/${snapshot.units.totalUnits}) · non-C units: ${snapshot.units.nonCUnits}`,
     );
   } else {
-    lines.push("C units: unavailable");
+    lines.push("linked C TUs: unavailable");
   }
+
+  return lines;
+}
+
+function buildSignature(snapshot) {
+  return JSON.stringify({
+    report: snapshot.report,
+    reportFresh: snapshot.reportFresh,
+    units: snapshot.units,
+    decomp: snapshot.decomp,
+  });
+}
+
+function makeBar(theme, percent, color, width = 14) {
+  if (percent == null || !Number.isFinite(percent)) {
+    return theme.fg("dim", "░".repeat(width));
+  }
+
+  const filled = clamp(Math.round((percent / 100) * width), 0, width);
+  return theme.fg(color, "█".repeat(filled)) + theme.fg("dim", "░".repeat(width - filled));
+}
+
+function buildMetricLine(theme, width, options) {
+  const {
+    label,
+    labelColor,
+    percent,
+    barColor,
+    ratio,
+    detail,
+    unavailableText,
+  } = options;
+
+  const labelText = theme.fg(labelColor, theme.bold(label.padEnd(6)));
+  if (percent == null && unavailableText) {
+    return truncateToWidth(
+      `${labelText} ${theme.fg("warning", unavailableText)}`,
+      width,
+    );
+  }
+
+  const percentText = theme.fg(labelColor, formatPercent(percent).padStart(7));
+  const bar = makeBar(theme, percent, barColor ?? labelColor);
+  let line = `${labelText} ${percentText} ${bar}`;
+
+  if (ratio) line += ` ${theme.fg("muted", ratio)}`;
+  if (detail) line += ` ${theme.fg("dim", "·")} ${theme.fg("dim", detail)}`;
+
+  return truncateToWidth(line, width);
+}
+
+function buildStyledLines(snapshot, theme, width) {
+  const lines = [];
+  const headerParts = [theme.fg("accent", theme.bold("◆ WarioWare Decomp"))];
+  if (snapshot.report && !snapshot.reportFresh) {
+    headerParts.push(theme.fg("warning", "cached report"));
+  }
+  lines.push(truncateToWidth(headerParts.join(` ${theme.fg("dim", "·")} `), width));
+
+  lines.push(
+    buildMetricLine(theme, width, {
+      label: "match",
+      labelColor: "success",
+      barColor: "success",
+      percent: snapshot.report?.matchedFunctionsPercent ?? null,
+      ratio: snapshot.report ? `${snapshot.report.matchedFunctions}/${snapshot.report.totalFunctions} fn` : null,
+      detail: snapshot.report ? `${formatPercent(snapshot.report.matchedCodePercent)} code` : null,
+      unavailableText: "run Docker make report",
+    }),
+  );
+
+  lines.push(
+    buildMetricLine(theme, width, {
+      label: "files",
+      labelColor: "accent",
+      barColor: "accent",
+      percent: snapshot.decomp?.decompFilesPercent ?? null,
+      ratio: snapshot.decomp ? `${formatRatio(snapshot.decomp.decompFiles, snapshot.decomp.totalFunctions)} fn` : null,
+      detail: snapshot.decomp
+        ? `${snapshot.decomp.standaloneFiles} standalone · ${snapshot.decomp.includedStubFiles} included`
+        : null,
+    }),
+  );
+
+  lines.push(
+    buildMetricLine(theme, width, {
+      label: "linked",
+      labelColor: "muted",
+      barColor: "warning",
+      percent: snapshot.units?.cUnitsPercent ?? null,
+      ratio: snapshot.units ? `${snapshot.units.cUnits}/${snapshot.units.totalUnits} TU` : null,
+      detail: snapshot.units ? `${snapshot.units.nonCUnits} non-C` : null,
+    }),
+  );
 
   return lines;
 }
@@ -99,14 +239,20 @@ export default function wariowareProgressWidget(pi) {
   let latestCtx;
   let refreshTimer;
   let lastSignature = "";
+  let lastReport = null;
 
   const applyWidget = (ctx, snapshot) => {
     if (!ctx.hasUI) return;
-    const lines = buildLines(snapshot);
-    const signature = JSON.stringify(lines);
+    const signature = buildSignature(snapshot);
     if (signature === lastSignature) return;
     lastSignature = signature;
-    ctx.ui.setWidget(WIDGET_KEY, lines);
+
+    ctx.ui.setWidget(WIDGET_KEY, (_tui, theme) => ({
+      render(width) {
+        return buildStyledLines(snapshot, theme, width);
+      },
+      invalidate() {},
+    }));
   };
 
   const refresh = async (ctx = latestCtx) => {
@@ -114,9 +260,16 @@ export default function wariowareProgressWidget(pi) {
     latestCtx = ctx;
 
     const repoRoot = findRepoRoot(ctx.cwd);
+    const freshReport = readReport(repoRoot);
+    if (freshReport) lastReport = freshReport;
+
+    const units = readUnitCoverage(repoRoot);
+    const report = freshReport ?? lastReport;
     const snapshot = {
-      report: readReport(repoRoot),
-      units: readUnitCoverage(repoRoot),
+      report,
+      reportFresh: !!freshReport,
+      units,
+      decomp: readDecompCoverage(repoRoot, report, units),
     };
 
     applyWidget(ctx, snapshot);
@@ -133,9 +286,12 @@ export default function wariowareProgressWidget(pi) {
     description: "Show current warioware decomp progress metrics",
     handler: async (_args, ctx) => {
       const repoRoot = findRepoRoot(ctx.cwd);
-      const report = readReport(repoRoot);
+      const freshReport = readReport(repoRoot);
+      if (freshReport) lastReport = freshReport;
+      const report = freshReport ?? lastReport;
       const units = readUnitCoverage(repoRoot);
-      const lines = buildLines({ report, units });
+      const decomp = readDecompCoverage(repoRoot, report, units);
+      const lines = buildPlainLines({ report, reportFresh: !!freshReport, units, decomp });
       ctx.ui.notify(lines.join(" | "), "info");
     },
   });

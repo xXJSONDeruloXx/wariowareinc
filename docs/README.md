@@ -10,9 +10,9 @@ If an agent resumes cold, read these first:
 
 ## Current verified baseline
 - Verified working tree: `batch 79` — func_0800210C: GBA virtual→physical address dereference (`arg0 & 0x7FFFFFFF`)
-- `matched_functions`: **1344 / 5955** (**22.584%**)
-- `matched_code_percent`: **6.4327%**
-- `tools/gen_objdiff.py`: **937 C / 5750 asm-only units**
+- `build/report.json`: **1344 / 5955 matched functions** (**22.569%**) · **6.4327%** matched code
+- `tools/gen_objdiff.py`: **891 linked C TUs / 5796 non-C units**
+- `src/decomp/*.c`: **937 decompiled function files** = **872 standalone_tu** + **65 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4764 / 5955**
 - Remaining gap to 80%: **3420 matched functions**

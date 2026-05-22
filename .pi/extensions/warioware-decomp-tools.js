@@ -962,7 +962,11 @@ function registerApplyConversion(pi) {
       const convertedRel = pf.convertedAsmRel;
       const decompObjRel = `build/src/decomp/asm_${addr}.c.o`;
       const includeLine = `#include "${asmRel}"`;
-      const decompIncludeLine = `#include "decomp/asm_${addr}.c"`;
+        // Compute the correct relative include path from the host source directory to the decomp file
+  const hostDir = path.dirname(pf.includingSource); // e.g. "src/scenes" or "src"
+  const decompFile = `src/decomp/asm_${addr}.c`;
+  const decompIncludePath = path.relative(hostDir, decompFile).replace(/\\/g, "/"); // e.g. "../decomp/asm_0801214c.c"
+  const decompIncludeLine = `#include "${decompIncludePath}"`;
       const workflow = pf.conversionMode;
 
       const plan = workflow === "standalone_tu"

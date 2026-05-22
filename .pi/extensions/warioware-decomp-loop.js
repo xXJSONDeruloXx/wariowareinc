@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { truncateToWidth } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 
 const WIDGET_KEY = "warioware-decomp-loop";
@@ -117,9 +118,10 @@ function buildChunkPrompt(chunk) {
     "## Step 7 — Commit, report, and signal done",
     "1. docker run --rm -v \"$PWD:/workspace\" -w /workspace devkitpro/devkitarm:latest bash -lc 'make report'",
     "2. python3 tools/gen_objdiff.py",
-    "3. Update docs (README, scaleup, batch-history, pattern-library if new patterns)",
-    "4. git add -A && git commit -m 'feat: ...' && git push",
-    "5. Call the `decomp_chunk_done` tool with a brief summary.",
+    "3. Count src/decomp/*.c separately so docs keep standalone_tu vs included_stub progress distinct from linked C TU coverage",
+    "4. Update docs (README, scaleup, batch-history, pattern-library if new patterns)",
+    "5. git add -A && git commit -m 'feat: ...' && git push",
+    "6. Call the `decomp_chunk_done` tool with a brief summary.",
     "   If blocked at any step, call `decomp_chunk_done` with blocked=true and a reason.",
     "",
     "## Rules",
@@ -132,18 +134,58 @@ function buildChunkPrompt(chunk) {
   ].join("\n");
 }
 
+function getLoopPhase(state) {
+  if (state.lastStatus === "blocked") return { label: "blocked", color: "error" };
+  if (state.lastStatus === "no-signal") return { label: "stale", color: "warning" };
+  if (!state.enabled) return { label: "off", color: "dim" };
+  if (state.lastStatus === "advancing" || state.lastStatus === "compacting") {
+    return { label: state.lastStatus, color: "accent" };
+  }
+  if (state.lastStatus === "done") return { label: "done", color: "success" };
+  if (state.lastStatus === "running" || state.lastStatus === "launching") {
+    return { label: state.lastStatus, color: "success" };
+  }
+  return { label: state.lastStatus || "idle", color: "muted" };
+}
+
 function formatStatus(state) {
-  let line = `decomp loop: ${state.enabled ? "on" : "off"} · chunk ${state.chunk} · ${state.lastStatus}`;
-  if (state.advanceRequested) line += " · advance pending";
-  if (state.lastStatus === "blocked" && state.lastBlockedReason)
-    line += ` · ${state.lastBlockedReason}`;
-  return line;
+  const phase = getLoopPhase(state);
+  const bits = [`loop ${phase.label}`, `chunk ${state.chunk}`];
+  if (state.advanceRequested) bits.push("advance pending");
+  if (state.lastStatus === "no-signal") bits.push("last run ended without decomp_chunk_done");
+  if (state.lastStatus === "blocked" && state.lastBlockedReason) bits.push(state.lastBlockedReason);
+  return bits.join(" · ");
+}
+
+function buildLoopLines(theme, width, state) {
+  const phase = getLoopPhase(state);
+  const header = [
+    theme.fg("accent", theme.bold("↻ Decomp Loop")),
+    theme.fg(phase.color, phase.label.toUpperCase()),
+    theme.fg("muted", `chunk ${state.chunk}`),
+  ];
+  if (state.advanceRequested) header.push(theme.fg("accent", "advance pending"));
+
+  const lines = [truncateToWidth(header.join(` ${theme.fg("dim", "·")} `), width)];
+
+  if (state.lastStatus === "no-signal") {
+    lines.push(truncateToWidth(theme.fg("warning", "stale: last run ended without decomp_chunk_done"), width));
+  } else if (state.lastStatus === "blocked" && state.lastBlockedReason) {
+    lines.push(truncateToWidth(theme.fg("error", state.lastBlockedReason), width));
+  }
+
+  return lines;
 }
 
 function applyWidget(ctx, repoRoot) {
   if (!ctx?.hasUI) return;
   const state = loadState(repoRoot);
-  ctx.ui.setWidget(WIDGET_KEY, [formatStatus(state)]);
+  ctx.ui.setWidget(WIDGET_KEY, (_tui, theme) => ({
+    render(width) {
+      return buildLoopLines(theme, width, state);
+    },
+    invalidate() {},
+  }));
 }
 
 // ── Advance the loop (same session, fresh prompt) ─────────────────────────────

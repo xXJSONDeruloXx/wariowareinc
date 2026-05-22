@@ -5,18 +5,19 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 71` — `func_08002468` bit-extract (LSLS+LSRS via inline asm)
-- `matched_functions`: **1345 / 5955** = **22.585%**
-- `matched_code_percent`: **6.4244%**
-- `tools/gen_objdiff.py`: **888 C / 5801 asm-only units**
+- Verified working tree: `batch 79` — `func_0800210C` GBA virtual→physical address dereference
+- `build/report.json`: **1344 / 5955 matched functions** = **22.569%**
+- `matched_code_percent`: **6.4327%**
+- `tools/gen_objdiff.py`: **891 linked C TUs / 5796 non-C units**
+- `src/decomp/*.c`: **937 decompiled function files** = **872 standalone_tu** + **65 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
 
-At the current `total_functions` count (`5956`), that means:
-- target: **4765 / 5956** matched functions
-- current gap: **3432** more matched functions
+At the current `total_functions` count (`5955`), that means:
+- target: **4764 / 5955** matched functions
+- current gap: **3420** more matched functions
 
 ## What just landed
 
