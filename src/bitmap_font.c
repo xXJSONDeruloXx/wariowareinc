@@ -64,7 +64,7 @@ void func_0800BC0C(void) {}
 
 #include "asm/bitmap_font/asm_0800bc50.s"
 
-#include "asm/bitmap_font/asm_0800bc90.s"
+#include "decomp/asm_0800bc90.c"
 
 #include "asm/bitmap_font/asm_0800bcac.s"
 
@@ -82,7 +82,7 @@ void func_0800BC0C(void) {}
 
 #include "decomp/asm_0800bf34.c"
 
-#include "asm/bitmap_font/asm_0800bf44.s"
+#include "decomp/asm_0800bf44.c"
 
 #include "asm/bitmap_font/asm_0800bf60.s"
 

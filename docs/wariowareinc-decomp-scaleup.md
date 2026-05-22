@@ -20,6 +20,24 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 77 — accepted
+- Metric delta: **+11 matched functions**
+- Matched code: **6.4324%**
+- Commit: pending
+- Accepted functions:
+  - `asm_080109cc` set_pause_beatscript_scene(0) + RSBS mask-clear at gCurrentSceneData+0xDF
+  - `asm_080144bc` scene_set_current_thread(0) + RSBS mask-clear at gCurrentSceneData+0xDE (~9)
+  - `asm_08014a0c` scene_set_current_thread(0) + func_08014810(1) + RSBS mask-clear at gCurrentSceneData+0xDD (~2)
+  - `asm_08012c64` conditional-call on D_03006518.unk1 == 1
+  - `asm_0800bc90` bit-test via `val << 0x1D` + conditional call (LSLS sign-bit test pattern)
+  - `asm_080118c4` switch(2) with 2 cases (0→BL, 1→BL)
+  - `asm_0801274c` conditional return: `save_is_stage_unlocked(arg0) != 0 || arg0 <= 0xA ? 1 : 0` (BLS for unsigned compare)
+  - `asm_08014354` for-loop `i=0..2` with func_0801429C(i,0) + func_0800C7A4(0x12) (CMP R4,#2; BLS)
+  - `asm_0800bf44` D_03004004 indexed halfword write with `(arg1<<2)|(arg2<<8)|arg3` (load-base-first)
+  - `asm_080113bc` 5 void calls + 2 arg calls from D_03006518.unk2
+  - `asm_080117fc` call + do-while loop (s32 i for BLE, not BLS) + const-arg call
+- Notes: (1) **BLS vs BLE**: `u32 i; while (i <= 2)` generates `BLS` (unsigned), but the original uses `BLE` (signed). Use `s32 i` to get `BLE`. This is a critical distinction — the loop counter type must match the original's comparison type. (2) **LSLS sign-bit test**: `val << 0x1D; if (val >= 0)` generates `LSLS R0, #0x1D; CMP R0, #0; BGE` — this is the original's bit-test pattern, not the natural `if (val & 4)`. (3) **save_is_stage_unlocked** takes a u32 id parameter (declared in memory.h), not void. (4) Forward declarations needed for `scene_set_current_thread` and `func_0801208C` in main_menu.c before first use.
+
 ### Batch 76 — accepted
 - Metric delta: **+16 matched functions**
 - Matched code: **6.4305%**
