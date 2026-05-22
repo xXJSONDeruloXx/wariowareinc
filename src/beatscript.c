@@ -408,7 +408,7 @@ void func_0800A160(struct Animation* anim, struct Vector2* pos) {
 
 #include "decomp/asm_0800a228.c"
 
-#include "asm/beatscript/asm_0800a240.s"
+#include "decomp/asm_0800a240.c"
 
 void write_save_main(void);
 

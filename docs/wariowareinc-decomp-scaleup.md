@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 101` — `func_080148BC` main_menu scene wrapper with RSBS mask-clear
-- `build/report.json`: **1356 / 5956 matched functions** = **22.7666%**
-- `matched_code_percent`: **6.4373%**
+- Verified working tree: `batch 102` — `func_0800A240` beatscript task launcher wrapper
+- `build/report.json`: **1357 / 5956 matched functions** = **22.7834%**
+- `matched_code_percent`: **6.4381%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **959 decompiled function files** = **873 standalone_tu** + **86 included_stub**
+- `src/decomp/*.c`: **960 decompiled function files** = **873 standalone_tu** + **87 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 102 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4381%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_0800A240` beatscript task launcher wrapper: prepares R4/R5/R6/R8 regs, calls get_current_mem_id(), then tail-calls start_new_task with stack-based 5th arg. Naked inline asm for exact instruction ordering with interwork-safe epilogue.
+- Notes: Pattern of stack-allocated 5th argument + high-register save/restore (R4-R6, R8) + interwork epilogue (`POP {R1}; BX R1`). This is a `start_new_task` wrapper used throughout beatscript.
 
 ### Batch 101 — accepted
 - Metric delta: **+1 matched function**
