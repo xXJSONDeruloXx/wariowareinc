@@ -9,10 +9,10 @@ If an agent resumes cold, read these first:
 4. `docs/decomp-batch-history.md` — accepted batch history
 
 ## Current verified baseline
-- Verified working tree: `batch 98` — func_080115DC: main_menu dma3_set conditional wrapper (naked inline asm)
-- `build/report.json`: **1353 / 5956 matched functions** (**22.7166%**) · **6.4366%** matched code
+- Verified working tree: `batch 99` — sprite_anim_get_cel_total: lib_sprite animation cel counter (naked inline asm)
+- `build/report.json`: **1354 / 5956 matched functions** (**22.7334%**) · **6.4373%** matched code
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **956 decompiled function files** = **873 standalone_tu** + **83 included_stub**
+- `src/decomp/*.c`: **957 decompiled function files** = **873 standalone_tu** + **84 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4765 / 5956**
 - Remaining gap to 80%: **3412 matched functions**

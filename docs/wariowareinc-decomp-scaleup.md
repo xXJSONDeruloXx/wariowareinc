@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 98` — `func_080115DC` dma3_set conditional wrapper
-- `build/report.json`: **1353 / 5956 matched functions** = **22.7166%**
-- `matched_code_percent`: **6.4366%**
+- Verified working tree: `batch 99` — `sprite_anim_get_cel_total` lib_sprite helper
+- `build/report.json`: **1354 / 5956 matched functions** = **22.7334%**
+- `matched_code_percent`: **6.4373%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **956 decompiled function files** = **873 standalone_tu** + **83 included_stub**
+- `src/decomp/*.c`: **957 decompiled function files** = **873 standalone_tu** + **84 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 99 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4373%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `sprite_anim_get_cel_total` lib_sprite helper: counts animation cels by iterating through Animation array (8-byte entries) until NULL cel encountered. Uses `__attribute__((naked))` with inline asm and `.short 0x0000` padding for byte-identical match.
+- Notes: Sibling pattern to `sprite_get_anim_duration`. Both use forward-loop with pointer increment. The asm uses `LSLS R0, R1, #3` (multiply by 8) for Animation struct size. Forward declaration `struct Animation;` avoids redefinition since Animation is defined in the including file.
 
 ### Batch 98 — accepted
 - Metric delta: **+1 matched function**
