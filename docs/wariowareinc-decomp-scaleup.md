@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 87` — `func_080118A0` switch(arg0) {case 0,1,2: BL} dispatcher
-- `build/report.json`: **1346 / 5956 matched functions** = **22.599%**
-- `matched_code_percent`: **6.4349%**
+- Verified working tree: `batch 88` — `start_load_gfx_table_task` graphics table task launcher
+- `build/report.json`: **1347 / 5956 matched functions** = **22.616%**
+- `matched_code_percent`: **6.4347%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **945 decompiled function files** = **873 standalone_tu** + **72 included_stub**
+- `src/decomp/*.c`: **946 decompiled function files** = **873 standalone_tu** + **73 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 88 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4347%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `start_load_gfx_table_task` graphics table task launcher: prepares stack args and calls `start_new_task(memID, &D_083A4494, &stack_args[0], NULL, 0)`. Requires array-based stack argument layout to match the original's `sub sp, #0xc` + sequential stores.
+- Notes: Stack-allocated array pattern `void *stack_args[2]; stack_args[0] = arg1; stack_args[1] = arg2;` matches the original's stack frame layout better than passing address-of-argument.
 
 ### Batch 86 — accepted
 - Metric delta: **+1 matched function**
