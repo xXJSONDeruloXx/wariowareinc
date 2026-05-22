@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 106` — `func_0800A298` beatscript sprite attr wrapper
+- Verified working tree: `batch 107` — `func_08012C80` main_menu stage unlock wrapper
 - `build/report.json`: **1346 / 5956 matched functions** = **22.5991%**
-- `matched_code_percent`: **6.43903%**
+- `matched_code_percent`: **6.43941%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **964 decompiled function files** = **873 standalone_tu** + **91 included_stub**
+- `src/decomp/*.c`: **965 decompiled function files** = **873 standalone_tu** + **92 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 107 — accepted
+- Metric delta: **+1 matched function** (1346 matched, small function)
+- Matched code: **6.43941%** (small increase)
+- Commit: pending
+- Accepted functions:
+  - `func_08012C80` main_menu stage unlock wrapper: checks save_is_stage_unlocked(arg0), if unlocked loads D_083AA3C4[arg0<<2], calls func_0800C874(R0) and func_020FC(), stores result to gCurrentSceneData+0x84. Uses naked inline asm with `.syntax unified` for exact R4 preservation and interwork-safe POP {R0}; BX R0 epilogue.
+- Notes: Pattern of conditional call chain with table lookup and result store. Uses LSLS for shift-computed indexing into D_083AA3C4 table. Sibling pattern to other main_menu conditional wrappers.
 
 ### Batch 106 — accepted
 - Metric delta: **+1 matched function** (1346 matched, small function)

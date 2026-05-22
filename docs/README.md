@@ -9,10 +9,10 @@ If an agent resumes cold, read these first:
 4. `docs/decomp-batch-history.md` — accepted batch history
 
 ## Current verified baseline
-- Verified working tree: `batch 106` — func_0800A298: beatscript sprite attr wrapper
-- `build/report.json`: **1346 / 5956 matched functions** (**22.5991%**) · **6.43903%** matched code
+- Verified working tree: `batch 107` — func_08012C80: main_menu stage unlock wrapper
+- `build/report.json`: **1346 / 5956 matched functions** (**22.5991%**) · **6.43941%** matched code
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **964 decompiled function files** = **873 standalone_tu** + **91 included_stub**
+- `src/decomp/*.c`: **965 decompiled function files** = **873 standalone_tu** + **92 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4765 / 5956**
 - Remaining gap to 80%: **3409 matched functions**
