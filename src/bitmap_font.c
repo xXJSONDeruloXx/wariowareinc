@@ -54,7 +54,7 @@ u8 bmp_font_obj_parse_hex_digit(char c) {
 
 #include "asm/bitmap_font/asm_0800bb74.s"
 
-#include "asm/bitmap_font/asm_0800bbb4.s"
+#include "decomp/asm_0800bbb4.c"
 
 #include "asm/bitmap_font/asm_0800bbcc.s"
 
@@ -76,11 +76,11 @@ void func_0800BC0C(void) {}
 
 #include "asm/bitmap_font/asm_0800bef4.s"
 
-#include "asm/bitmap_font/asm_0800bf0c.s"
+#include "decomp/asm_0800bf0c.c"
 
 #include "asm/bitmap_font/asm_0800bf20.s"
 
-#include "asm/bitmap_font/asm_0800bf34.s"
+#include "decomp/asm_0800bf34.c"
 
 #include "asm/bitmap_font/asm_0800bf44.s"
 

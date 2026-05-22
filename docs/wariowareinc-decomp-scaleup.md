@@ -20,6 +20,30 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 75 — accepted
+- Metric delta: **+17 matched functions**
+- Matched code: **6.4267%** (small increase due to small function sizes)
+- Commit: pending
+- Accepted functions:
+  - `asm_08011764` main_menu_scene_stop — two void calls (func_08007EAC + func_08003FB8)
+  - `asm_08013ae0` — two const-arg calls (func_0800C7A4(8); func_0800C7A4(9))
+  - `asm_08012cb4` — conditional call: if(func_08011698()) func_08012828()
+  - `asm_0801364c` — conditional call: if(func_08011698()) func_08013460()
+  - `asm_08014b44` — conditional call: if(func_08011698()) func_08014A34()
+  - `asm_08014de8` — conditional call: if(func_08011698()) func_08014DC4()
+  - `asm_080153e0` — conditional call: if(func_08011698()) func_080152D4()
+  - `asm_08015930` — conditional call: if(func_08011698()) func_080157C4()
+  - `asm_0800a024` — gCurrentSceneData byte load at 0xBA<<1=0x174
+  - `asm_0800a138` — gCurrentSceneData halfword load at 0xBD<<1=0x17A
+  - `asm_0800a14c` — gCurrentSceneData halfword load at 0xBC<<1=0x178
+  - `asm_0800a390` — gCurrentSceneData byte load at 0x9F<<2=0x27C
+  - `asm_0800a228` — u16-cast + 2-arg call: func_08006184((u16)get_current_mem_id(), arg0)
+  - `asm_0800bbb4` — language-indexed lookup: func_0800BB74(arg0[get_current_language()])
+  - `asm_0800bf34` — D_0300400C indexed halfword pair store (load base first trick for LDR-before-LSLS)
+  - `asm_0800bf0c` — gGraphicsBuffer.DISPCNT |= (0x100 << arg0) bit-OR-set
+  - `asm_080024d0` — 6-field struct init: 3 args then 3 zeros (pointer advance a0=a0+3 for ADDS R0,#0xC)
+- Notes: Key new patterns: (1) **conditional-call wrappers** — `if(func()) callee()` is a common main_menu pattern; (2) **gCurrentSceneData shift-offset loads** — `ptr = (u8*)gCurrentSceneData; return ptr[N<<shift]` reproduces the LDR+MOVS+LSLS+ADDS+LDR[BH] sequence; (3) **load-base-first trick** — assigning a global base to a local before computing offset forces LDR before LSLS; (4) **pointer-advance for zero-init** — reassigning `a0 = a0 + 3` generates `ADDS R0, #0xC` instead of offset-from-original; (5) Forward declarations needed in host C when included_stub function is used before its include point; (6) Don't duplicate extern declarations that already exist via transitively-included headers (e.g. memory.h→gameplay.h provides func_08003FB8/func_08007EAC to main_menu.c)
+
 ### Batch 74 — accepted
 - Metric delta: **+8 matched functions**
 - Matched code: **6.4244%** (unchanged due to small function sizes)

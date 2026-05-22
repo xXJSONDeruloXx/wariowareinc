@@ -46,6 +46,12 @@ void func_08010BE0(void) {
 
 #include "asm/scenes/main_menu/asm_080113ec.s"
 
+extern void func_08012CB4(void);
+extern void func_0801364C(void);
+extern void func_08014B44(void);
+extern void func_08014DE8(void);
+extern void func_080153E0(void);
+extern void func_08015930(void);
 void main_menu_scene_update(void) {
     switch (D_03006518.unk1) {
         case 0: func_0801208C(); break;
@@ -91,7 +97,7 @@ u32 func_08011698(void) {
 
 #include "asm/scenes/main_menu/asm_08011730.s"
 
-#include "asm/scenes/main_menu/asm_08011764.s"
+#include "../decomp/asm_08011764.c"
 
 #include "asm/scenes/main_menu/asm_08011774.s"
 
@@ -217,7 +223,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_08012c80.s"
 
-#include "asm/scenes/main_menu/asm_08012cb4.s"
+#include "../decomp/asm_08012cb4.c"
 
 #include "asm/scenes/main_menu/asm_08012cc8.s"
 
@@ -261,7 +267,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_08013628.s"
 
-#include "asm/scenes/main_menu/asm_0801364c.s"
+#include "../decomp/asm_0801364c.c"
 
 #include "asm/scenes/main_menu/asm_08013660.s"
 
@@ -279,7 +285,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_08013a94.s"
 
-#include "asm/scenes/main_menu/asm_08013ae0.s"
+#include "../decomp/asm_08013ae0.c"
 
 #include "asm/scenes/main_menu/asm_08013af4.s"
 
@@ -349,7 +355,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_08014a34.s"
 
-#include "asm/scenes/main_menu/asm_08014b44.s"
+#include "../decomp/asm_08014b44.c"
 
 #include "asm/scenes/main_menu/asm_08014b58.s"
 
@@ -365,7 +371,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_08014dc4.s"
 
-#include "asm/scenes/main_menu/asm_08014de8.s"
+#include "../decomp/asm_08014de8.c"
 
 #include "asm/scenes/main_menu/asm_08014dfc.s"
 
@@ -389,7 +395,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_080152d4.s"
 
-#include "asm/scenes/main_menu/asm_080153e0.s"
+#include "../decomp/asm_080153e0.c"
 
 #include "asm/scenes/main_menu/asm_080153f4.s"
 
@@ -405,7 +411,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_080157c4.s"
 
-#include "asm/scenes/main_menu/asm_08015930.s"
+#include "../decomp/asm_08015930.c"
 
 #include "asm/scenes/main_menu/asm_08015944.s"
 

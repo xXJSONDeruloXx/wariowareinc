@@ -16,7 +16,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "asm/graphics_table/asm_080024a4.s"
 
-#include "asm/graphics_table/asm_080024d0.s"
+#include "decomp/asm_080024d0.c"
 
 #include "asm/graphics_table/asm_080024e4.s"
 

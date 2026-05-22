@@ -349,7 +349,7 @@ void scene_set_music_pitch_env(s16 pitch) {
 
 #include "asm/beatscript/asm_0800a000.s"
 
-#include "asm/beatscript/asm_0800a024.s"
+#include "decomp/asm_0800a024.c"
 
 #include "decomp/asm_0800a038.c"
 
@@ -380,9 +380,9 @@ u32 get_current_mem_id(void) {
 
 #include "decomp/asm_0800a128.c"
 
-#include "asm/beatscript/asm_0800a138.s"
+#include "decomp/asm_0800a138.c"
 
-#include "asm/beatscript/asm_0800a14c.s"
+#include "decomp/asm_0800a14c.c"
 
 void func_0800A160(struct Animation* anim, struct Vector2* pos) {
     u32 memID = sprite_handler_get_mem_id(gSpriteHandler);
@@ -401,7 +401,7 @@ void func_0800A160(struct Animation* anim, struct Vector2* pos) {
 
 #include "decomp/asm_0800a218.c"
 
-#include "asm/beatscript/asm_0800a228.s"
+#include "decomp/asm_0800a228.c"
 
 #include "asm/beatscript/asm_0800a240.s"
 
@@ -423,7 +423,7 @@ u32 get_current_language(void) {
 
 #include "asm/beatscript/asm_0800a330.s"
 
-#include "asm/beatscript/asm_0800a390.s"
+#include "decomp/asm_0800a390.c"
 
 #include "asm/beatscript/asm_0800a3a4.s"
 
