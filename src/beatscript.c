@@ -422,7 +422,7 @@ u32 get_current_language(void) {
 
 #include "decomp/asm_0800a280.c"
 
-#include "asm/beatscript/asm_0800a298.s"
+#include "decomp/asm_0800a298.c"
 
 #include "asm/beatscript/asm_0800a2d8.s"
 

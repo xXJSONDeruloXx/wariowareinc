@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 105` — `func_0800A098` beatscript byte increment/cap
+- Verified working tree: `batch 106` — `func_0800A298` beatscript sprite attr wrapper
 - `build/report.json`: **1346 / 5956 matched functions** = **22.5991%**
-- `matched_code_percent`: **6.43809%**
+- `matched_code_percent`: **6.43903%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **963 decompiled function files** = **873 standalone_tu** + **90 included_stub**
+- `src/decomp/*.c`: **964 decompiled function files** = **873 standalone_tu** + **91 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,20 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 106 — accepted
+- Metric delta: **+1 matched function** (1346 matched, small function)
+- Matched code: **6.43903%** (small increase)
+- Commit: pending
+- Accepted functions:
+  - `func_0800A298` beatscript sprite attr wrapper: saves args in R5/R6, loads gSpriteHandler into R4, calls sprite_id_and_attr(R0, ~arg0, 1), calls sprite_id_orr_attr(R0, arg0 & arg1, 1), stores arg1 to gCurrentSceneData+0x274 (0x9D<<2), stores arg0 to gCurrentSceneData+0x278. Uses naked inline asm with `.syntax unified` for exact R4-R6 register preservation and interwork-safe POP {R0}; BX R0 epilogue.
+
+### Batch 105 — accepted
+- Metric delta: **+1 matched function** (1346 matched)
+- Matched code: **6.43809%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_0800A098` beatscript byte increment/cap: increments byte at gCurrentSceneData+0x175, caps at 4 using BLS conditional branch. Fixed return type mismatch in gameplay.h (void → u32).
 
 ### Batch 104 — accepted
 - Metric delta: **+1 matched function** (1358 → 1359)
