@@ -108,6 +108,24 @@
   - `sprite_id_delete(gSpriteHandler, *(u32 *)((u8 *)gCurrentSceneVariable + off));`
   - if the original has a pre-call like `func_0800CDB0(1)`, keep it before the delete and keep the byte-cast on the offset load
 
+- bit-extract via LSLS+LSRS pair: when the original uses `LSLS R0, R0, #N; LSRS R0, R0, #N` to extract a single bit, C `& 1` or `(x << N) >> N` may generate AND or ASRS instead of LSRS. Use inline asm with `.syntax unified` to match exactly:
+  ```c
+  s32 result;
+  asm volatile(
+      ".syntax unified\n"
+      "ldrb %0, [%1]\n"
+      "lsls %0, %0, #31\n"
+      "lsrs %0, %0, #31\n"
+      ".syntax divided\n"
+      : "=r"(result) : "r"(ptr)
+  );
+  return result;
+  ```
+
+### included_stub asm format traps
+- included_stub asm files that use `.syntax unified` embedded in a C `asm()` string cannot be assembled by the `compile_and_view_asm` tool (it writes the raw string to a temp `.s` file which the assembler rejects)
+- Workaround: manually assemble a standalone `.s` version of the target, compare with `objdump -d` and `objcopy -O binary` + `cmp`, then use `apply_conversion` directly after manual verification
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers

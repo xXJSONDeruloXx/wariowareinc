@@ -8,7 +8,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "asm/graphics_table/asm_080021c8.s"
 
-#include "asm/graphics_table/asm_08002468.s"
+#include "decomp/asm_08002468.c"
 
 #include "asm/graphics_table/asm_08002470.s"
 

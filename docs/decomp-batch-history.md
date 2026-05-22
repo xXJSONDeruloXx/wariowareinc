@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 71 | `pending` | +1 | `func_08002468` bit-extract (LSLS+LSRS, inline asm, first included_stub) |
 | 70 | `pending` | +2 | `func_0803DDA4` wrapper call with -1 + .short padding |
 | 69 | `pending` | +1 | `func_0801667C` IWRAM byte load (struct+offset trick) |
 | 68 | `pending` | +1 | `func_08016670` IWRAM byte store (struct+offset trick) |

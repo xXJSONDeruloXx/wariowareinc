@@ -5,8 +5,8 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 70` — `func_0803DDA4` wrapper (call with -1)
-- `matched_functions`: **1344 / 5954** = **22.579%**
+- Verified working tree: `batch 71` — `func_08002468` bit-extract (LSLS+LSRS via inline asm)
+- `matched_functions`: **1345 / 5955** = **22.585%**
 - `matched_code_percent`: **6.4244%**
 - `tools/gen_objdiff.py`: **888 C / 5801 asm-only units**
 - ROM status: **`wariowareinc.gba: OK`**
@@ -19,6 +19,15 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3432** more matched functions
 
 ## What just landed
+
+### Batch 71 — accepted
+- Metric delta: **1344 → 1345 matched functions** (+1)
+- Matched code: **6.4244% → 6.4244%**
+- Commit: pending
+- Accepted functions:
+  - `asm_08002468` — bit-extract helper (LDRB + LSLS #31 + LSRS #31), required inline asm with `.syntax unified` because C `& 1` generates ANDS and C `(x<<31)>>31` generates ASRS instead of LSRS
+- Notes: First included_stub conversion. compile_and_view_asm tool fails on `.syntax unified` asm stubs; manual objdump+cmp verification used instead.
+
 ### Batch 70 — accepted
 - Metric delta: **1342 → 1344 matched functions** (+2)
 - Matched code: **6.4228% → 6.4244%**
