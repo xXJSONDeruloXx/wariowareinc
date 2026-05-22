@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 100` — `func_08013628` main_menu table lookup
-- `build/report.json`: **1355 / 5956 matched functions** = **22.7498%**
+- Verified working tree: `batch 101` — `func_080148BC` main_menu scene wrapper with RSBS mask-clear
+- `build/report.json`: **1356 / 5956 matched functions** = **22.7666%**
 - `matched_code_percent`: **6.4373%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **958 decompiled function files** = **873 standalone_tu** + **85 included_stub**
+- `src/decomp/*.c`: **959 decompiled function files** = **873 standalone_tu** + **86 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 101 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4373%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_080148BC` main_menu wrapper: scene_set_current_thread(0), RSBS-mask-clear bits 0,1,4 at gCurrentSceneData+0xDE (mask=0x11), then call function pointer at gCurrentSceneData+0x144 (0xA2<<1 = 0x144). Naked inline asm with `.syntax unified` for exact instruction match.
+- Notes: Sibling pattern to func_080144BC (same structure but mask=9 at offset 0xDE). Both use scene_set_current_thread(0), RSBS mask-clear, and function pointer call. The offset 0x144 is computed as 0xA2<<1. Uses pure naked asm to match the exact instruction ordering including LDR R3/gCurrentSceneData reuse across both operations.
 
 ### Batch 100 — accepted
 - Metric delta: **+1 matched function**
