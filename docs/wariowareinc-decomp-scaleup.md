@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 107` — `func_08012C80` main_menu stage unlock wrapper
+- Verified working tree: `batch 108` — `func_08014C6C` main_menu scene wrapper
 - `build/report.json`: **1346 / 5956 matched functions** = **22.5991%**
-- `matched_code_percent`: **6.43941%**
+- `matched_code_percent`: **6.43997%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **965 decompiled function files** = **873 standalone_tu** + **92 included_stub**
+- `src/decomp/*.c`: **966 decompiled function files** = **873 standalone_tu** + **93 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 108 — accepted
+- Metric delta: **+1 matched function** (1346 matched, small function)
+- Matched code: **6.43997%** (small increase)
+- Commit: pending
+- Accepted functions:
+  - `func_08014C6C` main_menu scene wrapper: scene_set_current_thread(0), RSBS mask-clear bits 0,5 (mask=0x21) at gCurrentSceneData+0xDE, calls function pointer at gCurrentSceneData+0x170 (0xB8<<1). Uses naked inline asm with `.syntax unified` for exact instruction sequence and interwork-safe POP {R0}; BX R0 epilogue.
+- Notes: Sibling pattern to func_080148BC and func_080144BC (same structure with different masks at offset 0xDE). Uses 0xB8<<1 = 0x170 for function pointer offset.
 
 ### Batch 107 — accepted
 - Metric delta: **+1 matched function** (1346 matched, small function)
