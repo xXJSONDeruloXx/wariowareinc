@@ -170,6 +170,7 @@ Example trap: `func_08002514` calls `func_080024D0`. Both were originally asm. `
   - `sprite_id_delete(gSpriteHandler, *(u32 *)((u8 *)gCurrentSceneVariable + off));`
   - if the original has a pre-call like `func_0800CDB0(1)`, keep it before the delete and keep the byte-cast on the offset load
 
+- **LSRS vs ASRS (logical vs arithmetic shift right)**: To force `LSRS` instead of `ASRS`, cast the intermediate to `u32` before shifting. For example, `(u32)val << 0x17` followed by `>> 0x19` generates `LSLS R0, #0x17; LSRS R3, R0, #0x19` while omitting the cast produces `ASRS`.
 - bit-extract via LSLS+LSRS pair: when the original uses `LSLS R0, R0, #N; LSRS R0, R0, #N` to extract a single bit, C `& 1` or `(x << N) >> N` may generate AND or ASRS instead of LSRS. Use inline asm with `.syntax unified` to match exactly:
   ```c
   s32 result;

@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 92` — `func_08011708` main_menu conditional bit-test return
-- `build/report.json`: **1347 / 5956 matched functions** = **22.616%**
+- Verified working tree: `batch 93` — `func_080123F4` main_menu data processing
+- `build/report.json`: **1348 / 5956 matched functions** = **22.6326%**
 - `matched_code_percent`: **6.4355%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **950 decompiled function files** = **873 standalone_tu** + **77 included_stub**
+- `src/decomp/*.c`: **951 decompiled function files** = **873 standalone_tu** + **78 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 93 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4355%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_080123F4` main_menu data processing: extracts bitfield from gCurrentSceneData[0x88], shifts right (LSLS #0x17 then LSRS #0x19), caps at 0x20, then calls `func_08006CE8(0, D_083AA568, 0x20, capped_val)`.
+- Notes: **LSRS vs ASRS shift distinction**: `(u32)val << 0x17` forces unsigned semantics, generating `LSRS` (logical shift) instead of `ASRS` (arithmetic shift). The original uses `LSLS R0, #0x17; LSRS R3, R0, #0x19` - without the `(u32)` cast, C `>> 0x19` on a signed intermediate produces `ASRS`.
 
 ### Batch 92 — accepted
 - Metric delta: **+1 matched function**
