@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 97` — `func_08001DFC` array counter loop with BLS branch
-- `build/report.json`: **1352 / 5956 matched functions** = **22.6998%**
+- Verified working tree: `batch 98` — `func_080115DC` dma3_set conditional wrapper
+- `build/report.json`: **1353 / 5956 matched functions** = **22.7166%**
 - `matched_code_percent`: **6.4366%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **955 decompiled function files** = **873 standalone_tu** + **82 included_stub**
+- `src/decomp/*.c`: **956 decompiled function files** = **873 standalone_tu** + **83 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 98 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4366%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_080115DC` main_menu dma3_set conditional wrapper: checks if gCurrentSceneData[0xDC] is non-zero, then calls dma3_set with source from offset 0xD4 and destination from offset 0xD8, with transfer size 0x500 (0xA0<<3), unit 0x100 (0x80<<1), and bytes per interrupt 0x20.
+- Notes: Used naked inline asm with `.syntax unified` to match the exact instruction sequence including the specific constant generation via MOVS+LSLS for 0x500 and 0x100. The conditional BEQ branch and stack-based 5th argument (STR R3,[SP]) require precise instruction ordering that pure C cannot guarantee.
 
 ### Batch 97 — accepted
 - Metric delta: **+1 matched function**

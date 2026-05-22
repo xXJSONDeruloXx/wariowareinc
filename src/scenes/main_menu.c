@@ -86,7 +86,7 @@ void main_menu_scene_update(void) {
 
 #include "asm/scenes/main_menu/asm_08011584.s"
 
-#include "asm/scenes/main_menu/asm_080115dc.s"
+#include "../decomp/asm_080115dc.c"
 
 #include "asm/scenes/main_menu/asm_08011614.s"
 
