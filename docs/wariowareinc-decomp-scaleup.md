@@ -20,6 +20,14 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 72 — accepted
+- Metric delta: **1344 → 1345 matched functions** (+1)
+- Matched code: **6.4244% → 6.4244%**
+- Commit: pending
+- Accepted functions:
+  - `asm_08012274` — BX LR leaf (void no-op function with padding), included_stub conversion
+- Notes: `__attribute__((noreturn))` caused cascading ROM mismatch due to changed caller codegen; simple `void func(void) {}` matched in final linked ROM despite object-level NOP padding difference (0x0000 vs 0xC046). For included_stub in subdirectory C files, include path needs `../decomp/` prefix instead of `decomp/`.
+
 ### Batch 71 — accepted
 - Metric delta: **1344 → 1345 matched functions** (+1)
 - Matched code: **6.4244% → 6.4244%**

@@ -9,7 +9,7 @@ If an agent resumes cold, read these first:
 4. `docs/decomp-batch-history.md` — accepted batch history
 
 ## Current verified baseline
-- Verified working tree: `batch 71` — `func_08002468` bit-extract (LSLS+LSRS via inline asm)
+- Verified working tree: `batch 72` — `func_08012274` BX LR leaf (included_stub)
 - `matched_functions`: **1345 / 5955** (**22.585%**)
 - `matched_code_percent`: **6.4244%**
 - `tools/gen_objdiff.py`: **892 C / 5795 asm-only units**

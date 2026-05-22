@@ -125,6 +125,12 @@
 ### included_stub asm format traps
 - included_stub asm files that use `.syntax unified` embedded in a C `asm()` string cannot be assembled by the `compile_and_view_asm` tool (it writes the raw string to a temp `.s` file which the assembler rejects)
 - Workaround: manually assemble a standalone `.s` version of the target, compare with `objdump -d` and `objcopy -O binary` + `cmp`, then use `apply_conversion` directly after manual verification
+- **include path depth**: for included_stub conversions where the host C file is in a subdirectory (e.g. `src/scenes/main_menu.c`), the include-shim path must use `../decomp/asm_XXXX.c` instead of `decomp/asm_XXXX.c`. The `apply_conversion` tool doesn't account for this and generates wrong include paths for subdirectory host files
+
+### noreturn trap
+- **Do NOT use `__attribute__((noreturn))`** to suppress compiler-generated epilogues — it changes caller codegen and causes cascading ROM mismatch. Even if the function body is pure inline asm with `bx lr`, use plain `void` return type
+- For simple BX LR leaf functions, `void func(void) {}` produces `BX LR + NOP` which matches in the final linked ROM even when the original object has `BX LR + .short 0x0000` — the linker resolves the alignment padding correctly
+- Object-level NOP differences (`0xC046` vs `0x0000`) do NOT cause ROM-level mismatches for simple leaf functions
 
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
