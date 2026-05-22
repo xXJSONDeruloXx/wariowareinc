@@ -24,6 +24,17 @@ If those docs are not enough, mine prior session history from:
 - Push matched-function progress upward from the latest verified baseline documented in `docs/wariowareinc-decomp-scaleup.md`.
 - Prefer small, sibling-rich batches that can be verified and committed quickly.
 
+## Tool restrictions
+
+**Never use `pi-processes` (the `process` tool) in this repository.**
+
+The Docker-based build system requires synchronous completion verification (`wariowareinc.gba: OK`). Background processes with `pi-processes`:
+- Do not reliably propagate the Docker container exit status
+- Make it impossible to immediately halt on build mismatch
+- Obscure the critical pass/fail signal needed for the verification workflow
+
+Always use synchronous `bash` tool calls with explicit build verification. The decomp loop (`/decomp-next`, `/decomp-loop`) already handles session pacing correctly without background processes.
+
 ## Non-negotiable workflow rules
 1. One function per file in `src/decomp/`.
 2. Move converted asm files into `asm/converted/`.
