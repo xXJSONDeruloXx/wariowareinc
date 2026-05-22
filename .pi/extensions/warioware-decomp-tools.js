@@ -1405,6 +1405,233 @@ function registerVerifyCommands(pi) {
   });
 }
 
+// ── Tool: decomp_siblings ─────────────────────────────────────────────────────
+
+function registerDecompSiblings(pi) {
+  pi.registerTool({
+    name: "decomp_siblings",
+    label: "Find Decomp Siblings",
+    description:
+      "Finds functions similar to a matched one for batch conversion opportunities.\n" +
+      "Strategies:\n" +
+      "  same_file      – Functions in the same asm file (best for family conversion)\n" +
+      "  same_module    – Functions in the same source module (e.g., graphics_table, beatscript)\n" +
+      "  callers        – Functions that call this one\n" +
+      "  callees        – Functions that this one calls\n" +
+      "  pattern        – Functions with similar instruction patterns (loop, conditional, etc.)\n" +
+      "Returns a ranked list with preflight info ready for conversion.",
+    parameters: Type.Object({
+      functionName: Type.String({
+        description: "Function name to find siblings for (e.g. func_080024E4)",
+      }),
+      strategy: Type.Optional(
+        Type.Union(
+          [
+            Type.Literal("same_file"),
+            Type.Literal("same_module"),
+            Type.Literal("callers"),
+            Type.Literal("callees"),
+            Type.Literal("pattern"),
+          ],
+          { description: "Sibling detection strategy (default: same_file)" },
+        ),
+      ),
+      count: Type.Optional(Type.Number({ description: "How many siblings to return (default 10)" })),
+    }),
+    async execute(_id, { functionName, strategy = "same_file", count = 10 }, _signal, _onUpdate, ctx) {
+      const repoRoot = findRepoRoot(ctx.cwd);
+      const db = loadDb(repoRoot);
+
+      if (!db) {
+        return {
+          content: [{ type: "text", text: `mizuchi-db.json not found. Run: ${formatIndexCodebaseCommand(repoRoot, resolveMizuchiRoot(repoRoot).root)}` }],
+          details: { error: "db_missing" },
+        };
+      }
+
+      const allFns = db.decompFunctions || [];
+      const targetFn = findFn(db, functionName);
+
+      if (!targetFn) {
+        return {
+          content: [{ type: "text", text: `Function "${functionName}" not found in mizuchi-db.json. Check the name and run index-codebase if needed.` }],
+          details: { error: "function_not_found" },
+        };
+      }
+
+      // Unmatched = no real C code (empty or asm-only stubs)
+      const unmatchedFns = allFns.filter((f) => !f.cCode?.trim());
+
+      let siblings = [];
+      const pf = preflightFunction(repoRoot, targetFn, functionName);
+
+      switch (strategy) {
+        case "same_file": {
+          // Find functions in the same asm file
+          const targetAsmPath = targetFn.asmModulePath;
+          if (targetAsmPath) {
+            siblings = unmatchedFns.filter((f) => {
+              const fPath = f.asmModulePath;
+              return fPath && path.dirname(fPath) === path.dirname(targetAsmPath);
+            });
+          }
+          // Sort by asm line count (smallest first)
+          siblings.sort((a, b) => (a.asmCode?.split("\n").length ?? 999) - (b.asmCode?.split("\n").length ?? 999));
+          break;
+        }
+
+        case "same_module": {
+          // Extract module name from path (e.g., "graphics_table" from "asm/graphics_table/asm_080024e4.s")
+          const targetModule = targetFn.asmModulePath?.replace(".mizuchi-asm/asm/", "").split("/")[0];
+          if (targetModule) {
+            siblings = unmatchedFns.filter((f) => {
+              const fModule = f.asmModulePath?.replace(".mizuchi-asm/asm/", "").split("/")[0];
+              return fModule === targetModule;
+            });
+          }
+          siblings.sort((a, b) => (a.asmCode?.split("\n").length ?? 999) - (b.asmCode?.split("\n").length ?? 999));
+          break;
+        }
+
+        case "callers": {
+          // Find functions that call this one
+          const targetAddr = functionAddr(targetFn, functionName);
+          siblings = unmatchedFns.filter((f) => {
+            const calls = f.callsFunctions || [];
+            return calls.some((n) => n === functionName || n === targetAddr);
+          });
+          // Sort by how many matched functions they also call
+          const matchedNames = new Set(allFns.filter((f) => f.cCode?.trim()).map((f) => f.name));
+          siblings.sort((a, b) => {
+            const aMatchedCalls = (a.callsFunctions ?? []).filter((n) => matchedNames.has(n)).length;
+            const bMatchedCalls = (b.callsFunctions ?? []).filter((n) => matchedNames.has(n)).length;
+            return bMatchedCalls - aMatchedCalls;
+          });
+          break;
+        }
+
+        case "callees": {
+          // Find functions that this one calls
+          const targetCalls = targetFn.callsFunctions || [];
+          siblings = unmatchedFns.filter((f) => {
+            const fAddr = functionAddr(f, f.name);
+            return targetCalls.some((n) => n === f.name || n === fAddr);
+          });
+          siblings.sort((a, b) => (a.asmCode?.split("\n").length ?? 999) - (b.asmCode?.split("\n").length ?? 999));
+          break;
+        }
+
+        case "pattern": {
+          // Find functions with similar instruction patterns
+          // Heuristic: similar instruction sequences, loop structures, etc.
+          const targetPattern = extractPattern(targetFn.asmCode ?? "");
+          siblings = unmatchedFns.filter((f) => {
+            const fPattern = extractPattern(f.asmCode ?? "");
+            // Check for similar patterns (same instruction types, similar structure)
+            return (
+              fPattern.hasLoop === targetPattern.hasLoop &&
+              fPattern.hasConditional === targetPattern.hasConditional &&
+              fPattern.instructionTypes === targetPattern.instructionTypes &&
+              Math.abs((f.asmCode?.split("\n").length ?? 0) - (targetFn.asmCode?.split("\n").length ?? 0)) <= 5
+            );
+          });
+          // Sort by similarity score (line count difference as proxy)
+          siblings.sort((a, b) => {
+            const aDiff = Math.abs((a.asmCode?.split("\n").length ?? 0) - (targetFn.asmCode?.split("\n").length ?? 0));
+            const bDiff = Math.abs((b.asmCode?.split("\n").length ?? 0) - (targetFn.asmCode?.split("\n").length ?? 0));
+            return aDiff - bDiff;
+          });
+          break;
+        }
+      }
+
+      // Filter out already_converted functions
+      siblings = siblings.filter((f) => {
+        const fPf = preflightFunction(repoRoot, f, f.name);
+        return fPf.conversionMode !== "already_converted";
+      });
+
+      // Prefer supported workflows
+      const supportedSiblings = siblings.filter((f) => {
+        const fPf = preflightFunction(repoRoot, f, f.name);
+        return fPf.safeForAutonomous;
+      });
+
+      // If we have enough supported siblings, use those; otherwise mix in research candidates
+      const finalSiblings = supportedSiblings.length >= count ? supportedSiblings.slice(0, count) : siblings.slice(0, count);
+
+      const lines = [
+        `Siblings of ${functionName} (${strategy} strategy)`,
+        `  Target workflow: ${pf.conversionMode}${pf.safeForAutonomous ? " ✅" : " ⚠️"}`,
+        `  Found ${siblings.length} unmatched siblings (${supportedSiblings.length} supported)\n`,
+      ];
+
+      for (const fn of finalSiblings) {
+        const fPf = preflightFunction(repoRoot, fn, fn.name);
+        const addr = functionAddr(fn, fn.name);
+        const asmLines = fn.asmCode?.split("\n").length ?? 0;
+        const asmSrc = asmRelPath(fn) ?? "?";
+        const targetObj = addr ? `build/asm/asm_${addr}.s.o` : "?";
+        const calledMatched = (fn.callsFunctions ?? []).filter(
+          (n) => allFns.find((f) => f.name === n)?.cCode?.trim(),
+        ).length;
+
+        lines.push(
+          `• ${fn.name}  [${asmLines} asm lines]
+` +
+          `  workflow: ${fPf.conversionMode}${fPf.safeForAutonomous ? " (supported)" : " (research/manual)"}
+` +
+          `  asm: ${asmSrc}
+` +
+          `  target: ${targetObj}${fPf.targetObjectExists ? " (exists)" : " (not built/found)"}
+` +
+          `  matched-calls: ${calledMatched}/${(fn.callsFunctions ?? []).length}
+` +
+          `  calls: ${(fn.callsFunctions ?? []).slice(0, 3).join(", ")}${(fn.callsFunctions?.length ?? 0) > 3 ? "..." : ""}`,
+        );
+      }
+
+      if (finalSiblings.length === 0) {
+        lines.push("No unmatched siblings found with this strategy.");
+        lines.push("  Try a different strategy or run query_candidates for general exploration.");
+      }
+
+      return {
+        content: [{ type: "text", text: lines.join("\n") }],
+        details: {
+          functionName,
+          strategy,
+          totalSiblings: siblings.length,
+          supportedSiblings: supportedSiblings.length,
+          siblings: finalSiblings.map((f) => ({
+            name: f.name,
+            asmLines: f.asmCode?.split("\n").length ?? 0,
+            preflight: preflightFunction(repoRoot, f, f.name),
+            callsFunctions: f.callsFunctions ?? [],
+          })),
+        },
+      };
+    },
+  });
+}
+
+// Helper to extract pattern features from asm code
+function extractPattern(asmCode) {
+  const lines = asmCode.split("\n");
+  const hasLoop = lines.some((l) => /\bb(ne|eq|gt|lt|ge|le|cc|cs|hi|ls)\b/i.test(l));
+  const hasConditional = lines.some((l) => /\bcmp\b/i.test(l));
+  const instrTypes = new Set();
+  for (const line of lines) {
+    const m = line.match(/^\s*[/*]*\s*([a-z]+)\s+/i);
+    if (m) instrTypes.add(m[1].toLowerCase());
+  }
+  return {
+    hasLoop,
+    hasConditional,
+    instructionTypes: Array.from(instrTypes).sort().join(","),
+  };
+}
+
 // ── Export ────────────────────────────────────────────────────────────────────
 
 export default function wariowareDecompTools(pi) {
@@ -1413,6 +1640,7 @@ export default function wariowareDecompTools(pi) {
   registerPreflightCandidate(pi);
   registerM2cDecompile(pi);
   registerQueryCandidates(pi);
+  registerDecompSiblings(pi);
   registerApplyConversion(pi);
   registerSetupCommand(pi);
   registerVerifyCommands(pi);
