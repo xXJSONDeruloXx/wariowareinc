@@ -37,6 +37,7 @@ Notes:
 5. Supported workflows: `standalone_tu` (src/decomp + linker swap) and `included_stub` (guarded include-shim inside the host C TU)
 6. Treat `unknown_skip` and `already_converted` as research/manual candidates; do not force generic linker-swap conversion onto them
 7. Require a matching ROM before treating anything as accepted
+8. **Preflight "already_converted" false positive**: If `apply_conversion` fails and auto-restores files, `preflight_candidate` may report `already_converted` on the next attempt because it checks for files before checking mizuchi-db. The files were restored but mizuchi-db still lists the function as unmatched. **Fix**: Run a manual `git commit` to actually land the changes, then refresh mizuchi-db with index-codebase, or ignore the preflight warning and proceed if you know the conversion is valid.
 8. Rerun report + objdiff after accepted progress
 9. Commit code + docs together
 10. Push immediately after verified progress
@@ -85,6 +86,12 @@ Track:
 1. Select a narrow, sibling-rich candidate set with `query_candidates` (default `conversionMode=recommended`)
 2. `recommended` includes `standalone_tu` and `included_stub` candidates that the tools can apply mechanically
 3. Call `preflight_candidate` before iteration; proceed when `safeForAutonomous=true`
+4. **After matching a function**, use `decomp_siblings` to find similar functions for batch conversion:
+   - `strategy: same_file` – Functions in same asm file (best for family conversion)
+   - `strategy: same_module` – Functions in same source module (e.g., graphics_table)
+   - `strategy: callers` – Functions that call the matched one
+   - `strategy: callees` – Functions called by the matched one
+   - `strategy: pattern` – Functions with similar instruction patterns (loops, conditionals, etc.)
 4. If only `unknown_skip`/manual candidates remain, use `conversionMode=all` diagnostically and pick a small promising target only when you can explain the integration path
 5. Explain to yourself why that family is worth testing
 6. Convert the smallest safe subset first if the family is risky

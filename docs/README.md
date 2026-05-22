@@ -21,6 +21,12 @@ If an agent resumes cold, read these first:
 - Prefer the repo-local fresh-context commands over pifinity/Ralph:
   - `/decomp-next` for one fresh-context chunk
   - `/decomp-loop start` for repeated fresh-context chunks across new sessions
+- Use `decomp_siblings` tool to find similar functions after matching one:
+  - `strategy: same_file` - Functions in same asm file (best for batch conversion)
+  - `strategy: same_module` - Functions in same source module (e.g., graphics_table)
+  - `strategy: callers` - Functions that call the matched one
+  - `strategy: callees` - Functions called by the matched one
+  - `strategy: pattern` - Functions with similar instruction patterns
 - On a new machine, first run:
   - `/reload`
   - `/decomp-setup` (or `/decomp-health`)
