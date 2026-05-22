@@ -99,7 +99,7 @@ u32 func_08011698(void) {
 
 #include "asm/scenes/main_menu/asm_080116d4.s"
 
-#include "asm/scenes/main_menu/asm_08011708.s"
+#include "../decomp/asm_08011708.c"
 
 #include "asm/scenes/main_menu/asm_08011730.s"
 

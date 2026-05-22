@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 91` — `func_08014DC4` main_menu conditional key-check wrapper
-- `build/report.json`: **1346 / 5956 matched functions** = **22.599%**
+- Verified working tree: `batch 92` — `func_08011708` main_menu conditional bit-test return
+- `build/report.json`: **1347 / 5956 matched functions** = **22.616%**
 - `matched_code_percent`: **6.4355%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **948 decompiled function files** = **873 standalone_tu** + **75 included_stub**
+- `src/decomp/*.c`: **950 decompiled function files** = **873 standalone_tu** + **77 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 92 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4355%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_08011708` main_menu conditional check: tests bit in gCurrentSceneData[0xDF] via LSLS sign-bit test pattern (`val << 0x1D; if (val < 0)`), calls func_08011614(), returns 1 if bit set AND func_08011614 returns 0, else returns 0. Uses POP {R1}; BX R1 non-void return epilogue.
+- Notes: **LSLS sign-bit test pattern**: The original uses `LSLS R0, #0x1D; CMP R0, #0; BLT` to test a specific bit. Write as `s32 val = ptr[N]; val = val << 0x1D; if (val < 0)` — do NOT use `if (val & 4)` which generates `MOVS R1, #4; ANDS; CMP; BEQ` instead.
 
 ### Batch 89 — accepted
 - Metric delta: **+1 matched function**
