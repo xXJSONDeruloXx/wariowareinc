@@ -304,7 +304,7 @@ export default function wariowareDecompLoop(pi) {
       }),
       blocked: Type.Optional(
         Type.Boolean({
-          description: "Set true if you could not make meaningful progress",
+          description: "Set true if you could not make meaningful progress. NOTE: This does NOT stop the loop; the next chunk will start automatically to try a different candidate.",
         }),
       ),
       blockedReason: Type.Optional(
@@ -318,8 +318,9 @@ export default function wariowareDecompLoop(pi) {
       const state = loadState(repoRoot);
 
       if (blocked) {
-        state.enabled = false;
-        state.advanceRequested = false;
+        // NOTE: Loop continues even when blocked - we just advance to next chunk
+        // This allows trying different candidates without manual intervention
+        state.advanceRequested = true;
         state.lastStatus = "blocked";
         state.lastBlockedReason = blockedReason || summary;
         state.lastChunkSummary = summary;
@@ -327,18 +328,37 @@ export default function wariowareDecompLoop(pi) {
         applyWidget(latestCtx, repoRoot);
         if (latestCtx?.hasUI) {
           latestCtx.ui.notify(
-            `decomp loop blocked: ${blockedReason || summary}`,
+            `decomp loop blocked at chunk ${state.chunk}: ${blockedReason || summary}. Advancing...`,
             "warning",
           );
         }
+
+        // If loop is enabled, trigger advancement to try a different candidate
+        if (state.enabled) {
+          // Use setImmediate to ensure the tool response is sent before advancing
+          setImmediate(() => {
+            try {
+              advanceLoop(repoRoot);
+            } catch (err) {
+              // Fallback: leave state ready for next cycle
+              const s = loadState(repoRoot);
+              s.advanceRequested = true;
+              s.lastStatus = "waiting-to-advance";
+              saveState(repoRoot, s);
+            }
+          });
+        }
+
         return {
           content: [
             {
               type: "text",
-              text: `Chunk ${state.chunk} marked blocked. Loop stopped.\nReason: ${blockedReason || summary}`,
+              text: state.enabled
+                ? `Chunk ${state.chunk} blocked. Loop continuing to next chunk.\nReason: ${blockedReason || summary}`
+                : `Chunk ${state.chunk} marked blocked.\nReason: ${blockedReason || summary}`,
             },
           ],
-          details: { blocked: true, reason: blockedReason || summary },
+          details: { blocked: true, loopContinuing: state.enabled, reason: blockedReason || summary },
         };
       }
 
