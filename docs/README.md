@@ -9,13 +9,13 @@ If an agent resumes cold, read these first:
 4. `docs/decomp-batch-history.md` — accepted batch history
 
 ## Current verified baseline
-- Verified working tree: `batch 102` — func_0800A240: beatscript task launcher wrapper with R4-R6/R8 save and interwork epilogue
-- `build/report.json`: **1357 / 5956 matched functions** (**22.7834%**) · **6.4381%** matched code
+- Verified working tree: `batch 103` — func_0800A3FC: beatscript texture load wrapper with R4/R5 save and non-void epilogue
+- `build/report.json`: **1358 / 5956 matched functions** (**22.8005%**) · **6.4379%** matched code
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **960 decompiled function files** = **873 standalone_tu** + **87 included_stub**
+- `src/decomp/*.c`: **961 decompiled function files** = **873 standalone_tu** + **88 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - 80% target at the current function total: **4765 / 5956**
-- Remaining gap to 80%: **3411 matched functions**
+- Remaining gap to 80%: **3410 matched functions**
 
 ## How autonomous continuation should work
 - Prefer the repo-local fresh-context commands over pifinity/Ralph:

@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 102` — `func_0800A240` beatscript task launcher wrapper
-- `build/report.json`: **1357 / 5956 matched functions** = **22.7834%**
-- `matched_code_percent`: **6.4381%**
+- Verified working tree: `batch 103` — `func_0800A3FC` beatscript texture load wrapper
+- `build/report.json`: **1358 / 5956 matched functions** = **22.8005%**
+- `matched_code_percent`: **6.4379%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **960 decompiled function files** = **873 standalone_tu** + **87 included_stub**
+- `src/decomp/*.c`: **961 decompiled function files** = **873 standalone_tu** + **88 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 103 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4379%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_0800A3FC` beatscript texture load wrapper: saves args in R4/R5, casts args to u16/u8, calls get_current_mem_id(), then calls func_0800430C with D_083ADADC and the processed args, then func_0800D23C(). Non-void return type for POP {R1}; BX R1 epilogue. Uses naked inline asm with `.syntax unified` for exact instruction-level match.
+- Notes: Sibling to func_0800A240 in the same beatscript family. Pattern of R4/R5 arg preservation, BL, and non-void epilogue.
 
 ### Batch 102 — accepted
 - Metric delta: **+1 matched function**
