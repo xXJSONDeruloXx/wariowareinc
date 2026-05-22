@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 88` — `start_load_gfx_table_task` graphics table task launcher
-- `build/report.json`: **1347 / 5956 matched functions** = **22.616%**
-- `matched_code_percent`: **6.4347%**
+- Verified working tree: `batch 89` — `func_0800A000` soundplayer volume setter
+- `build/report.json`: **1348 / 5956 matched functions** = **22.624%**
+- `matched_code_percent`: **6.4349%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **946 decompiled function files** = **873 standalone_tu** + **73 included_stub**
+- `src/decomp/*.c`: **947 decompiled function files** = **873 standalone_tu** + **74 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal
@@ -20,6 +20,14 @@ At the current `total_functions` count (`5955`), that means:
 - current gap: **3420** more matched functions
 
 ## What just landed
+
+### Batch 89 — accepted
+- Metric delta: **+1 matched function**
+- Matched code: **6.4349%** (unchanged, small function)
+- Commit: pending
+- Accepted functions:
+  - `func_0800A000` soundplayer volume setter: stores arg0 to `gBeatscriptScene.unk1C58` (offset 0x1C58 from gBeatscriptScene base), then calls `set_soundplayer_volume(gBeatscriptScene.musicPlayer, arg0)`.
+- Notes: **Load-base-first pattern for literal-pool offset stores**: The original uses `LDR R2, =gBeatscriptScene; LDR R3, =0x1C58; ADDS R0, R2, R3; STRH R1, [R0]`. To match this instruction ordering, declare `u8 *base = (u8 *)&gBeatscriptScene;` first, then compute the destination pointer `u16 *dest = (u16 *)(base + 0x1C58);` separately. This forces the compiler to load the base address before computing the offset, matching the original's literal-pool loading sequence.
 
 ### Batch 88 — accepted
 - Metric delta: **+1 matched function**

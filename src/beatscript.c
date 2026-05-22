@@ -352,7 +352,7 @@ void scene_set_music_pitch_env(s16 pitch) {
     scene_update_music_pitch();
 }
 
-#include "asm/beatscript/asm_0800a000.s"
+#include "decomp/asm_0800a000.c"
 
 #include "decomp/asm_0800a024.c"
 
