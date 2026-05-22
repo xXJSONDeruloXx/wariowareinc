@@ -12,8 +12,22 @@ When resuming cold or after compaction:
 - `/decomp-loop start` runs repeated fresh-context chunks across new sessions.
 - `/decomp-loop stop` halts the loop.
 - `/decomp-loop status` shows the current loop state.
+- `/decomp-setup` or `/decomp-health` checks whether a machine has the required Docker/Mizuchi/decomp prerequisites.
 
 These commands are preferred over Ralph or pifinity because each chunk starts from the canonical docs with clean context.
+
+## New-machine / portable setup
+1. Clone this repo.
+2. Install Docker, python3, git, and pi.
+3. Clone Mizuchi next to the repo (`../mizuchi`) or, if you keep it elsewhere, add `export MIZUCHI_ROOT=/absolute/path/to/mizuchi` to `~/.zshrc` and restart/source your shell before starting pi.
+4. Run `/reload`.
+5. Run `/decomp-setup`.
+6. Run `/decomp-verify`.
+
+Notes:
+- The decomp tools autodetect a sibling Mizuchi checkout at `../mizuchi`.
+- If an environment variable is needed, persist it in `~/.zshrc` rather than setting it for one shell only.
+- On macOS, do **not** rely on local `make` / `make report`; use Docker verification.
 
 ## Hard repo rules
 1. One function per file in `src/decomp/`

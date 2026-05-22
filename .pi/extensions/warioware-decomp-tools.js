@@ -17,8 +17,85 @@ import { Type } from "typebox";
 
 const REPO_SENTINEL = "wariowareinc.ld";
 const DB_FILE = "mizuchi-db.json";
-const MIZUCHI_ROOT = "/Users/kurt/Developer/mizuchi";
 const DOCKER_IMAGE = "devkitpro/devkitarm:latest";
+const MIZUCHI_ENV_VARS = ["MIZUCHI_ROOT", "PI_MIZUCHI_ROOT"];
+
+function shellQuote(value) {
+  return `'${String(value).replace(/'/g, `'"'"'`)}'`;
+}
+
+function commandExists(command) {
+  try {
+    execSync(`command -v ${shellQuote(command)} >/dev/null 2>&1`, {
+      stdio: "pipe",
+      shell: "/bin/bash",
+      timeout: 10_000,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function looksLikeMizuchiRoot(dir) {
+  if (!dir) return false;
+  return fs.existsSync(path.join(dir, "package.json"));
+}
+
+function resolveMizuchiRoot(repoRoot) {
+  const checked = [];
+  const envProblems = [];
+
+  for (const envName of MIZUCHI_ENV_VARS) {
+    const value = process.env[envName]?.trim();
+    if (!value) continue;
+    const resolved = path.resolve(value);
+    checked.push(`${envName}=${resolved}`);
+    if (looksLikeMizuchiRoot(resolved)) {
+      return { root: resolved, source: `$${envName}`, checked, envProblems };
+    }
+    envProblems.push(`${envName}=${resolved} is not a Mizuchi checkout`);
+  }
+
+  const autoCandidates = [
+    path.resolve(repoRoot, "..", "mizuchi"),
+    path.resolve(repoRoot, "..", "..", "mizuchi"),
+    path.join(os.homedir(), "Developer", "mizuchi"),
+    path.join(os.homedir(), "mizuchi"),
+  ];
+
+  const seen = new Set();
+  for (const candidate of autoCandidates) {
+    const resolved = path.resolve(candidate);
+    if (seen.has(resolved)) continue;
+    seen.add(resolved);
+    checked.push(resolved);
+    if (looksLikeMizuchiRoot(resolved)) {
+      return { root: resolved, source: "autodetect", checked, envProblems };
+    }
+  }
+
+  return { root: null, source: null, checked, envProblems };
+}
+
+function formatMizuchiRootFix(repoRoot) {
+  const sibling = path.resolve(repoRoot, "..", "mizuchi");
+  return [
+    `Clone Mizuchi next to this repo (recommended): git clone <mizuchi-repo-url> ${shellQuote(sibling)}`,
+    "or if you keep Mizuchi elsewhere, persist it in zsh:",
+    "echo 'export MIZUCHI_ROOT=/absolute/path/to/mizuchi' >> ~/.zshrc && source ~/.zshrc",
+  ].join("\n      ");
+}
+
+function formatIndexCodebaseCommand(repoRoot, mizuchiRoot) {
+  const root = mizuchiRoot || "<path-to-mizuchi>";
+  return `cd ${shellQuote(root)} && npm start -- index-codebase --config ${shellQuote(path.join(repoRoot, "mizuchi.yaml"))} --skip-embeddings`;
+}
+
+function formatM2cSetupCommand(mizuchiRoot) {
+  const root = mizuchiRoot || "<path-to-mizuchi>";
+  return `cd ${shellQuote(root)} && git clone https://github.com/matt-kempster/m2c.git vendor/m2c && ./scripts/setup-m2c.sh`;
+}
 
 // ── Repo root ─────────────────────────────────────────────────────────────────
 
@@ -625,9 +702,27 @@ function registerM2cDecompile(pi) {
       }
       const pf = preflightFunction(repoRoot, fn, functionName);
 
-      const m2cPy = path.join(MIZUCHI_ROOT, "vendor/m2c/m2c.py");
+      const mizuchi = resolveMizuchiRoot(repoRoot);
+      if (!mizuchi.root) {
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                "m2c is unavailable because Mizuchi was not found.\n" +
+                `Set one of ${MIZUCHI_ENV_VARS.map((name) => `$${name}`).join(" / ")} or clone Mizuchi beside this repo.\n\n` +
+                "Recommended fix:\n" +
+                `  ${formatMizuchiRootFix(repoRoot)}\n\n` +
+                "Then run /reload and /decomp-setup.",
+            },
+          ],
+          details: { error: "mizuchi_missing", preflight: pf, mizuchi },
+        };
+      }
+
+      const m2cPy = path.join(mizuchi.root, "vendor/m2c/m2c.py");
       // setup-m2c.sh creates venv at vendor/m2c/.venv
-      const venvPython = path.join(MIZUCHI_ROOT, "vendor/m2c/.venv/bin/python3");
+      const venvPython = path.join(mizuchi.root, "vendor/m2c/.venv/bin/python3");
 
       // Check setup
       if (!fs.existsSync(m2cPy)) {
@@ -637,13 +732,11 @@ function registerM2cDecompile(pi) {
               type: "text",
               text:
                 "m2c not set up. To enable:\n" +
-                "  cd /Users/kurt/Developer/mizuchi\n" +
-                "  git clone https://github.com/matt-kempster/m2c.git vendor/m2c\n" +
-                "  ./scripts/setup-m2c.sh\n\n" +
+                `  ${formatM2cSetupCommand(mizuchi.root)}\n\n` +
                 "Then reload the extension with /reload.",
             },
           ],
-          details: { error: "m2c_not_setup", preflight: pf },
+          details: { error: "m2c_not_setup", preflight: pf, mizuchi },
         };
       }
 
@@ -765,8 +858,8 @@ function registerQueryCandidates(pi) {
       const db = loadDb(repoRoot);
       if (!db) {
         return {
-          content: [{ type: "text", text: "mizuchi-db.json not found. Run: cd /Users/kurt/Developer/mizuchi && npm start -- index-codebase --config /path/to/mizuchi.yaml" }],
-          details: { error: "db_missing" },
+          content: [{ type: "text", text: `mizuchi-db.json not found. Run: ${formatIndexCodebaseCommand(repoRoot, resolveMizuchiRoot(repoRoot).root)}` }],
+          details: { error: "db_missing", mizuchi: resolveMizuchiRoot(repoRoot) },
         };
       }
 
@@ -1111,78 +1204,119 @@ function registerApplyConversion(pi) {
 // ── Command: /decomp-setup ────────────────────────────────────────────────────
 
 function registerSetupCommand(pi) {
+  const runSetupCheck = async (ctx) => {
+    const repoRoot = findRepoRoot(ctx.cwd);
+    const mizuchi = resolveMizuchiRoot(repoRoot);
+    const dbExists = fs.existsSync(path.join(repoRoot, DB_FILE));
+    const checks = [];
+
+    const check = (label, ok, fix, options = {}) => {
+      checks.push({ label, ok, fix, required: options.required !== false });
+      return ok;
+    };
+
+    let dockerOk = false;
+    try {
+      execSync("docker info", { stdio: "pipe", timeout: 10_000 });
+      dockerOk = true;
+    } catch {}
+
+    check("Docker running", dockerOk, "Start Docker Desktop");
+    check("python3", commandExists("python3"), "Install python3");
+    check(
+      "Mizuchi root (for reindexing / Atlas / m2c)",
+      !!mizuchi.root,
+      `${formatMizuchiRootFix(repoRoot)}`,
+      { required: !dbExists },
+    );
+    check(
+      "npm (for reindexing / Atlas)",
+      commandExists("npm"),
+      "Install npm / Node.js",
+      { required: false },
+    );
+    check(
+      "tools/mizuchi/compile-in-docker.sh",
+      fs.existsSync(path.join(repoRoot, "tools/mizuchi/compile-in-docker.sh")),
+      "Missing — check git status",
+    );
+    check(
+      "tools/mizuchi/get-context.sh",
+      fs.existsSync(path.join(repoRoot, "tools/mizuchi/get-context.sh")),
+      "Missing — check git status",
+    );
+    check(
+      "tools/mizuchi/export-asm.py",
+      fs.existsSync(path.join(repoRoot, "tools/mizuchi/export-asm.py")),
+      "Missing — check git status",
+    );
+    check(
+      ".mizuchi-asm/asm mirror (recommended)",
+      fs.existsSync(path.join(repoRoot, ".mizuchi-asm", "asm")),
+      `Run: python3 ${shellQuote(path.join(repoRoot, "tools", "mizuchi", "export-asm.py"))}`,
+      { required: false },
+    );
+    check(
+      "tools/objdiff-cli (executable)",
+      fs.existsSync(path.join(repoRoot, "tools/objdiff-cli")) &&
+        (fs.statSync(path.join(repoRoot, "tools/objdiff-cli")).mode & 0o111) !== 0,
+      "chmod +x tools/objdiff-cli",
+    );
+    check(
+      "mizuchi-db.json",
+      dbExists,
+      `Run: ${formatIndexCodebaseCommand(repoRoot, mizuchi.root)}`,
+    );
+
+    const buildAsmDir = path.join(repoRoot, "build/asm");
+    const hasBuildObjs =
+      fs.existsSync(buildAsmDir) && fs.readdirSync(buildAsmDir).some((f) => f.endsWith(".s.o"));
+    check(
+      "build/asm/*.s.o objects (required for standalone_tu compile_and_view_asm)",
+      hasBuildObjs,
+      "Run: docker run --rm -v \"$PWD:/workspace\" -w /workspace devkitpro/devkitarm:latest bash -lc 'set -euo pipefail; rm -rf build; make -j4'",
+    );
+    check(
+      "m2c (optional — GBA target skeletons)",
+      !!mizuchi.root && fs.existsSync(path.join(mizuchi.root, "vendor/m2c/m2c.py")),
+      `Run: ${formatM2cSetupCommand(mizuchi.root)}`,
+      { required: false },
+    );
+
+    const requiredChecks = checks.filter((c) => c.required);
+    const allRequired = requiredChecks.every((c) => c.ok);
+    const lines = [
+      allRequired ? "✅ WarioWare decomp machine health: ready" : "⚠️  WarioWare decomp machine health: action needed",
+      `repo: ${repoRoot}`,
+      `mizuchi: ${mizuchi.root ? `${mizuchi.root} (${mizuchi.source})` : "not found"}`,
+      "first-run: /reload -> /decomp-setup -> /decomp-verify",
+    ];
+
+    if (mizuchi.envProblems.length) {
+      lines.push(`env warnings: ${mizuchi.envProblems.join("; ")}`);
+    }
+
+    lines.push("", "Required checks:");
+    for (const c of checks.filter((c) => c.required)) {
+      lines.push(`  ${c.ok ? "✅" : "❌"} ${c.label}${!c.ok ? `\n      Fix: ${c.fix}` : ""}`);
+    }
+
+    lines.push("", "Optional checks:");
+    for (const c of checks.filter((c) => !c.required)) {
+      lines.push(`  ${c.ok ? "✅" : "⚪"} ${c.label}${!c.ok ? `\n      Fix: ${c.fix}` : ""}`);
+    }
+
+    ctx.ui.notify(lines.join("\n"), allRequired ? "info" : "warning");
+  };
+
   pi.registerCommand("decomp-setup", {
-    description: "Check WarioWare decomp tool prerequisites and show setup instructions",
-    handler: async (_args, ctx) => {
-      const repoRoot = findRepoRoot(ctx.cwd);
-      const checks = [];
+    description: "Check WarioWare decomp prerequisites and machine portability health",
+    handler: async (_args, ctx) => runSetupCheck(ctx),
+  });
 
-      const check = (label, ok, fix) => {
-        checks.push({ label, ok, fix });
-        return ok;
-      };
-
-      // Docker
-      let dockerOk = false;
-      try {
-        execSync("docker info", { stdio: "pipe", timeout: 10_000 });
-        dockerOk = true;
-      } catch {}
-      check("Docker running", dockerOk, "Start Docker Desktop");
-
-      // compile-in-docker.sh
-      check(
-        "tools/mizuchi/compile-in-docker.sh",
-        fs.existsSync(path.join(repoRoot, "tools/mizuchi/compile-in-docker.sh")),
-        "Missing — check git status",
-      );
-
-      // get-context.sh
-      check(
-        "tools/mizuchi/get-context.sh",
-        fs.existsSync(path.join(repoRoot, "tools/mizuchi/get-context.sh")),
-        "Missing — check git status",
-      );
-
-      // objdiff-cli
-      check(
-        "tools/objdiff-cli (executable)",
-        fs.existsSync(path.join(repoRoot, "tools/objdiff-cli")) &&
-          (fs.statSync(path.join(repoRoot, "tools/objdiff-cli")).mode & 0o111) !== 0,
-        "chmod +x tools/objdiff-cli",
-      );
-
-      // mizuchi-db.json
-      check(
-        "mizuchi-db.json",
-        fs.existsSync(path.join(repoRoot, DB_FILE)),
-        "cd /Users/kurt/Developer/mizuchi && npm start -- index-codebase --config wariowareinc/mizuchi.yaml",
-      );
-
-      // build/asm objects
-      const buildAsmDir = path.join(repoRoot, "build/asm");
-      const hasBuildObjs =
-        fs.existsSync(buildAsmDir) && fs.readdirSync(buildAsmDir).some((f) => f.endsWith(".s.o"));
-      check(
-        "build/asm/*.s.o objects (required for standalone_tu compile_and_view_asm)",
-        hasBuildObjs,
-        "Run Docker build: docker run --rm -v \"$PWD:/workspace\" -w /workspace devkitpro/devkitarm:latest bash -lc 'make -j4'",
-      );
-
-      check(
-        "m2c (optional — GBA target skeletons)",
-        fs.existsSync(path.join(MIZUCHI_ROOT, "vendor/m2c/m2c.py")),
-        "cd /Users/kurt/Developer/mizuchi && git clone https://github.com/matt-kempster/m2c.git vendor/m2c && ./scripts/setup-m2c.sh",
-      );
-
-      const all = checks.every((c) => c.ok);
-      const lines = [
-        all ? "✅ All decomp tools ready." : "⚠️  Some decomp tools need setup:\n",
-        ...checks.map((c) => `  ${c.ok ? "✅" : "❌"} ${c.label}${!c.ok ? "\n      Fix: " + c.fix : ""}`),
-      ];
-
-      ctx.ui.notify(lines.join("\n"), all ? "info" : "warning");
-    },
+  pi.registerCommand("decomp-health", {
+    description: "Alias for /decomp-setup",
+    handler: async (_args, ctx) => runSetupCheck(ctx),
   });
 }
 

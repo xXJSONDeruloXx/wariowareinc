@@ -53,11 +53,13 @@ With this step, Atlas sees clean raw asm.
 
 ## 2. Index the repo with Mizuchi
 
-From the cloned Mizuchi repo:
+Assuming this repo is your current directory, either clone Mizuchi next to it (`../mizuchi`) or persist `MIZUCHI_ROOT` in `~/.zshrc` first:
 
 ```bash
-cd /Users/kurt/Developer/mizuchi
-npm start -- index-codebase --config /Users/kurt/Developer/wariowareinc/mizuchi.yaml --skip-embeddings
+echo 'export MIZUCHI_ROOT=/absolute/path/to/mizuchi' >> ~/.zshrc
+source ~/.zshrc
+cd "$MIZUCHI_ROOT"
+npm start -- index-codebase --config /absolute/path/to/wariowareinc/mizuchi.yaml --skip-embeddings
 ```
 
 ### Notes
@@ -72,9 +74,9 @@ npm start -- index-codebase --config /Users/kurt/Developer/wariowareinc/mizuchi.
 From the Mizuchi repo:
 
 ```bash
-cd /Users/kurt/Developer/mizuchi
+cd "$MIZUCHI_ROOT"
 npm run build:decomp-atlas
-npm start -- atlas --config /Users/kurt/Developer/wariowareinc/mizuchi.yaml
+npm start -- atlas --config /absolute/path/to/wariowareinc/mizuchi.yaml
 ```
 
 Observed working result:
@@ -146,12 +148,12 @@ So today this setup is best described as:
 ## Fast path
 
 ```bash
-cd /Users/kurt/Developer/wariowareinc
+cd /absolute/path/to/wariowareinc
 ./tools/mizuchi/export-asm.py
 
-cd /Users/kurt/Developer/mizuchi
-npm start -- index-codebase --config /Users/kurt/Developer/wariowareinc/mizuchi.yaml --skip-embeddings
-npm start -- atlas --config /Users/kurt/Developer/wariowareinc/mizuchi.yaml
+cd "$MIZUCHI_ROOT"
+npm start -- index-codebase --config /absolute/path/to/wariowareinc/mizuchi.yaml --skip-embeddings
+npm start -- atlas --config /absolute/path/to/wariowareinc/mizuchi.yaml
 ```
 
 Then:

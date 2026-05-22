@@ -21,6 +21,11 @@ If an agent resumes cold, read these first:
 - Prefer the repo-local fresh-context commands over pifinity/Ralph:
   - `/decomp-next` for one fresh-context chunk
   - `/decomp-loop start` for repeated fresh-context chunks across new sessions
+- On a new machine, first run:
+  - `/reload`
+  - `/decomp-setup` (or `/decomp-health`)
+  - `/decomp-verify`
+- The decomp tools now autodetect a sibling Mizuchi checkout at `../mizuchi` or use `$MIZUCHI_ROOT` / `$PI_MIZUCHI_ROOT`; if you need an env var, persist it in `~/.zshrc`.
 - The docs in this directory are the durable memory that should survive context compaction and session changes.
 - Any new durable learning should be written back here before the agent yields.
 
