@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 86` — `func_080EF998` sprite field increment with overflow guard (0x100 cap)
-- `build/report.json`: **1347 / 5956 matched functions** = **22.615%**
-- `matched_code_percent`: **6.4347%**
+- Verified working tree: `batch 87` — `func_080118A0` switch(arg0) {case 0,1,2: BL} dispatcher
+- `build/report.json`: **1346 / 5956 matched functions** = **22.599%**
+- `matched_code_percent`: **6.4349%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **944 decompiled function files** = **873 standalone_tu** + **71 included_stub**
+- `src/decomp/*.c`: **945 decompiled function files** = **873 standalone_tu** + **72 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 
 ## Goal

@@ -115,7 +115,7 @@ u32 func_08011698(void) {
 
 #include "asm/scenes/main_menu/asm_08011864.s"
 
-#include "asm/scenes/main_menu/asm_080118a0.s"
+#include "../decomp/asm_080118a0.c"
 
 #include "../decomp/asm_080118c4.c"
 

@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 87 | `pending` | +1 | `func_080118A0` switch(arg0) dispatcher with 3 cases (0/1/2). Simple switch statement matches perfectly, unlike if-else chain |
 | 86 | `pending` | +1 | `func_080EF998` sprite field increment with overflow guard (0x100 cap). Trailing padding uses `__attribute__((section(".text")))` to avoid NOPs |
 | 85 | `pending` | +1 | `func_080109EC` main_menu scene setup wrapper: scene_set_current_thread(0), texture loader, run_func_after_task callback. Pattern: common scene init sequence with interwork-safe epilogue |
 | 81 | `ac30fda5` | +1 | `func_080024E4` graphics_table loop wrapper - forward-loop through GraphicsTable entries (while(ptr->src != NULL) ptr += 0xC), then tail-call func_0800247C. Key: register `asm("r2")` + goto loop/start pattern preserves the `ADDS R2,#0xC` in original instruction order |
