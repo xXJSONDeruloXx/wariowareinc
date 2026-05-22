@@ -1306,7 +1306,21 @@ function registerSetupCommand(pi) {
       lines.push(`  ${c.ok ? "✅" : "⚪"} ${c.label}${!c.ok ? `\n      Fix: ${c.fix}` : ""}`);
     }
 
-    ctx.ui.notify(lines.join("\n"), allRequired ? "info" : "warning");
+    const reportText = lines.join("\n");
+    ctx.ui.notify(reportText, allRequired ? "info" : "warning");
+    pi.sendMessage({
+      customType: "warioware-decomp-setup-report",
+      content: reportText,
+      display: true,
+      details: {
+        repoRoot,
+        mizuchi,
+        allRequired,
+        checks,
+      },
+    }, {
+      deliverAs: "nextTurn",
+    });
   };
 
   pi.registerCommand("decomp-setup", {
