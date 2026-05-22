@@ -47,6 +47,17 @@
 - small struct-init / zero-init functions
 - gGraphicsBuffer small store pairs / clears
 - `gGraphicsBuffer` 1-bit field writes like `gGraphicsBuffer.unk854_1 = arg0`
+- **GraphicsTable pointer-advance loop**: forward-loop through `GraphicsTable` entries looking for `src == NULL` terminator, then tail-call. Use register-pinned pointer (`register char *r2 asm("r2")`) with goto labels to preserve `ADDS R2,#0xC` instruction order before the load/compare. The pattern is:
+  ```c
+  register char *r2 asm("r2") = arg0;
+  goto start;
+loop:
+  r2 += 0xC;
+start:
+  if (*(void **)r2 != NULL)
+      goto loop;
+  func_0800247C(r2);
+  ```
 - `gCurrentSceneData` halfword add / shift / store helpers
 - `sprite_id_delete(gSpriteHandler, *(u32*)(gCSV + offset))` siblings
 
@@ -97,6 +108,20 @@
 - some OR/bit-clear forms need a very specific spelling to avoid extra `ADDS`
 - **register-pinning workaround**: when `&= ~3` must emit `MOVS R0,#3; RSBS R0,R0,#0; ANDS R0,R1` but agbcc prefers `MOVS #0xFC; ANDS`, pin the mask variable to R0: `register u32 m asm("r0"); val = ptr[7]; m = 3; m = -m; m = val & m; ptr[7] = m;`. **CRITICAL**: load the byte into a separate `val` local BEFORE creating the mask, so the compiler puts LDRB before MOVS/RSBS. Without this, the compiler may put MOVS/NEG before LDRB, producing different byte order.
 - **Shift-OR-set instruction interleaving**: for `ptr[N] = (ptr[N] & 0x7F) | (arg0 << 7)`, declare `u32 shifted` as a local variable BEFORE `ptr`, and compute `shifted = arg0 << 7` after loading `ptr`. This forces the compiler to interleave `LSLS R0, #7` between `LDR R3` and `LDRB R2`, matching the original. Writing `arg0 = arg0 << 7` before loading `ptr` puts LSLS before LDR, which is wrong.
+- **Forward loop with pointer increment pattern**: for loops that advance a pointer before checking (e.g., iterating through GraphicsTable entries), use `register char *r2 asm("r2")` to pin the pointer register, combined with `goto` labels for loop control. Example:
+  ```c
+  void func_080024E4(void *arg0) {
+      register char *r2 asm("r2") = arg0;
+      goto start;
+  loop:
+      r2 += 0xC;
+  start:
+      if (*(void **)r2 != NULL)
+          goto loop;
+      func_0800247C(r2);
+  }
+  ```
+  This preserves the original instruction order (`ADDS R2,#0xC` before `LDR R0,[R2]`) and the specific register allocation the original asm uses.
 - **BLS vs BLE for loop conditions**: `u32 i; while (i <= 2)` generates `BLS` (unsigned lower-or-same), while `s32 i; while (i <= 2)` generates `BLE` (signed less-or-equal). Check the original's branch type to determine the correct counter type. Using the wrong type produces different bytes even though the loop semantics are identical for non-negative values.
 - **LSLS sign-bit test pattern**: When the original tests a specific bit using `LSLS R0, #0x1D; CMP R0, #0; BGE`, write `s32 val = ptr[N]; val = val << 0x1D; if (val >= 0) return; callee();`. Do NOT use `if (val & 4)` — that generates `MOVS R1, #4; ANDS; CMP; BEQ` which is different code.
 - **Literal-pool AND mask** — `gGraphicsBuffer.DISPCNT &= 0xEFFF` compound assignment produces the right register allocation. Using a local `u16 val; val = ...; val &= ...; gGraphicsBuffer.DISPCNT = val;` produces wrong register allocation (AND result in R1 instead of R0).
