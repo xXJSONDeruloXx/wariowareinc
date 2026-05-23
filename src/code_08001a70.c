@@ -8,7 +8,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "decomp/asm_08001b04.c"
 
-#include "asm/code_08001a70/asm_08001b28.s"
+#include "decomp/asm_08001b28.c"
 
 #include "decomp/asm_08001b70.c"
 

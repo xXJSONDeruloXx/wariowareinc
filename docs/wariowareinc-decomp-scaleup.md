@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 126` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- Verified working tree: `batch 127` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
 - `matched_code_percent`: **6.45165%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1035 decompiled function files** = **873 standalone_tu** + **162 included_stub**
+- `src/decomp/*.c`: **1038 decompiled function files** = **873 standalone_tu** + **165 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 
@@ -21,6 +21,15 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 127 — accepted
+- Metric delta: **+0 report matched functions**, **+3 included_stub decomp files**, **+0.000000% matched code** (6.4524055 → 6.4524055%)
+- Matched code: **6.4524055%**
+- Accepted functions:
+  - `func_08001B28` code_08001a70: rotation matrix identity initializer at D_03000010[arg0*8] with D_03000118 byte clear. Leaf. Uses asm volatile barriers to force R6 callee-save and instruction ordering for LDR R0,=D_03000118; ADD R0, R6, R0 sequence.
+  - `sprite_delete` lib_sprite: sprite deallocation with bit-mask clears (0xFD & byte0, 0xBE & byte1), z-link removal, and ID dealloc. Uses s32 arg1 to avoid early u16 truncation. Key: asm volatile barrier after MOV R5, R0 to prevent early LSLS R1.
+  - `func_080EF358` lib_sprite: sprite animation progress calculator with loop accumulating cel durations and __udivsi3 division. Uses u32 return type with LSLS/LSRS truncation to match original. 1 trailing MOV R8,R8 NOP diff accepted by linker (byte-identical ROM).
+- Notes: Three included_stub conversions across two modules (code_08001a70, lib_sprite). Key patterns: s32 arg1 to prevent early u16 truncation when arg1 is used as s16 after BL, asm volatile barriers to force callee-save of R6 and instruction ordering, u32 return type to get POP {R1}; BX R1 epilogue with trailing truncation. Failed attempts: sprite_set_z and sprite_set_x_y blocked by agbcc not pushing R7 callee-saved register.
 
 ### Batch 126 — accepted
 - Metric delta: **+0 report matched functions**, **+6 included_stub decomp files**, **+0.000189% matched code** (6.452217 → 6.4524055%)

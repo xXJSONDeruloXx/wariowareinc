@@ -36,7 +36,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "asm/lib_sprite/asm_080ef0b8.s"
 
-#include "asm/lib_sprite/asm_080ef154.s"
+#include "decomp/asm_080ef154.c"
 
 #include "asm/lib_sprite/asm_080ef1ac.s"
 
@@ -50,7 +50,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "decomp/asm_080ef31c.c"
 
-#include "asm/lib_sprite/asm_080ef358.s"
+#include "decomp/asm_080ef358.c"
 
 void sprite_set_visible(struct SpriteHandler *handler, s16 id, u16 isVisible) {
     D_03000E70 = SPRITE_OPERATION_SET_VISIBLE;
