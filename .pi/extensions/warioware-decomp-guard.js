@@ -25,11 +25,13 @@ const DECOMP_SOURCE_RE = /(^|\/)src\/decomp\/[^/]+\.c$/;
 
 const LEGACY_NAKED_ASM_FILES = new Set([
   "src/decomp/asm_08001d5c.c",
+  "src/decomp/asm_08002468.c",
   "src/decomp/asm_0800bec0.c",
   "src/decomp/asm_0800c080.c",
   "src/decomp/asm_080113ec.c",
   "src/decomp/asm_08011774.c",
   "src/decomp/asm_08014e88.c",
+  "src/decomp/asm_080cd564.c",
   "src/decomp/asm_080ee830.c",
   "src/decomp/asm_080eed9c.c",
   "src/decomp/asm_080eedc0.c",

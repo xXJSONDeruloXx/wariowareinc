@@ -15,7 +15,7 @@ If an agent resumes cold, read these first:
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
 - `src/decomp/*.c`: **1046 decompiled function files** = **873 standalone_tu** + **173 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Remaining naked asm files: **12** (func_08001D5C, func_0800BEC0, func_0800C080, func_080113EC, func_08011774, func_08014E88, func_080EE830, sprite_anim_get_cel_total, sprite_get_anim_duration, sprite_set_x_y, sprite_set_x, sprite_set_y)
+- Remaining naked/original asm wrapper files: **14** (func_08001D5C, func_08002468, func_0800BEC0, func_0800C080, func_080113EC, func_08011774, func_08014E88, func_080CD564, func_080EE830, sprite_anim_get_cel_total, sprite_get_anim_duration, sprite_set_x_y, sprite_set_x, sprite_set_y)
 - 80% target at the current function total: **4765 / 5956**
 - Remaining gap to 80%: **3409 matched functions**
 
