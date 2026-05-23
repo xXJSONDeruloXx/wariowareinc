@@ -9,7 +9,7 @@ Prefer this file + the other docs in `/docs`
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
 - `matched_code_percent`: **6.453723%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1044 decompiled function files** = **873 standalone_tu** + **171 included_stub**
+- `src/decomp/*.c`: **1045 decompiled function files** = **873 standalone_tu** + **172 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **9** (func_0800BEC0, func_0800C080, func_080113EC, func_08011774, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, sprite_set_x, sprite_set_y)
 

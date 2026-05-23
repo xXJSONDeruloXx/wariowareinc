@@ -104,14 +104,14 @@ Example trap: `func_08002514` calls `func_080024D0`. Both were originally asm. `
 - **Included-stub extern type consistency**: When converting an included_stub function that uses symbols already declared in other included_stub files in the same host TU, the extern declarations must match exactly. E.g., `func_0800C7A4` was declared as `extern void func_0800C7A4(s32)` in asm_080117fc.c — a new file declaring it as `extern void func_0800C7A4(u32)` causes a compilation error in the host TU.
 - **Implicit-register-argument trap**: Some functions like `func_08015A88` take an argument in R0 implicitly (reading R5=R0 in their prologue), but existing decomp files declare them as `void func(void)`. If you need to pass R0 explicitly for a new conversion, changing the extern to `void func(u32)` breaks existing callers that pass no argument. The compiler generates `MOVS R0, #0; BL func` instead of just `BL func`, causing ROM mismatch. **Mitigation**: Leave such functions for later when all callers can be updated simultaneously, or use naked inline asm to set R0 before the call.
 - **Forward declarations needed** when an included_stub function is used before its include point in the host C file. Add `extern void func_XXXX(void);` before the first use.
-- **s16 callee-signature sign-extension trap**: When a function passes a sign-extended s16 value to a callee declared as `s32 sprite_is_invalid(void*, s16)`, the compiler adds extra `LSLS R1, #16; ASRS R1, #16` before the BL because it re-sign-extends the s16 argument per the callee's formal parameter type. The original asm doesn't have this — the value is already sign-extended in a register. **Mitigation**: Use naked inline asm for callers of `sprite_is_invalid` (and similar s16-parameter callees) where the original passes an already-sign-extended value. Example: `sprite_set_x`, `sprite_set_y` both needed naked asm due to this trap. - **CMP#1/BGE vs CMP#0/BGT optimization trap**: The compiler (agbcc) always transforms `val >= 1` into `val > 0`, which generates `CMP R0, #0; BGT/BLE` instead of `CMP R0, #1; BGE/BLT`. This is an optimization since comparing against 0 is cheaper (no immediate needed for CMP). When the original asm uses `CMP R0, #1; BGE` (e.g., in a switch-like function where case 1-3 returns one value), pure C cannot reproduce this exact comparison pattern. **Mitigation**: Use naked inline asm for functions where the exact `CMP #1; BGE/BLT` instruction sequence must be matched. Example: `func_0800BEC0`.
-- **Register allocation mismatch with 5th stack arg + u16 truncation**: Functions that take a 5th stack argument AND truncate one of the register arguments to u16 (LSLS/LSRS) are extremely difficult to match with pure C. The compiler may swap which register gets the truncation (R0 vs R1) and which callee-save register holds the 5th arg vs the zero constant (R5 vs R6). Additionally, the compiler may place the stack buffer at different offsets (sp[0] vs sp[1]) causing all subsequent store offsets to shift. **Mitigation**: Use `__attribute__((naked))` with inline asm for these functions. Include `.balign 4, 0` and `.ltorg` after the epilogue to match the original's literal pool placement. Example: `func_0800C080`.
+- **s16 callee-signature sign-extension trap**: When a function passes a sign-extended s16 value to a callee declared as `s32 sprite_is_invalid(void*, s16)`, the compiler adds extra `LSLS R1, #16; ASRS R1, #16` before the BL because it re-sign-extends the s16 argument per the callee's formal parameter type. The original asm doesn't have this — the value is already sign-extended in a register. **Mitigation**: First try declaring the callee with a matching s32 parameter type in your decomp file. If that causes conflicts with other decomp files in the same TU, try asm volatile BL to bypass the type system. Only use naked inline asm as a last resort. Example: `sprite_set_x`, `sprite_set_y` currently use naked asm due to this trap but should be revisited. - **CMP#1/BGE vs CMP#0/BGT optimization trap**: The compiler (agbcc) always transforms `val >= 1` into `val > 0`, which generates `CMP R0, #0; BGT/BLE` instead of `CMP R0, #1; BGE/BLT`. This is an optimization since comparing against 0 is cheaper (no immediate needed for CMP). When the original asm uses `CMP R0, #1; BGE` (e.g., in a switch-like function where case 1-3 returns one value), pure C cannot reproduce this exact comparison pattern. **Mitigation**: This is a genuine agbcc optimization that has no pure C workaround. Only use naked asm for this specific case after confirming the original uses `CMP #1`. Example: `func_0800BEC0`.
+- **Register allocation mismatch with 5th stack arg + u16 truncation**: Functions that take a 5th stack argument AND truncate one of the register arguments to u16 (LSLS/LSRS) are extremely difficult to match with pure C. The compiler may swap which register gets the truncation (R0 vs R1) and which callee-save register holds the 5th arg vs the zero constant (R5 vs R6). Additionally, the compiler may place the stack buffer at different offsets (sp[0] vs sp[1]) causing all subsequent store offsets to shift. **Mitigation**: First try `u32 sp[1]` array-based stack args and register pinning to control which registers hold which values. If the compiler still swaps R5/R6 or R0/R1, try asm volatile barriers to pin values. Only use naked asm if all C shaping fails after 5+ attempts. Example: `func_0800C080` currently uses naked asm but should be revisited.
 
 ### `_call_via_r1` indirect call trap
 
 When the original asm loads a function pointer into R1 via `LDR R1, =func_XXXX` and then calls `BL _call_via_r1`, pure C generates a direct `BL func_XXXX` instead. The `_call_via_r1` pattern uses R1 for the callee address and R0 for the argument, producing `LDR R1, [PC, #offset]; MOV R0, R2; BL _call_via_r1`. A direct C call produces just `MOV R0, R4; BL func_XXXX` which is different object code.
 
-**Mitigation**: Use naked inline asm with `.ltorg` for functions that use `_call_via_r1`. The `.ltorg` directive ensures the literal pool for the function pointer is placed right after the function body. Example: `func_080EE830`.
+**Mitigation**: This is a genuine case where naked asm is justified — there is no pure C way to emit an indirect call through R1. Use naked inline asm with `.ltorg` for functions that use `_call_via_r1`. The `.ltorg` directive ensures the literal pool for the function pointer is placed right after the function body. Example: `func_080EE830`.
 
 ### s32 casts for ASR in signed multiply-shift
 When computing `s32_result = (s16_val1 * s16_val2) >> 8`, the compiler may generate LSR instead of ASR if the multiply operands are in u32 register variables. Use explicit s32 casts to force ASR:
@@ -126,11 +126,12 @@ Without the s32 casts, the compiler treats the MUL result as unsigned and genera
 ### Register / return-shape traps
 - `POP {R1}; BX R1` epilogue is generated by agbcc for **non-void** functions with `-mthumb-interwork` (the return value is in R0, so it uses R1 for the pop). **Void** functions with `-mthumb-interwork` generate `POP {R0}; BX R0`. Without `-mthumb-interwork`, both generate `POP {PC}`.
 - BL + STRH patterns may keep the wrong register live and produce `POP {R0}; BX R0` instead of `POP {R1}; BX R1` — check if the function should be non-void
+- `s8`/`s16` return types can force extra sign-extension in the epilogue (`LSLS`/`ASRS`) even when the original just moves the register through. If that happens, try a wider intermediate and confirm whether the sign-extension is truly required or just a compiler artifact.
 - semantically identical C can still miss due to register allocation differences
 - Zero-init store order depends on C source statement order: `a0[1]=0; a0[0]=0; a0[2]=0;` generates `STR [R0,#4]; STR [R0]; STR [R0,#8]` (matching the original's non-sequential pattern), while `a0[0]=0; a0[1]=0; a0[2]=0;` generates sequential stores
 - Included stubs in the same TU don't need extern declarations for functions already defined in the host C file
 - **Instruction ORDER is critical for byte-identical matching**, not just instruction choice. `.syntax divided` makes `mov`/`neg`/`and` encode identically to `movs`/`rsbs`/`ands`, but the compiler may reorder instructions differently from the original. For example, `MOVS R0,#3; RSBS R0,R0,#0; ANDS R0,R1` and `LDRB R1; MOVS R0,#3; RSBS R0,R0,#0; ANDS R0,R1` produce different bytes even though the same instructions are present — the LDRB position in the instruction stream matters.
-- **Register-reuse between LDRSH offset and BL argument**: When the original uses R2 for both a LDRSH offset (e.g., `MOVS R2, #2; LDRSH R1, [R1, R2]`) and then immediately reuses R2 for a BL argument (`MOVS R2, #1; BL callee`), pure C with register pinning often fails. The compiler sees that R2 is needed for the BL argument and moves the LDRSH offset to a different register (R3), producing `MOVS R2, #1; MOVS R3, #2; LDRSH R1, [R1, R3]` which is functionally identical but byte-different. **Mitigation**: Use naked inline asm for such cases. Example: `func_08011774`.
+- **Register-reuse between LDRSH offset and BL argument**: When the original uses R2 for both a LDRSH offset (e.g., `MOVS R2, #2; LDRSH R1, [R1, R2]`) and then immediately reuses R2 for a BL argument (`MOVS R2, #1; BL callee`), pure C with register pinning often fails. The compiler sees that R2 is needed for the BL argument and moves the LDRSH offset to a different register (R3), producing `MOVS R2, #1; MOVS R3, #2; LDRSH R1, [R1, R3]` which is functionally identical but byte-different. **Mitigation**: This is a genuine compiler limitation — try register pinning first, but if the compiler still moves the offset to a different register, naked asm may be justified as a last resort. Example: `func_08011774`.
 
 ### Bitfield / mask traps
 - do not replace bitfield extraction with AND masks when the original is a shift-pair
@@ -219,38 +220,36 @@ Without the s32 casts, the compiler treats the MUL result as unsigned and genera
 - For simple BX LR leaf functions, `void func(void) {}` produces `BX LR + NOP` which matches in the final linked ROM even when the original object has `BX LR + .short 0x0000` — the linker resolves the alignment padding correctly
 - Object-level NOP differences (`0xC046` vs `0x0000`) do NOT cause ROM-level mismatches for simple leaf functions
 
-### Loop-based patterns that resist pure C
-- Some loop-based patterns (like `sprite_get_anim_duration`) resist matching in pure C due to register allocation and instruction ordering that agbcc cannot replicate
-- When goto labels, register pinning (`register type asm("rN")`), and other C shaping tricks fail, use `__attribute__((naked))` with inline assembly:
-  ```c
-  __attribute__((naked))
-  s16 sprite_get_anim_duration(struct Animation *anim) {
-      asm volatile(
-          ".syntax unified\n"
-          "push {lr}\n"
-          "adds r1, r0, #0\n"  // mov r1, r0 (ptr = arg)
-          "movs r2, #0\n"      // sum = 0
-          "b 1f\n"             // branch to check
-          "2:\n"               // loop body
-          "ldrb r0, [r1, #4]\n"  // load duration
-          "adds r0, r2, r0\n"    // sum += duration
-          "lsls r0, r0, #0x10\n" // shift left
-          "lsrs r2, r0, #0x10\n" // shift right (u16 cast)
-          "adds r1, #8\n"        // ptr++ (sizeof Animation)
-          "1:\n"                 // check
-          "ldr r0, [r1]\n"
-          "cmp r0, #0\n"
-          "bne 2b\n"            // if (ptr->cel != NULL) loop
-          "adds r0, r2, #0\n"   // return sum
-          "pop {r1}\n"
-          "bx r1\n"
-          ".short 0x0000\n"      // padding
-          ".syntax divided\n"
-      );
-  }
-  ```
-- Use this sparingly — it's a fallback when pure C shaping fails after reasonable attempts
-- Always include trailing `.short 0x0000` if the original has padding bytes
+### ⛔ Naked inline asm is a LAST RESORT, not a first resort
+
+**Never jump to `__attribute__((naked))` + inline asm as the first approach.** Naked asm wrappers are not real decompilation — they are just the original assembly wrapped in a C function shell, providing zero readability improvement. The goal of this project is to recover readable C, not to re-encode assembly.
+
+**Mandatory effort before resorting to naked asm.** You MUST attempt all of the following C shaping techniques before considering naked asm. Only if ALL of them fail after genuine effort (at least 5 compile iterations with different approaches) may you use naked asm:
+
+1. **Pure C** with correct types, statement ordering, and local variables
+2. **Register-pinned variables** (`register type asm("rN")`) to control register allocation
+3. **asm volatile barriers** (`asm volatile("" : "+r"(x))`) to prevent instruction reordering or register swaps
+4. **asm volatile clobbers** (`asm volatile("" ::: "r1")`) to force specific register choices
+5. **Statement reordering** — declaration order affects instruction order in agbcc
+6. **Type shaping** — `u16` vs `s32`, `(u32)` casts for LSRS vs ASRS, non-void return type for POP{R1};BX R1 epilogue
+7. **Load-base-first trick** — assign global base to a local pointer before computing offsets
+8. **Pointer arithmetic shaping** — `(u8 *)base + offset` vs `base[N]` vs pointer-advance patterns
+9. **goto labels** for loop control when `for`/`while` generate wrong branch types
+
+**Legitimate reasons for naked asm (rare):**
+- **`_call_via_r1` / indirect call via register** — C always generates a direct BL; no pure C way to emit `LDR R1,=func; BL _call_via_r1`
+- **R2 register-reuse between LDRSH offset and BL argument** — the compiler always moves the offset to a different register, which is functionally identical but byte-different
+- **CMP#1/BGE vs CMP#0/BGT** — the compiler always transforms `>= 1` to `> 0`; no C spelling produces `CMP #1`
+- **s16 callee-signature sign-extension** — when the callee's formal parameter type forces extra sign-extension that the original doesn't have, and the callee is in a different TU that can't be changed
+
+**NOT valid reasons for naked asm:**
+- "Register allocation is different" — try register pinning, asm volatile barriers, and statement reordering first
+- "I couldn't match it after 2 tries" — try harder with different C shapings
+- "It's faster" — speed is not the goal; readable C is the goal
+- "The function has a 5th stack argument" — use `u32 sp[1]` or similar array-based stack args in pure C
+
+**Converting existing naked asm to real C:** Existing naked asm decomp files should be revisited and converted to real C whenever possible. Priority: (1) functions where naked asm was used only for register allocation differences, (2) functions where naked asm was used for instruction ordering fixable with statement reordering, (3) functions where naked asm was used for a trap that now has a documented C workaround. Each converted function must still achieve 100% match with `compile_and_view_asm` before applying.
+
 
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers

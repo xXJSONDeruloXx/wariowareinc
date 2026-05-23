@@ -154,6 +154,23 @@ When triggered, document:
 - Keep declarations before statements (C89)
 - Reuse known-good spellings from prior accepted siblings whenever possible
 
+## Naked asm → real C conversion (optional per-chunk step)
+
+Each chunk MAY spend effort converting an existing `__attribute__((naked))` decomp file to real C with register pinning + asm volatile barriers. This is optional — do it when a function looks straightforward, not when the chunk is already productive with new conversions.
+
+**Process:**
+1. List naked asm files: `grep -rl '__attribute__((naked))' src/decomp/`
+2. Pick the simplest one — prefer functions that are struct writers, sequential BL callers, or use already-proven C patterns (RSBS mask-clear, LSLS sign-bit test, etc.).
+3. Write a real C version using register pinning + asm volatile barriers/clobbers. Use `asm volatile("bl callee")` for individual calls that need specific register ordering, but avoid `__attribute__((naked))`.
+4. Build and check `wariowareinc.gba: OK`.
+5. If it doesn't match after 3-4 attempts, restore the naked asm version and move on. Don't spend the entire chunk on one conversion.
+
+**Known hard cases that should stay naked:**
+- Functions using `_call_via_r1` (no C equivalent)
+- Functions with `CMP #1; BGE` (agbcc always optimizes to `CMP #0; BGT`)
+- Functions with s16 return type where the epilogue sign-extends but the original doesn't (e.g., `sprite_get_anim_duration`, `sprite_anim_get_cel_total`)
+- Functions where R3 must survive across a LDR instruction (scratch register can't be callee-saved without extra push/pop)
+
 ## Commit style
 Use short, one-line semantic commits, e.g.:
 - `feat: add batch 49 (sprite_id_delete siblings, gCSV shifts)`

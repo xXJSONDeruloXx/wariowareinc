@@ -20,7 +20,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "asm/code_08001a70/asm_08001cd0.s"
 
-#include "asm/code_08001a70/asm_08001d5c.s"
+#include "decomp/asm_08001d5c.c"
 
 #include "decomp/asm_08001da4.c"
 
