@@ -5,13 +5,13 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 114` — func_08011824, func_0801197C real C included_stub conversions
+- Verified working tree: `batch 115` — func_08011774, func_08014878, func_08015590 real C included_stub conversions
 - `build/report.json`: **1346 / 5956 matched functions** = **22.5991%**
-- `matched_code_percent`: **6.44336%**
+- `matched_code_percent`: **6.44412%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **976 decompiled function files** = **873 standalone_tu** + **103 included_stub**
+- `src/decomp/*.c`: **979 decompiled function files** = **873 standalone_tu** + **106 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
-- Remaining naked asm files: **4** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration)
+- Remaining naked asm files: **5** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774)
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
@@ -21,6 +21,16 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 115 — accepted
+
+- Metric delta: **+0 report matched functions**, **+3 included_stub decomp files** (matched code increased)
+- Matched code: **6.44412%**
+- Accepted functions:
+  - `func_08014878` main_menu scene init: `scene_set_current_thread(0)`, `func_08014810(1)`, five `func_0800C77C` calls (0x13-0x17), then RSBS mask-clear bits 0,4 at `gCurrentSceneData+0xDE` (mask=0x11). Real C with register pins.
+  - `func_08015590` main_menu scene cleanup: `scene_set_current_thread(0)`, loads `gCurrentSceneData` word at offset 0xDE<<1=0x1BC (function pointer), calls `func_080065C0`, AND mask 0x7F at `gCurrentSceneData+0xDE`, then loads function pointer at offset 0xE0<<1=0x1C0 and calls via `_call_via_r0`. Real C with register pins.
+  - `func_08011774` main_menu sprite anim loop: iterates 0..2, loads `gSpriteHandler` and `gCurrentSceneSpritePool`, computes `pool_base + i*2` then `LDRSH [R1, #2]` to get sprite ID, calls `sprite_set_anim_cel(handler, id, 1)`, then `func_0800C7A4(0xA)`. **Naked inline asm** — pure C couldn't match because R2 is reused for both LDRSH offset (value 2) and BL argument (value 1). The compiler moved the cel=1 into R2 before the LDRSH, putting the offset into R3 instead, breaking the register match.
+- Notes: `func_08011774` is the 5th naked inline asm file (others: func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration). Register-reuse patterns where R2 serves double duty remain a primary reason for naked asm fallback.
 
 ### Batch 114 — accepted
 
