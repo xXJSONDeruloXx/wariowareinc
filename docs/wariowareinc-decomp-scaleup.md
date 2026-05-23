@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 124` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- Verified working tree: `batch 125` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
 - `matched_code_percent`: **6.45165%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1024 decompiled function files** = **873 standalone_tu** + **151 included_stub**
+- `src/decomp/*.c`: **1029 decompiled function files** = **873 standalone_tu** + **156 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 
@@ -21,6 +21,17 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 125 — accepted
+- Metric delta: **+0 report matched functions**, **+5 included_stub decomp files**, **+0.000565% matched code** (6.451652 → 6.452217%)
+- Matched code: **6.452217%**
+- Accepted functions:
+  - `func_08012C18` main_menu: stage lookup with save_is_stage_unlocked, get_current_language, func_0800068C calls. Non-void return (POP {R1}; BX R1). Fixed conflicting extern type from asm_08012c64.c (void func(u8) → u32 func(u32)).
+  - `func_08011920` main_menu: scene thread setup with conditional bit-test on gCurrentSceneData+0x88. Uses asm volatile barrier on r0 to prevent `LDR R0,[R0]; MOV R1,R0` collapse into `LDR R1,[R0]`.
+  - `func_0800BFF0` bitmap_font: gGraphicsBuffer+0x48 AND/OR mask write for BG position. Two blocks: x (F0FF mask, <<8) and y (0FFF mask, <<12).
+  - `func_0800894C` gameplay: struct entry init with AND/OR mask and RSBS bit-clear. Uses asm volatile barrier on r4 to prevent SUBS #3 optimization of MOVS #2; RSBS.
+  - `func_0800898C` gameplay: linked-list append with 0xFF-sentinel loop (pointer-advance pattern). AND/OR mask (0x3FF/0xFFFC00FF), then init next entry.
+- Notes: Five included_stub functions across three modules (main_menu, bitmap_font, gameplay). The `asm volatile("" : "+r"(r0))` barrier was used to prevent instruction-sequence collapse (LDR+MOV → single LDR). The `asm volatile("" : "+r"(r4))` barrier prevented compiler from seeing r4=1 and optimizing MOVS#2/RSBS into SUBS#3. Failed attempts: func_0800BEC0 (CMP#1/BGE vs CMP#0/BGT optimization), func_08013EC0 (0x80<<1 folding into ADD #0xFC).
 
 ### Batch 124 — accepted
 - Metric delta: **+0 report matched functions**, **+5 included_stub decomp files** (matched code stable)

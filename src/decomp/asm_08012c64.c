@@ -2,7 +2,7 @@
 #include "global.h"
 #include "src/scenes/main_menu.h"
 
-extern void func_08012C18(u8);
+extern u32 func_08012C18(u32);
 extern void func_08015A88(void);
 
 void func_08012C64(void) {

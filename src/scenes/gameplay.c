@@ -276,9 +276,9 @@ void func_08008940(void) {
     func_08003EB0();
 }
 
-#include "asm/scenes/gameplay/asm_0800894c.s"
+#include "../decomp/asm_0800894c.c"
 
-#include "asm/scenes/gameplay/asm_0800898c.s"
+#include "../decomp/asm_0800898c.c"
 
 #include "asm/scenes/gameplay/asm_080089d8.s"
 
