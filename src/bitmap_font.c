@@ -56,7 +56,7 @@ u8 bmp_font_obj_parse_hex_digit(char c) {
 
 #include "decomp/asm_0800bbb4.c"
 
-#include "asm/bitmap_font/asm_0800bbcc.s"
+#include "decomp/asm_0800bbcc.c"
 
 void func_0800BC0C(void) {}
 

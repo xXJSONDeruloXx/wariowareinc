@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 127` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- Verified working tree: `batch 128` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
 - `matched_code_percent`: **6.45165%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1038 decompiled function files** = **873 standalone_tu** + **165 included_stub**
+- `src/decomp/*.c`: **1040 decompiled function files** = **873 standalone_tu** + **167 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 
@@ -22,9 +22,17 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 128 — accepted
+- Metric delta: **+0 report matched functions**, **+2 included_stub decomp files**, **+0.000754% matched code** (6.4524055 → 6.453159%)
+- Matched code: **6.453159%**
+- Accepted functions:
+  - `func_08012D3C` main_menu: scene thread 0 setup, D_03006518 byte read + func_08012EC4 call, conditional func_08012CC8, bit-mask clear of 0x21 flag at gCurrentSceneData+0xDD. Uses extern struct Unk03006518 to match existing declaration.
+  - `func_0800BBCC` bitmap_font: scene data struct initializer calling func_0800B828/func_0800BA78 with 5th stack arg via inline asm ldr. Uses matching func_0800B828(u32, u32) declaration from existing asm_0800bb74.c.
+- Notes: Two included_stub conversions. Key patterns: matching existing extern declarations across decomp files (struct Unk03006518, func_0800B828 2-arg vs 3-arg), inline asm ldr for 5th stack arg at [sp, #0xC].
+
 ### Batch 127 — accepted
-- Metric delta: **+0 report matched functions**, **+3 included_stub decomp files**, **+0.000000% matched code** (6.4524055 → 6.4524055%)
-- Matched code: **6.4524055%**
+- Metric delta: **+0 report matched functions**, **+3 included_stub decomp files**, **+0.000000% matched code** (6.453159 → 6.453159%)
+- Matched code: **6.453159%**
 - Accepted functions:
   - `func_08001B28` code_08001a70: rotation matrix identity initializer at D_03000010[arg0*8] with D_03000118 byte clear. Leaf. Uses asm volatile barriers to force R6 callee-save and instruction ordering for LDR R0,=D_03000118; ADD R0, R6, R0 sequence.
   - `sprite_delete` lib_sprite: sprite deallocation with bit-mask clears (0xFD & byte0, 0xBE & byte1), z-link removal, and ID dealloc. Uses s32 arg1 to avoid early u16 truncation. Key: asm volatile barrier after MOV R5, R0 to prevent early LSLS R1.
@@ -32,8 +40,8 @@ At the current `total_functions` count (`5956`), that means:
 - Notes: Three included_stub conversions across two modules (code_08001a70, lib_sprite). Key patterns: s32 arg1 to prevent early u16 truncation when arg1 is used as s16 after BL, asm volatile barriers to force callee-save of R6 and instruction ordering, u32 return type to get POP {R1}; BX R1 epilogue with trailing truncation. Failed attempts: sprite_set_z and sprite_set_x_y blocked by agbcc not pushing R7 callee-saved register.
 
 ### Batch 126 — accepted
-- Metric delta: **+0 report matched functions**, **+6 included_stub decomp files**, **+0.000189% matched code** (6.452217 → 6.4524055%)
-- Matched code: **6.4524055%**
+- Metric delta: **+0 report matched functions**, **+6 included_stub decomp files**, **+0.000189% matched code** (6.452217 → 6.453159%)
+- Matched code: **6.453159%**
 - Accepted functions:
   - `func_080159FC` main_menu: gCurrentSceneData+0xCC counter increment with BLS reset, then copy 3 halfwords from lookup table to D_030041E4. Leaf.
   - `func_0800C038` bitmap_font: gGraphicsBuffer+0x48 AND/OR mask write for BG scroll (FFF0/FF0F masks, low 4 bits / bits 4-7). Same family as func_0800BFF0. Leaf.

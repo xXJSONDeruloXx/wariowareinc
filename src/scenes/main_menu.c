@@ -233,7 +233,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_08012cc8.s"
 
-#include "asm/scenes/main_menu/asm_08012d3c.s"
+#include "../decomp/asm_08012d3c.c"
 
 #include "asm/scenes/main_menu/asm_08012d7c.s"
 
