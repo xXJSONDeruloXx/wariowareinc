@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 120 | current commit | +1 report matched / +6 decomp files | Real C: func_080119B8 (scene init mode 4), func_08016D88 (soft_reset check), func_08014DFC (game data setup), func_08013660 (stage select init), func_080141C8 (scene flag setup with asm volatile clobber), func_08002514 (graphics_table find-empty). New patterns: register clobber, inline add. |
 | 119 | current commit | +0 report matched / +2 decomp files | Real C: func_08014374 (language-indexed scene data), func_080135E8 (stage-unlocked string lookup). asm volatile BL pattern for type conflicts. |
 | 118 | current commit | +0 report matched / +2 decomp files | Real C: func_0800247C (graphics_table copy-entries), func_080024A4 (copy with count). Fixed forward-decl conflicts in func_080024E4/func_080024FC. |
 | 117 | current commit | +1 report matched / +2 decomp files | Real C: sprite_handler_alloc_id (free-list allocator, u32=0xFFFF literal pool trick), func_080EFC50 (sprite count by unk30 match). Both use id*56 offset pattern + padding byte. |
