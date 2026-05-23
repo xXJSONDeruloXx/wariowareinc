@@ -5,12 +5,13 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 109` — main_menu linked pair (`func_08014E88`, `func_080152A0`)
+- Verified working tree: `batch 112` — func_080116D4, func_080143BC, func_080133EC real C included_stub conversions
 - `build/report.json`: **1346 / 5956 matched functions** = **22.5991%**
-- `matched_code_percent`: **6.44129%**
+- `matched_code_percent`: **6.44261%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **968 decompiled function files** = **873 standalone_tu** + **95 included_stub**
+- `src/decomp/*.c`: **971 decompiled function files** = **873 standalone_tu** + **98 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
+- Remaining naked asm files: **4** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration)
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
@@ -20,6 +21,28 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 112 — accepted
+
+- Metric delta: **+0 report matched functions**, **+3 included_stub decomp files** (matched code increased)
+- Matched code: **6.44261%**
+- Accepted functions:
+  - `func_080116D4` main_menu RSBS mask-clear + function pointer bit-test: clears bits 0,2 at gCurrentSceneData+0xDF (mask=5), then reads function pointer at gCurrentSceneData+0x13C (0x9E<<1), tests bit 1, and conditionally calls set_pause_beatscript_scene(1). Real C with register pins.
+  - `func_080143BC` main_menu scene init wrapper: scene_set_current_thread(0), loads byte at gCurrentSceneData+0xFD, calls func_0801429C(byte, 1), calls func_08014374(), then RSBS mask-clear bit 1 at gCurrentSceneData+0xDD. Real C with register pins.
+  - `func_080133EC` main_menu multi-call + D_03006518 write: scene_set_current_thread(0), three void calls (func_08013AF4, func_08013A94, func_08013B94), stores 3 to D_03006518[1], calls func_08013C60, then RSBS mask-clear bit 1 at gCurrentSceneData+0xDD. Real C with register pins.
+- Notes: All three are real C conversions (not naked inline asm). Register-pinned variables used to match exact instruction sequences for RSBS mask-clear pattern and gCurrentSceneData pointer reuse. D_03006518 store pattern uses `(u8 *)&D_03006518; ptr[1] = 3;` to match LDR R1,=D_03006518 + MOVS R0,#3 + STRB.
+
+### Batch 110 — accepted (refactor)
+
+- Metric delta: **+0 report matched functions**, **+12 decomp files converted from naked asm to real C**
+- Matched code: **6.44129%**
+- Commit: `7a3ce013`
+- Refactored 12 of 16 naked inline-asm files to real C with register-pinned variables:
+  - func_0800A098, func_0800A240, func_0800A298, func_0800A3FC, func_0800A430 (beatscript)
+  - func_080115DC, func_08012C80, func_08013628 (main_menu)
+  - func_08014490, func_080148BC, func_08014C6C, func_080152A0 (main_menu)
+- 4 remain as naked asm (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration) due to loop/LDRSH generation issues.
+- Notes: Register-pinned local variables (`register type asm("rN")`) are a powerful shaping tool for matching exact instruction sequences, especially for RSBS mask-clear pattern and gCurrentSceneData base-reuse across multiple operations.
 
 ### Batch 109 — accepted
 - Metric delta: **+0 report matched functions**, **+2 included_stub decomp files** (matched code increased)
