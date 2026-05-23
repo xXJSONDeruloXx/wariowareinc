@@ -96,7 +96,7 @@ void func_0800BC0C(void) {}
 
 #include "decomp/asm_0800c038.c"
 
-#include "asm/bitmap_font/asm_0800c080.s"
+#include "decomp/asm_0800c080.c"
 
 #include "asm/bitmap_font/asm_0800c0bc.s"
 

@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 128` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- Verified working tree: `batch 129` — func_0800C080 naked asm included_stub conversion (bitmap_font task launcher)
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
-- `matched_code_percent`: **6.45165%**
+- `matched_code_percent`: **6.453159%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1040 decompiled function files** = **873 standalone_tu** + **167 included_stub**
+- `src/decomp/*.c`: **1041 decompiled function files** = **873 standalone_tu** + **168 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 
