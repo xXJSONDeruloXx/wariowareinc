@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 125` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- Verified working tree: `batch 126` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
 - `matched_code_percent`: **6.45165%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1029 decompiled function files** = **873 standalone_tu** + **156 included_stub**
+- `src/decomp/*.c`: **1035 decompiled function files** = **873 standalone_tu** + **162 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 
@@ -21,6 +21,18 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 126 — accepted
+- Metric delta: **+0 report matched functions**, **+6 included_stub decomp files**, **+0.000189% matched code** (6.452217 → 6.4524055%)
+- Matched code: **6.4524055%**
+- Accepted functions:
+  - `func_080159FC` main_menu: gCurrentSceneData+0xCC counter increment with BLS reset, then copy 3 halfwords from lookup table to D_030041E4. Leaf.
+  - `func_0800C038` bitmap_font: gGraphicsBuffer+0x48 AND/OR mask write for BG scroll (FFF0/FF0F masks, low 4 bits / bits 4-7). Same family as func_0800BFF0. Leaf.
+  - `func_08001AC0` code_08001a70: slot-allocator search loop scanning D_03000118 for free byte. Returns slot index or -1. Leaf. Fixed extern type to match asm_08001b04.c (void→u32 arg).
+  - `func_08001A70` code_08001a70: D_03000010 array initialization loop with 0x100/0 halfword pattern and D_03000118 zero-clear. Uses triple asm volatile barrier for MOVS R0,#0x80; LSLS; MOV R5,R0; MOVS R3,#0 ordering. Leaf.
+  - `func_08001BA4` code_08001a70: rotation matrix builder using gCosineTable/gSineTable with ASR #8. Key fix: s32 casts on MUL and shift to generate ASR instead of LSR. Leaf.
+  - `func_08001C08` code_08001a70: 2D rotation matrix builder (two angles) using gCosineTable/gSineTable with ASR #8. Same s32 cast pattern as func_08001BA4. Leaf.
+- Notes: Six leaf functions across three modules (main_menu, bitmap_font, code_08001a70). Key patterns: s32 casts for ASR generation in signed multiply-shift, triple asm volatile barrier for instruction ordering, and the gGraphicsBuffer AND/OR mask family now has 3 members (BFF0, C038, plus earlier ones).
 
 ### Batch 125 — accepted
 - Metric delta: **+0 report matched functions**, **+5 included_stub decomp files**, **+0.000565% matched code** (6.451652 → 6.452217%)
