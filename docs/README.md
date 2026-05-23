@@ -10,10 +10,10 @@ If an agent resumes cold, read these first:
 5. `docs/decomp-tooling-feedback.md` — tooling gaps, workarounds, and improvement notes
 
 ## Current verified baseline
-- Verified working tree: `batch 123` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
-- `build/report.json`: **1350 / 5960 matched functions** (**22.6510%**) · **6.45165%** matched code
+- Verified working tree: `batch 124` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- `build/report.json`: **1350 / 5960 matched functions** (**22.6510%**) · **6.451652%** matched code
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1019 decompiled function files** = **873 standalone_tu** + **146 included_stub**
+- `src/decomp/*.c`: **1024 decompiled function files** = **873 standalone_tu** + **151 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 - 80% target at the current function total: **4765 / 5956**

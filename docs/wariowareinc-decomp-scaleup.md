@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 123` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- Verified working tree: `batch 124` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
 - `matched_code_percent`: **6.45165%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1019 decompiled function files** = **873 standalone_tu** + **146 included_stub**
+- `src/decomp/*.c`: **1024 decompiled function files** = **873 standalone_tu** + **151 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 
@@ -21,6 +21,17 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 124 — accepted
+- Metric delta: **+0 report matched functions**, **+5 included_stub decomp files** (matched code stable)
+- Matched code: **6.451652%**
+- Accepted functions:
+  - `sprite_remove_z_link` lib_sprite linked-list removal: updates prev/next pointers (0x1A/0x18 offsets) with head/tail fixup at 0xC/0xE. Leaf function; instruction order fix via interleaving r3 load between r4 and r1 shift.
+  - `func_08012700` main_menu sprite scene init: stores byte at D_03006518, loads position from D_083AA0C4 table, conditionally calls func_08011504 with func_08012658+1 callback or direct func_08012658, then play_sound. Uses asm volatile BL for func_08011504 and play_sound. Instruction order fix via asm volatile barrier on r2.
+  - `func_08013764` main_menu D_03000E60 struct init: AND/OR mask pattern with 0x3FF/0xFFFC00FF, RSBS mask-clear at +2, 0xFF init at +8. Leaf function; instruction order fix via asm volatile barrier on r2.
+  - `func_080136A4` main_menu scene thread setup: calls scene_set_current_thread(0), sprite_set_anim_cel via asm volatile BL (s16 callee-signature trap), RSBS mask-clear at +0xDD, then func_080135E8 and func_08015A88.
+  - `func_08011584` main_menu sprite position set: calls func_08005920 (check), sprite_set_x_y via asm volatile BL (s16 callee-signature trap), and func_08005834. Uses R5 reuse for gCurrentSceneData pointer across the function.
+- Notes: Five included_stub functions in one chunk. The `asm volatile("" : "+r"(r2))` barrier pattern was critical for preventing instruction reordering in sprite_remove_z_link and func_08013764. Attempted sprite_set_z with naked asm but .syntax divided/unified leakage into host TU caused build failure; left for standalone_tu conversion. Attempted func_08011864 (switch pattern) but CMP #1/BLO vs CMP #0/BEQ optimization difference prevents byte-identical match.
 
 ### Batch 123 — accepted
 - Metric delta: **+0 report matched functions**, **+8 included_stub decomp files** (matched code increased)

@@ -84,7 +84,7 @@ void main_menu_scene_update(void) {
 
 #include "asm/scenes/main_menu/asm_08011504.s"
 
-#include "asm/scenes/main_menu/asm_08011584.s"
+#include "../decomp/asm_08011584.c"
 
 #include "../decomp/asm_080115dc.c"
 
@@ -201,7 +201,7 @@ void func_0801208C(void) {
 
 #include "../decomp/asm_080126c8.c"
 
-#include "asm/scenes/main_menu/asm_08012700.s"
+#include "../decomp/asm_08012700.c"
 
 #include "../decomp/asm_0801274c.c"
 
@@ -277,11 +277,11 @@ void func_0801208C(void) {
 
 #include "../decomp/asm_08013660.c"
 
-#include "asm/scenes/main_menu/asm_080136a4.s"
+#include "../decomp/asm_080136a4.c"
 
 #include "asm/scenes/main_menu/asm_080136f4.s"
 
-#include "asm/scenes/main_menu/asm_08013764.s"
+#include "../decomp/asm_08013764.c"
 
 #include "asm/scenes/main_menu/asm_080137b0.s"
 
