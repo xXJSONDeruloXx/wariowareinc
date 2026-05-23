@@ -5,27 +5,36 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 115` — func_08011774, func_08014878, func_08015590 real C included_stub conversions
-- `build/report.json`: **1346 / 5956 matched functions** = **22.5991%**
-- `matched_code_percent`: **6.44412%**
+- Verified working tree: `batch 116` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- `build/report.json`: **1347 / 5957 matched functions** = **22.6135%**
+- `matched_code_percent`: **6.44431%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **979 decompiled function files** = **873 standalone_tu** + **106 included_stub**
+- `src/decomp/*.c`: **982 decompiled function files** = **873 standalone_tu** + **109 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
-- Remaining naked asm files: **5** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774)
+- Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
 
 At the current `total_functions` count (`5956`), that means:
-- target: **4765 / 5956** matched functions
+- target: **4766 / 5957** matched functions
 - current gap: **3409** more matched functions
 
 ## What just landed
 
+### Batch 116 — accepted
+- Metric delta: **+1 report matched function**, **+3 included_stub decomp files** (matched code increased)
+- Matched code: **6.44431%**
+- Accepted functions:
+  - `func_080EFC20` lib_sprite animation count: iterates through animation linked list, counting entries until nextAnim == -1 sentinel. Real C with register pins. Uses `__attribute__((section(".text"))) const u8 _padding[]` to match the `.short 0x0000` alignment padding.
+  - `sprite_set_x` lib_sprite x-position setter: sets D_03000E70=7, validates sprite with sprite_is_invalid, computes spriteData + id*56 offset, stores x halfword at offset +2. **Naked inline asm** — sprite_is_invalid declared as s32(void*, s16) in lib_sprite.h causes extra sign-extension before BL.
+  - `sprite_set_y` lib_sprite y-position setter: identical pattern to sprite_set_x but sets D_03000E70=8 and stores y at offset +4. **Naked inline asm** for same callee-signature reason.
+- Notes: sprite_set_x/sprite_set_y are the 6th and 7th naked inline asm files. The sprite_is_invalid(void*, s16) callee-signature vs original asm's implicit s32-passing is a recurring trap for lib_sprite functions.
+
 ### Batch 115 — accepted
 
 - Metric delta: **+0 report matched functions**, **+3 included_stub decomp files** (matched code increased)
-- Matched code: **6.44412%**
+- Matched code: **6.44431%**
 - Accepted functions:
   - `func_08014878` main_menu scene init: `scene_set_current_thread(0)`, `func_08014810(1)`, five `func_0800C77C` calls (0x13-0x17), then RSBS mask-clear bits 0,4 at `gCurrentSceneData+0xDE` (mask=0x11). Real C with register pins.
   - `func_08015590` main_menu scene cleanup: `scene_set_current_thread(0)`, loads `gCurrentSceneData` word at offset 0xDE<<1=0x1BC (function pointer), calls `func_080065C0`, AND mask 0x7F at `gCurrentSceneData+0xDE`, then loads function pointer at offset 0xE0<<1=0x1C0 and calls via `_call_via_r0`. Real C with register pins.
