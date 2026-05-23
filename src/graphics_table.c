@@ -32,7 +32,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "decomp/asm_08002598.c"
 
-#include "asm/graphics_table/asm_080025bc.s"
+#include "decomp/asm_080025bc.c"
 
 #include "decomp/asm_080025f8.c"
 

@@ -2,4 +2,4 @@
 
 asm(".include \"include/gba.inc\"");
 
-#include "asm/language_select/asm_08016e6c.s"
+#include "../decomp/asm_08016e6c.c"

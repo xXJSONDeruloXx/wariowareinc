@@ -10,7 +10,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "asm/code_08001a70/asm_08001b28.s"
 
-#include "asm/code_08001a70/asm_08001b70.s"
+#include "decomp/asm_08001b70.c"
 
 #include "asm/code_08001a70/asm_08001ba4.s"
 
@@ -28,4 +28,4 @@ asm(".include \"include/gba.inc\"");
 
 #include "decomp/asm_08001dfc.c"
 
-#include "asm/code_08001a70/asm_08001e20.s"
+#include "decomp/asm_08001e20.c"

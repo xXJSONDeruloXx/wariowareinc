@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 120` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- Verified working tree: `batch 121` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
 - `build/report.json`: **1349 / 5959 matched functions** = **22.6415%**
-- `matched_code_percent`: **6.44713%**
+- `matched_code_percent`: **6.44826%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **994 decompiled function files** = **873 standalone_tu** + **121 included_stub**
+- `src/decomp/*.c`: **1002 decompiled function files** = **873 standalone_tu** + **129 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 
@@ -22,9 +22,23 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 121 — accepted
+- Metric delta: **+0 report matched functions**, **+8 included_stub decomp files** (matched code increased)
+- Matched code: **6.44826%**
+- Accepted functions:
+  - `func_080126C8` main_menu scene init (zero mode): identical pattern to func_080119B8 — `scene_set_current_thread(0)`, writes 0 to `D_03006518.unk1`, calls `func_080117FC` + `func_08015C38` + `func_08011730(1)`, RSBS mask-clear bit 1 at `gCurrentSceneData+0xDD`. Real C with register pins.
+  - `func_08013428` main_menu scene init (zero mode): identical code to func_080126C8 — same pattern, same register allocation. Real C with register pins.
+  - `func_080143F0` main_menu scene init (zero mode): identical code to func_080126C8 and func_08013428. Real C with register pins.
+  - `func_080025BC` graphics_table DMA copy loop: iterates 12-byte entries, calls `dma3_set` with source/dest/count from each entry. Uses `u32 sp[1]` local array for stack-based 5th arg (`bytesPerInterrupt = 0x100`). Real C with register pins.
+  - `func_08016E6C` language_select check: tests `D_030035E0` halfword, conditionally calls `func_08016CBC(D_083AD90C)`, then `func_08016D00()`; if result nonzero sets `gCurrentScene = 5`. Uses `extern u32 D_083AD90C` for proper symbol reference in literal pool. Real C with register pins.
+  - `func_08001B70` code_08001a70 task finder: iterates 0..0x1F checking `D_03000118[i]` and `D_03000140[i]`, calls `func_08001B28(i)` when both match. Real C with register pins.
+  - `func_08001E20` code_08001a70 task counter: similar to func_08001B70 but counts matching entries instead of calling a function. Returns count in R0. No BL calls — leaf function. Real C with register pins.
+  - `func_08015A4C` main_menu scene buffer fill: loads `gCurrentSceneData`, reads offset 0xB4 flag, if set reads halfword at 0xC2 and ORs with 0x40000; fills 16 words at `data[0xC]+0x240` using inline `STM` instruction. No BL calls — leaf function. Uses `asm volatile("stm %2!, {%1}")` for STM store loop. Real C with register pins.
+- Notes: Eight functions in one chunk — most productive session yet. Three identical scene-init functions (func_080126C8/func_08013428/func_080143F0) were all first-try matches. New pattern: `asm volatile STM` for store-multiple loops that the compiler cannot generate from pure C. The `u32 sp[]` local array pattern correctly handles stack-based function arguments for `dma3_set`. Using `extern u32 D_083AD90C` + `&D_083AD90C` produces proper symbol references in literal pool instead of raw address constants.
+
 ### Batch 120 — accepted
 - Metric delta: **+1 report matched function**, **+6 included_stub decomp files** (matched code increased)
-- Matched code: **6.44713%**
+- Matched code: **6.44826%**
 - Accepted functions:
   - `func_080119B8` main_menu scene init (mode 4): `scene_set_current_thread(0)`, writes 4 to `D_03006518.unk1`, calls `func_08011824`, RSBS mask-clear bit 1 at `gCurrentSceneData+0xDD`, calls `func_080143A0`. Real C with register pins.
   - `func_08016D88` soft_reset check: tests `D_030035E0` halfword, if nonzero calls `func_08016DB8`, then calls `func_08016DE0`; if result is 1, calls `func_080001D4` and writes 1 to `gCurrentScene`. Real C with register pins.
@@ -36,7 +50,7 @@ At the current `total_functions` count (`5956`), that means:
 
 ### Batch 119 — accepted
 - Metric delta: **+0 report matched functions**, **+2 included_stub decomp files** (matched code slightly increased)
-- Matched code: **6.44713%**
+- Matched code: **6.44826%**
 - Accepted functions:
   - `func_08014374` main_menu language-indexed scene data loader: calls `get_current_language()`, indexes into `D_083AB320` table, reads byte from `gCurrentSceneData+0xFD`, indexes again into sub-table, calls `func_08015A88` with result. Real C with register pins. Uses `asm volatile("bl func_08015A88" :: "r"(r0))` to avoid type conflict with existing `extern void func_08015A88(void)` declaration in other decomp files.
   - `func_080135E8` main_menu stage-unlocked string table lookup: if `save_is_stage_unlocked(stage)` returns nonzero, indexes into `D_083AAF20` (unlocked strings) by language*4 + stage*4; otherwise indexes into `D_083AAF38` (locked strings) by language*4. Returns the resulting pointer. Real C with register pins. Fixed `extern void func_080135E8(u32)` → `extern u32 func_080135E8(u32)` in `asm_0801197c.c`.
@@ -44,7 +58,7 @@ At the current `total_functions` count (`5956`), that means:
 
 ### Batch 118 — accepted
 - Metric delta: **+0 report matched functions**, **+2 included_stub decomp files** (matched code increased)
-- Matched code: **6.44713%**
+- Matched code: **6.44826%**
 - Accepted functions:
   - `func_0800247C` graphics_table copy-entries: copies 12-byte GraphicsTable entries from src to dest until src->src == NULL, then zero-terminates dest. Real C with register pins. Key: `goto check` before loop body produces the original's branch-to-test-first pattern.
   - `func_080024A4` graphics_table copy-entries with count: similar to func_0800247C but also takes a max count parameter and stops when count reaches 0. First word from src is stored to dest before loading remaining words (original asm reuses R0 from the NULL check as the first STR source). Real C with register pins.
@@ -52,7 +66,7 @@ At the current `total_functions` count (`5956`), that means:
 
 ### Batch 117 — accepted
 - Metric delta: **+1 report matched function**, **+2 included_stub decomp files** (matched code increased)
-- Matched code: **6.44713%**
+- Matched code: **6.44826%**
 - Accepted functions:
   - `sprite_handler_alloc_id` lib_sprite free-list allocator: reads handler->nextAllocID (offset 0x10), if >= 0 follows the free list via sprite->unk1A to get the next free ID, updates handler->nextAllocID, and if new ID is negative sets handler->lastAllocID = 0xFFFF. Real C with register pins. Key insight: using `u32 sentinel = 0x0000FFFF` produces the correct `LDR R0, [PC, #offset]` + `STRH R0` sequence instead of `LDR + LDRH` that a `u16` or pointer deref generates.
   - `func_080EFC50` lib_sprite sprite count by callback: iterates through animation linked list counting sprites whose unk30 field matches arg1. Real C with register pins. Uses same `computed += (s32)data` pattern from func_080EFC20 to get the correct ADD operand order.
@@ -60,7 +74,7 @@ At the current `total_functions` count (`5956`), that means:
 
 ### Batch 116 — accepted
 - Metric delta: **+1 report matched function**, **+3 included_stub decomp files** (matched code increased)
-- Matched code: **6.44713%**
+- Matched code: **6.44826%**
 - Accepted functions:
   - `func_080EFC20` lib_sprite animation count: iterates through animation linked list, counting entries until nextAnim == -1 sentinel. Real C with register pins. Uses `__attribute__((section(".text"))) const u8 _padding[]` to match the `.short 0x0000` alignment padding.
   - `sprite_set_x` lib_sprite x-position setter: sets D_03000E70=7, validates sprite with sprite_is_invalid, computes spriteData + id*56 offset, stores x halfword at offset +2. **Naked inline asm** — sprite_is_invalid declared as s32(void*, s16) in lib_sprite.h causes extra sign-extension before BL.
@@ -70,7 +84,7 @@ At the current `total_functions` count (`5956`), that means:
 ### Batch 115 — accepted
 
 - Metric delta: **+0 report matched functions**, **+3 included_stub decomp files** (matched code increased)
-- Matched code: **6.44713%**
+- Matched code: **6.44826%**
 - Accepted functions:
   - `func_08014878` main_menu scene init: `scene_set_current_thread(0)`, `func_08014810(1)`, five `func_0800C77C` calls (0x13-0x17), then RSBS mask-clear bits 0,4 at `gCurrentSceneData+0xDE` (mask=0x11). Real C with register pins.
   - `func_08015590` main_menu scene cleanup: `scene_set_current_thread(0)`, loads `gCurrentSceneData` word at offset 0xDE<<1=0x1BC (function pointer), calls `func_080065C0`, AND mask 0x7F at `gCurrentSceneData+0xDE`, then loads function pointer at offset 0xE0<<1=0x1C0 and calls via `_call_via_r0`. Real C with register pins.
