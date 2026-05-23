@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 122 | current commit | +1 report matched / +9 decomp files | Real C: func_08012768/func_08012798/func_080127C8/func_080127F8 (stage finder family offsets 4-7), func_08012DCC (sprite visibility loop), func_080118E0 (scene init+sound), func_080166AC (intro check), func_08014FA8 (scene cleanup with _call_via_r0), func_080EF31C (sprite field getter). New: r1 clobber for reordering, unique _padding names. |
 | 121 | current commit | +0 report matched / +8 decomp files | Real C: func_080126C8/func_08013428/func_080143F0 (identical scene inits), func_080025BC (DMA copy with sp[] for stack arg), func_08016E6C (language_select with extern symbol), func_08001B70 (task finder), func_08001E20 (task counter), func_08015A4C (STM buffer fill). New: inline STM, sp[] for stack args, extern symbol for literal pool. |
 | 120 | current commit | +1 report matched / +6 decomp files | Real C: func_080119B8 (scene init mode 4), func_08016D88 (soft_reset check), func_08014DFC (game data setup), func_08013660 (stage select init), func_080141C8 (scene flag setup with asm volatile clobber), func_08002514 (graphics_table find-empty). New patterns: register clobber, inline add. |
 | 119 | current commit | +0 report matched / +2 decomp files | Real C: func_08014374 (language-indexed scene data), func_080135E8 (stage-unlocked string lookup). asm volatile BL pattern for type conflicts. |

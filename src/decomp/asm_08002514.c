@@ -17,5 +17,5 @@ void func_08002514(u32 *table, u32 a1, u32 a2, u32 a3) {
     func_080024D0((u32 *)r0, a1, a2, a3);
 }
 
-__attribute__((section(".text"))) const u16 _padding = 0;
+__attribute__((section(".text"))) const u16 _padding_08002514 = 0;
 #endif

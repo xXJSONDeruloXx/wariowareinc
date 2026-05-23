@@ -3,4 +3,4 @@
 asm(".include \"include/gba.inc\"");
 
 
-#include "asm/intro/asm_080166ac.s"
+#include "../decomp/asm_080166ac.c"
