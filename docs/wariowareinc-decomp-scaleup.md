@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 112` — func_080116D4, func_080143BC, func_080133EC real C included_stub conversions
+- Verified working tree: `batch 113` — func_08014C34, func_08011730, load_gfx_table real C included_stub conversions
 - `build/report.json`: **1346 / 5956 matched functions** = **22.5991%**
-- `matched_code_percent`: **6.44261%**
+- `matched_code_percent`: **6.44299%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **971 decompiled function files** = **873 standalone_tu** + **98 included_stub**
+- `src/decomp/*.c`: **974 decompiled function files** = **873 standalone_tu** + **101 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **4** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration)
 
@@ -21,6 +21,17 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 113 — accepted
+
+- Metric delta: **+0 report matched functions**, **+3 included_stub decomp files** (matched code increased)
+- Matched code: **6.44299%**
+- Accepted functions:
+  - `func_08014C34` main_menu scene wrapper: scene_set_current_thread(0), func_0800C77C(0x18), RSBS mask-clear bits 0,5 at gCurrentSceneData+0xDE (mask=0x21), then reads function pointer at gCurrentSceneData+0x174 (0xBA<<1), calls if non-zero. Real C with register pins.
+  - `func_08011730` main_menu conditional gGraphicsBuffer write: if arg0!=0, writes 4 to gGraphicsBuffer+0x50 and calls func_0800A000(0xB3); else writes 0 to gGraphicsBuffer+0x50 and calls func_0800A000(0x100). Real C with register pins. Key: `(u8 *)&gGraphicsBuffer; ptr += 0x50` form produces correct literal-pool LDR + ADDS sequence rather than folded offset.
+  - `load_gfx_table` graphics_table loader: allocates 0x5C-byte stack buffer, calls func_08002124 with 0x20000 size, polls bit 0 of buffer via func_080021C8 loop. Real C with register pins and explicit `u8 stack[0x5C]` array for stack allocation.
+- Also fixed: `func_080021C8` type in asm_08002584.c changed from `extern void func_080021C8(u32)` to `extern void func_080021C8(void *)` to match the real signature and avoid conflicting type errors.
+- Notes: apply_conversion failed for load_gfx_table due to conflicting extern types in the same TU (asm_08002584.c had `func_080021C8(u32)` vs the new `func_080021C8(void *)`). Fixing the existing extern declaration before applying resolves the conflict. Manual conversion used for this case.
 
 ### Batch 112 — accepted
 

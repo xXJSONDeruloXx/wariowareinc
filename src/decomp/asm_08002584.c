@@ -1,7 +1,7 @@
 #if __INCLUDE_LEVEL__ > 0
 #include "global.h"
 
-extern void func_080021C8(u32);
+extern void func_080021C8(void *);
 
 u32 func_08002584(u32 arg0) {
     u8 val;

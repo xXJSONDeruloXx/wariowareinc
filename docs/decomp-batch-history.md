@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 113 | current commit | +0 report matched / +3 decomp files | Real C included_stub: `func_08014C34` (scene wrapper + RSBS mask + function pointer call), `func_08011730` (gGraphicsBuffer conditional write + func_0800A000), `load_gfx_table` (graphics table loader with stack buffer + polling loop). Also fixed `func_080021C8` type mismatch in asm_08002584.c. |
 | 112 | current commit | +0 report matched / +3 decomp files | Real C included_stub: `func_080116D4` (RSBS mask + bit-test), `func_080143BC` (scene init wrapper), `func_080133EC` (multi-call + D_03006518 write). All register-pinned real C. |
 | 110 | `7a3ce013` | +0 report matched / +12 refactor | Refactored 12 naked inline-asm files to real C with register-pinned variables. 4 remain as naked asm. |
 | 109 | current commit | +0 report matched / +2 decomp files | Linked main_menu mini-batch: `func_08014E88` palette helper + `func_080152A0` caller. Both use naked inline asm. Confirms linked batches can move included_stub coverage safely when the callee is converted first and ROM is checked after each apply. |

@@ -101,7 +101,7 @@ u32 func_08011698(void) {
 
 #include "../decomp/asm_08011708.c"
 
-#include "asm/scenes/main_menu/asm_08011730.s"
+#include "../decomp/asm_08011730.c"
 
 #include "../decomp/asm_08011764.c"
 
@@ -365,7 +365,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_08014b58.s"
 
-#include "asm/scenes/main_menu/asm_08014c34.s"
+#include "../decomp/asm_08014c34.c"
 
 #include "../decomp/asm_08014c6c.c"
 
