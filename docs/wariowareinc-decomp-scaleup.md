@@ -5,13 +5,13 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 129` — func_0800C080 naked asm included_stub conversion (bitmap_font task launcher)
+- Verified working tree: `batch 130` — sprite_set_x_y naked asm included_stub conversion (lib_sprite combined x/y position setter)
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
 - `matched_code_percent`: **6.453159%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1041 decompiled function files** = **873 standalone_tu** + **168 included_stub**
+- `src/decomp/*.c`: **1042 decompiled function files** = **873 standalone_tu** + **169 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
-- Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
+- Remaining naked asm files: **9** (func_0800C080, func_080113EC, func_08011774, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, sprite_set_x, sprite_set_y, sprite_set_x_y)
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.

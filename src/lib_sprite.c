@@ -40,7 +40,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "asm/lib_sprite/asm_080ef1ac.s"
 
-#include "asm/lib_sprite/asm_080ef224.s"
+#include "decomp/asm_080ef224.c"
 
 #include "decomp/asm_080ef264.c"
 

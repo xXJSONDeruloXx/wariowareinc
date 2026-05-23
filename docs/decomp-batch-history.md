@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 130 | current commit | +0 report matched / +1 decomp file | Naked asm: sprite_set_x_y (lib_sprite combined x/y position setter with sprite_is_invalid guard). Key: same pattern as sprite_set_x/sprite_set_y but stores both x at offset +2 and y at offset +4, uses R6 for x value and R7 for y value. |
 | 129 | current commit | +0 report matched / +1 decomp file | Naked asm: func_0800C080 (bitmap_font task launcher with 5th stack arg, start_new_task). Key: pure C failed due to R5↔R6 and R0↔R1 register swap + sp offset shift; naked inline asm with .ltorg + .balign 4,0 required. Also added D_083A4A80 to undefined_syms.ld. |
 | 128 | current commit | +0 report matched / +2 decomp files / +0.0008% code | Real C: func_08012D3C (scene thread setup with bit-mask clear), func_0800BBCC (scene data init with 5th stack arg inline asm). Key: match existing extern declarations across decomp files. |
 | 127 | current commit | +0 report matched / +3 decomp files / +0.0000% code | Real C: func_08001B28 (matrix identity init with R6 callee-save barrier), sprite_delete (sprite dealloc with s32 arg1 trick), func_080EF358 (anim progress with __udivsi3). Key: s32 arg1 prevents early truncation, barriers for R6 push. Blocked: sprite_set_z/x_y by R7 push issue. |
