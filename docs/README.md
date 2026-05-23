@@ -10,7 +10,7 @@ If an agent resumes cold, read these first:
 5. `docs/decomp-tooling-feedback.md` — tooling gaps, workarounds, and improvement notes
 
 ## Current verified baseline
-- Verified working tree: `batch 132` — func_080EE830 naked asm included_stub conversion (lib_sprite animation command reader with _call_via_r1)
+- Verified working tree: `batch 134` — func_0800C110 real-C included_stub conversion (bitmap_font task launcher wrapper with local task-arg struct and `start_new_task` return)
 - `build/report.json`: **1350 / 5960 matched functions** (**22.6510%**) · **6.453723%** matched code
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
 - `src/decomp/*.c`: **1046 decompiled function files** = **873 standalone_tu** + **173 included_stub**

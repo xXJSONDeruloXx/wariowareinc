@@ -154,16 +154,16 @@ When triggered, document:
 - Keep declarations before statements (C89)
 - Reuse known-good spellings from prior accepted siblings whenever possible
 
-## Naked asm → real C conversion (optional per-chunk step)
+## Naked asm → real C conversion (maintenance pass only)
 
-Each chunk MAY spend effort converting an existing `__attribute__((naked))` decomp file to real C with register pinning + asm volatile barriers. This is optional — do it when a function looks straightforward, not when the chunk is already productive with new conversions.
+Each chunk MAY spend spare effort converting an existing `__attribute__((naked))` decomp file to real C with register pinning + asm volatile barriers. This is a dedicated maintenance pass, not a fallback when the primary candidate is stubborn.
 
 **Process:**
 1. List naked asm files: `grep -rl '__attribute__((naked))' src/decomp/`
-2. Pick the simplest one — prefer functions that are struct writers, sequential BL callers, or use already-proven C patterns (RSBS mask-clear, LSLS sign-bit test, etc.).
+2. Pick only a file with a clear C-shaping plan and a documented reason it is probably convertible.
 3. Write a real C version using register pinning + asm volatile barriers/clobbers. Use `asm volatile("bl callee")` for individual calls that need specific register ordering, but avoid `__attribute__((naked))`.
-4. Build and check `wariowareinc.gba: OK`.
-5. If it doesn't match after 3-4 attempts, restore the naked asm version and move on. Don't spend the entire chunk on one conversion.
+4. Keep iterating until perfect, or until you've tried at least 5 distinct shapings.
+5. If it still won't match, stop, document the blocker, and leave the naked asm in place. Do not use naked asm as a fallback for a near-miss primary conversion.
 
 **Known hard cases that should stay naked:**
 - Functions using `_call_via_r1` (no C equivalent)

@@ -246,10 +246,13 @@ Without the s32 casts, the compiler treats the MUL result as unsigned and genera
 **NOT valid reasons for naked asm:**
 - "Register allocation is different" — try register pinning, asm volatile barriers, and statement reordering first
 - "I couldn't match it after 2 tries" — try harder with different C shapings
+- "It's 99% close" — close is not a reason to re-encode the function as naked asm; keep shaping or block with the exact mismatch
 - "It's faster" — speed is not the goal; readable C is the goal
 - "The function has a 5th stack argument" — use `u32 sp[1]` or similar array-based stack args in pure C
 
 **Converting existing naked asm to real C:** Existing naked asm decomp files should be revisited and converted to real C whenever possible. Priority: (1) functions where naked asm was used only for register allocation differences, (2) functions where naked asm was used for instruction ordering fixable with statement reordering, (3) functions where naked asm was used for a trap that now has a documented C workaround. Each converted function must still achieve 100% match with `compile_and_view_asm` before applying.
+
+**Included-stub helper typedef collision trap:** each `src/decomp/*.c` file is included into the host TU, so generic helper typedef names like `TaskArgs` can collide across files. Prefer unique typedef names or anonymous local structs inside each decomp file.
 
 
 ## Families still worth mining heavily

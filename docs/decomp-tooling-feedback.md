@@ -39,3 +39,18 @@ Use this file to record where the current decomp tools helped, where they missed
   - Use the `start_new_task` return value directly in the wrapper when the asm returns via `bx r1`, and keep the task arguments in a local struct so the compiler emits the same `strh` sequence.
 - Desired tooling improvement:
   - Add a small reminder in the loop prompt for stack-struct wrappers: if the asm returns a value, try `return start_new_task(...)` before falling back to void/naked variants.
+
+## Batch 135 — anti-ASM-cop-out guardrails
+- Tools that helped:
+  - `vcc_recall` surfaced the earlier prompt edits and the exact toxic failure mode: a near-miss compile result leading straight to naked asm.
+  - The existing naked-asm real-C docs already had the right ingredients; the missing piece was a stricter loop prompt that treats naked asm as maintenance, not a fallback.
+- Tooling/workflow gap:
+  - The loop prompt still made the naked-asm maintenance pass feel optional and low-friction, which is too easy for weaker agents to abuse when a candidate is only a register-allocation mismatch away from perfect.
+  - Included-stub real-C conversions can fail late on host-TU symbol collisions if helper typedef names are reused across files.
+- Manual workaround:
+  - Tightened the loop prompt and the workflow docs to say: keep iterating on C when a candidate is close, and only revisit naked asm with a concrete C-shaped plan after the main chunk is done or blocked.
+  - Added a reminder to use unique helper typedef names (or anonymous structs) inside included-stub decomp files.
+- Desired tooling improvement:
+  - Add a stronger visible cue in the chunk loop UI when the agent is about to switch from a near-miss C candidate to a naked asm target.
+  - Consider a lint/pass that flags duplicate helper typedef names across `src/decomp/*.c` includes before `apply_conversion` runs.
+
