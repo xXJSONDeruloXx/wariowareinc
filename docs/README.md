@@ -13,9 +13,9 @@ If an agent resumes cold, read these first:
 - Verified working tree: `batch 130` — sprite_set_x_y naked asm included_stub conversion (lib_sprite combined x/y position setter)
 - `build/report.json`: **1350 / 5960 matched functions** (**22.6510%**) · **6.453159%** matched code
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1042 decompiled function files** = **873 standalone_tu** + **169 included_stub**
+- `src/decomp/*.c`: **1043 decompiled function files** = **873 standalone_tu** + **170 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Remaining naked asm files: **9** (func_0800C080, func_080113EC, func_08011774, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, sprite_set_x, sprite_set_y, sprite_set_x_y)
+- Remaining naked asm files: **10** (func_0800BEC0, func_0800C080, func_080113EC, func_08011774, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, sprite_set_x, sprite_set_y, sprite_set_x_y)
 - 80% target at the current function total: **4765 / 5956**
 - Remaining gap to 80%: **3409 matched functions**
 
