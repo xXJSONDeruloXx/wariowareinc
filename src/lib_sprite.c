@@ -20,7 +20,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "asm/lib_sprite/asm_080eecdc.s"
 
-#include "asm/lib_sprite/asm_080eed24.s"
+#include "decomp/asm_080eed24.c"
 
 #include "asm/lib_sprite/asm_080eed58.s"
 
@@ -397,4 +397,4 @@ void sprite_handler_set_global_x_y(struct SpriteHandler *handler, u16 x, u16 y) 
 
 #include "decomp/asm_080efc20.c"
 
-#include "asm/lib_sprite/asm_080efc50.s"
+#include "decomp/asm_080efc50.c"
