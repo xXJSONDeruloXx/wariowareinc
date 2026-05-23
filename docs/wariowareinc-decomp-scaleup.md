@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 113` — func_08014C34, func_08011730, load_gfx_table real C included_stub conversions
+- Verified working tree: `batch 114` — func_08011824, func_0801197C real C included_stub conversions
 - `build/report.json`: **1346 / 5956 matched functions** = **22.5991%**
-- `matched_code_percent`: **6.44299%**
+- `matched_code_percent`: **6.44336%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **974 decompiled function files** = **873 standalone_tu** + **101 included_stub**
+- `src/decomp/*.c`: **976 decompiled function files** = **873 standalone_tu** + **103 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **4** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration)
 
@@ -21,6 +21,15 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 114 — accepted
+
+- Metric delta: **+0 report matched functions**, **+2 included_stub decomp files** (matched code increased)
+- Matched code: **6.44336%**
+- Accepted functions:
+  - `func_08011824` main_menu sprite setup: four sequential `func_0800C7A4` calls (args 1,2,3,0xA), then `sprite_set_anim_cel(gSpriteHandler, gCurrentSceneSpritePool[6], 0)`, then `func_0800C77C(6)`. Real C with no register pinning needed — simple code matches the original perfectly.
+  - `func_0801197C` main_menu scene init: `scene_set_current_thread(0)`, writes 2 to `D_03006518.unk1`, calls `func_08011824`, reads `D_03006518.unk0` and passes to `func_080135E8`, calls `func_08015A88()`, then RSBS mask-clear bit 1 at `gCurrentSceneData+0xDD` (mask=2). Real C with register pins.
+- Notes: `func_08014374` was attempted but blocked — it computes a function pointer from `D_083AB320[language]` + `gCurrentSceneData+0xFD` offset and passes it to `func_08015A88` via R0, but `func_08015A88` is declared as `void func_08015A88(void)` in existing decomp files (asm_08012c64.c, asm_0801197c.c). Changing the signature to `void func_08015A88(u32)` causes ROM mismatch because the existing callers generate different code. This is a callee-signature-impedance trap — the function implicitly takes R0 but callers don't pass it explicitly.
 
 ### Batch 113 — accepted
 

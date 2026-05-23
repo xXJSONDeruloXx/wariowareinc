@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 114 | current commit | +0 report matched / +2 decomp files | Real C included_stub: `func_08011824` (4 sequential func_0800C7A4 calls + sprite_set_anim_cel + func_0800C77C), `func_0801197C` (scene_set_current_thread + D_03006518 write + multi-call + RSBS mask-clear). Key: func_08011824 matches with simple `sprite_set_anim_cel(gSpriteHandler, gCurrentSceneSpritePool[6], 0)` — no register pinning needed. Attempted `func_08014374` but blocked by `func_08015A88` signature conflict (takes R0 implicitly but declared void in other decomp files). |
 | 113 | current commit | +0 report matched / +3 decomp files | Real C included_stub: `func_08014C34` (scene wrapper + RSBS mask + function pointer call), `func_08011730` (gGraphicsBuffer conditional write + func_0800A000), `load_gfx_table` (graphics table loader with stack buffer + polling loop). Also fixed `func_080021C8` type mismatch in asm_08002584.c. |
 | 112 | current commit | +0 report matched / +3 decomp files | Real C included_stub: `func_080116D4` (RSBS mask + bit-test), `func_080143BC` (scene init wrapper), `func_080133EC` (multi-call + D_03006518 write). All register-pinned real C. |
 | 110 | `7a3ce013` | +0 report matched / +12 refactor | Refactored 12 naked inline-asm files to real C with register-pinned variables. 4 remain as naked asm. |
