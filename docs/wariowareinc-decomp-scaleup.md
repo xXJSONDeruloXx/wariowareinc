@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 122` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- Verified working tree: `batch 123` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
-- `matched_code_percent`: **6.45015%**
+- `matched_code_percent`: **6.45165%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1011 decompiled function files** = **873 standalone_tu** + **138 included_stub**
+- `src/decomp/*.c`: **1019 decompiled function files** = **873 standalone_tu** + **146 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 
@@ -22,9 +22,23 @@ At the current `total_functions` count (`5956`), that means:
 
 ## What just landed
 
+### Batch 123 — accepted
+- Metric delta: **+0 report matched functions**, **+8 included_stub decomp files** (matched code increased)
+- Matched code: **6.45165%**
+- Accepted functions:
+  - `func_08012058` main_menu scene init with function pointer: loads sprite position from D_083AA0C4 table, calls func_08011504 with x/y/func_08011920+1/0, then func_08011730(0). Uses asm volatile BL for func_08011504 to avoid type conflict with main_menu.h declaration.
+  - `func_08013A4C` main_menu scene flag handler: copies halfword from gCurrentSceneData+0xEC to gGraphicsBuffer+0x14, tests bit 0 of +0xDD, conditionally calls func_08013C60+func_08013AF4 and zeroes +0xF1, then RSBS mask-clear bits 0,6 at +0xDE.
+  - `func_08013A94` main_menu cursor scroll handler: calls func_0800C7A4(8)+func_0800C7A4(9), checks gCurrentSceneData+0xF0 byte and D_03006518.unk3 for conditional func_0800C77C calls. Uses (s32) cast for BGE comparison instead of BHS.
+  - `func_0800BB74` bitmap_font init: calls func_0800B828 with data pointer, stores scene data offsets, calls func_0800BA78. Uses asm volatile BL for func_0800B828 to enforce R0/R1/R2 register assignment.
+  - `func_08001DA4` code_08001a70 loop: iterates D_03000138*4 times, copies halfwords from D_03000010 array to offset +6 of each D_03000110 entry. Leaf function, first-try match.
+  - `sprite_handler_dealloc_id` lib_sprite id deallocation: validates s16 id, manages linked list at offset 0x1A with 0xFFFF sentinel, stores at offset 0x12. Uses asm volatile r1 clobber to prevent instruction reordering.
+  - `func_0800BC10` bitmap_font sprite show: if scene data offset 0x180 nonzero, calls sprite_set_visible(handler, id, 1) and sets +0x195 to 1. Uses asm volatile BL for sprite_set_visible.
+  - `func_0800BC50` bitmap_font sprite hide: similar to func_0800BC10 but calls sprite_set_visible(handler, id, 0) and sets +0x195 to 4. Uses asm volatile BL for sprite_set_visible.
+- Notes: Eight functions in one chunk. The asm volatile BL pattern was used extensively (func_08011504, func_0800B828, sprite_set_visible) to handle type conflicts and enforce register ordering. The (s32) cast for signed comparison (BGE vs BHS) was a new technique for matching original branch instructions. The r1 clobber pattern prevented instruction reordering in sprite_handler_dealloc_id. Cleaned up stale dependency files from failed apply_conversion.
+
 ### Batch 122 — accepted
 - Metric delta: **+1 report matched function**, **+9 included_stub decomp files** (matched code increased)
-- Matched code: **6.45015%**
+- Matched code: **6.45165%**
 - Accepted functions:
   - `func_08012768` main_menu stage finder (offset 4): iterates `D_083AA0C4` table entries (16-byte stride), calls `func_0801274C` for each positive entry at offset 4, returns index if found or -1 if all negative. Has literal pool in middle of function. Real C with register pins.
   - `func_08012798` main_menu stage finder (offset 5): identical to func_08012768 but checks signed byte at offset 5. Real C with register pins.
@@ -39,7 +53,7 @@ At the current `total_functions` count (`5956`), that means:
 
 ### Batch 121 — accepted
 - Metric delta: **+0 report matched functions**, **+8 included_stub decomp files** (matched code increased)
-- Matched code: **6.45015%**
+- Matched code: **6.45165%**
 - Accepted functions:
   - `func_080126C8` main_menu scene init (zero mode): identical pattern to func_080119B8 — `scene_set_current_thread(0)`, writes 0 to `D_03006518.unk1`, calls `func_080117FC` + `func_08015C38` + `func_08011730(1)`, RSBS mask-clear bit 1 at `gCurrentSceneData+0xDD`. Real C with register pins.
   - `func_08013428` main_menu scene init (zero mode): identical code to func_080126C8 — same pattern, same register allocation. Real C with register pins.
@@ -53,7 +67,7 @@ At the current `total_functions` count (`5956`), that means:
 
 ### Batch 120 — accepted
 - Metric delta: **+1 report matched function**, **+6 included_stub decomp files** (matched code increased)
-- Matched code: **6.45015%**
+- Matched code: **6.45165%**
 - Accepted functions:
   - `func_080119B8` main_menu scene init (mode 4): `scene_set_current_thread(0)`, writes 4 to `D_03006518.unk1`, calls `func_08011824`, RSBS mask-clear bit 1 at `gCurrentSceneData+0xDD`, calls `func_080143A0`. Real C with register pins.
   - `func_08016D88` soft_reset check: tests `D_030035E0` halfword, if nonzero calls `func_08016DB8`, then calls `func_08016DE0`; if result is 1, calls `func_080001D4` and writes 1 to `gCurrentScene`. Real C with register pins.
@@ -65,7 +79,7 @@ At the current `total_functions` count (`5956`), that means:
 
 ### Batch 119 — accepted
 - Metric delta: **+0 report matched functions**, **+2 included_stub decomp files** (matched code slightly increased)
-- Matched code: **6.45015%**
+- Matched code: **6.45165%**
 - Accepted functions:
   - `func_08014374` main_menu language-indexed scene data loader: calls `get_current_language()`, indexes into `D_083AB320` table, reads byte from `gCurrentSceneData+0xFD`, indexes again into sub-table, calls `func_08015A88` with result. Real C with register pins. Uses `asm volatile("bl func_08015A88" :: "r"(r0))` to avoid type conflict with existing `extern void func_08015A88(void)` declaration in other decomp files.
   - `func_080135E8` main_menu stage-unlocked string table lookup: if `save_is_stage_unlocked(stage)` returns nonzero, indexes into `D_083AAF20` (unlocked strings) by language*4 + stage*4; otherwise indexes into `D_083AAF38` (locked strings) by language*4. Returns the resulting pointer. Real C with register pins. Fixed `extern void func_080135E8(u32)` → `extern u32 func_080135E8(u32)` in `asm_0801197c.c`.
@@ -73,7 +87,7 @@ At the current `total_functions` count (`5956`), that means:
 
 ### Batch 118 — accepted
 - Metric delta: **+0 report matched functions**, **+2 included_stub decomp files** (matched code increased)
-- Matched code: **6.45015%**
+- Matched code: **6.45165%**
 - Accepted functions:
   - `func_0800247C` graphics_table copy-entries: copies 12-byte GraphicsTable entries from src to dest until src->src == NULL, then zero-terminates dest. Real C with register pins. Key: `goto check` before loop body produces the original's branch-to-test-first pattern.
   - `func_080024A4` graphics_table copy-entries with count: similar to func_0800247C but also takes a max count parameter and stops when count reaches 0. First word from src is stored to dest before loading remaining words (original asm reuses R0 from the NULL check as the first STR source). Real C with register pins.
@@ -81,7 +95,7 @@ At the current `total_functions` count (`5956`), that means:
 
 ### Batch 117 — accepted
 - Metric delta: **+1 report matched function**, **+2 included_stub decomp files** (matched code increased)
-- Matched code: **6.45015%**
+- Matched code: **6.45165%**
 - Accepted functions:
   - `sprite_handler_alloc_id` lib_sprite free-list allocator: reads handler->nextAllocID (offset 0x10), if >= 0 follows the free list via sprite->unk1A to get the next free ID, updates handler->nextAllocID, and if new ID is negative sets handler->lastAllocID = 0xFFFF. Real C with register pins. Key insight: using `u32 sentinel = 0x0000FFFF` produces the correct `LDR R0, [PC, #offset]` + `STRH R0` sequence instead of `LDR + LDRH` that a `u16` or pointer deref generates.
   - `func_080EFC50` lib_sprite sprite count by callback: iterates through animation linked list counting sprites whose unk30 field matches arg1. Real C with register pins. Uses same `computed += (s32)data` pattern from func_080EFC20 to get the correct ADD operand order.
@@ -89,7 +103,7 @@ At the current `total_functions` count (`5956`), that means:
 
 ### Batch 116 — accepted
 - Metric delta: **+1 report matched function**, **+3 included_stub decomp files** (matched code increased)
-- Matched code: **6.45015%**
+- Matched code: **6.45165%**
 - Accepted functions:
   - `func_080EFC20` lib_sprite animation count: iterates through animation linked list, counting entries until nextAnim == -1 sentinel. Real C with register pins. Uses `__attribute__((section(".text"))) const u8 _padding[]` to match the `.short 0x0000` alignment padding.
   - `sprite_set_x` lib_sprite x-position setter: sets D_03000E70=7, validates sprite with sprite_is_invalid, computes spriteData + id*56 offset, stores x halfword at offset +2. **Naked inline asm** — sprite_is_invalid declared as s32(void*, s16) in lib_sprite.h causes extra sign-extension before BL.
@@ -99,7 +113,7 @@ At the current `total_functions` count (`5956`), that means:
 ### Batch 115 — accepted
 
 - Metric delta: **+0 report matched functions**, **+3 included_stub decomp files** (matched code increased)
-- Matched code: **6.45015%**
+- Matched code: **6.45165%**
 - Accepted functions:
   - `func_08014878` main_menu scene init: `scene_set_current_thread(0)`, `func_08014810(1)`, five `func_0800C77C` calls (0x13-0x17), then RSBS mask-clear bits 0,4 at `gCurrentSceneData+0xDE` (mask=0x11). Real C with register pins.
   - `func_08015590` main_menu scene cleanup: `scene_set_current_thread(0)`, loads `gCurrentSceneData` word at offset 0xDE<<1=0x1BC (function pointer), calls `func_080065C0`, AND mask 0x7F at `gCurrentSceneData+0xDE`, then loads function pointer at offset 0xE0<<1=0x1C0 and calls via `_call_via_r0`. Real C with register pins.

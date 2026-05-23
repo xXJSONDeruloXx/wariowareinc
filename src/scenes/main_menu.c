@@ -143,7 +143,7 @@ u32 func_08011698(void) {
 
 #include "asm/scenes/main_menu/asm_08011e68.s"
 
-#include "asm/scenes/main_menu/asm_08012058.s"
+#include "../decomp/asm_08012058.c"
 
 void func_0801208C(void) {
     struct Vector2* pos;
@@ -287,9 +287,9 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_080139d4.s"
 
-#include "asm/scenes/main_menu/asm_08013a4c.s"
+#include "../decomp/asm_08013a4c.c"
 
-#include "asm/scenes/main_menu/asm_08013a94.s"
+#include "../decomp/asm_08013a94.c"
 
 #include "../decomp/asm_08013ae0.c"
 
