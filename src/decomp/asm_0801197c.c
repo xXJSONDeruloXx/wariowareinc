@@ -4,7 +4,7 @@
 /* D_03006518, gCurrentSceneData: from main_menu.h/types.h */
 /* scene_set_current_thread: from beatscript.h */
 /* func_08011824: defined in another included_stub in this TU */
-extern void func_080135E8(u32);
+extern u32 func_080135E8(u32);
 extern void func_08015A88(void);
 
 void func_0801197C(void) {

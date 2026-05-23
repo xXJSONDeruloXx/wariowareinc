@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 119 | current commit | +0 report matched / +2 decomp files | Real C: func_08014374 (language-indexed scene data), func_080135E8 (stage-unlocked string lookup). asm volatile BL pattern for type conflicts. |
 | 118 | current commit | +0 report matched / +2 decomp files | Real C: func_0800247C (graphics_table copy-entries), func_080024A4 (copy with count). Fixed forward-decl conflicts in func_080024E4/func_080024FC. |
 | 117 | current commit | +1 report matched / +2 decomp files | Real C: sprite_handler_alloc_id (free-list allocator, u32=0xFFFF literal pool trick), func_080EFC50 (sprite count by unk30 match). Both use id*56 offset pattern + padding byte. |
 | 116 | current commit | +1 report matched / +3 decomp files | Real C: func_080EFC20 (animation count loop with sentinel -1, padding byte). Naked asm: sprite_set_x, sprite_set_y (lib_sprite x/y setters — naked needed because sprite_is_invalid(void*, s16) callee signature adds extra sign-extension before BL). |
