@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 117` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
+- Verified working tree: `batch 118` — func_080EFC20, sprite_set_x, sprite_set_y real C + naked asm included_stub conversions
 - `build/report.json`: **1348 / 5958 matched functions** = **22.6135%**
 - `matched_code_percent`: **6.44468%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **984 decompiled function files** = **873 standalone_tu** + **111 included_stub**
+- `src/decomp/*.c`: **986 decompiled function files** = **873 standalone_tu** + **113 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked asm files: **7** (func_080113EC, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, func_08011774, sprite_set_x, sprite_set_y)
 
@@ -21,6 +21,14 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 118 — accepted
+- Metric delta: **+0 report matched functions**, **+2 included_stub decomp files** (matched code increased)
+- Matched code: **6.44468%**
+- Accepted functions:
+  - `func_0800247C` graphics_table copy-entries: copies 12-byte GraphicsTable entries from src to dest until src->src == NULL, then zero-terminates dest. Real C with register pins. Key: `goto check` before loop body produces the original's branch-to-test-first pattern.
+  - `func_080024A4` graphics_table copy-entries with count: similar to func_0800247C but also takes a max count parameter and stops when count reaches 0. First word from src is stored to dest before loading remaining words (original asm reuses R0 from the NULL check as the first STR source). Real C with register pins.
+- Notes: Fixed signature conflicts in existing decomp files `func_080024E4` and `func_080024FC` — these forward-declared func_0800247C/func_080024A4 with wrong argument counts. Updated them to pass the implicit R1/R2 registers through their own parameter lists.
 
 ### Batch 117 — accepted
 - Metric delta: **+1 report matched function**, **+2 included_stub decomp files** (matched code increased)

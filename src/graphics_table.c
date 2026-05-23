@@ -12,9 +12,9 @@ asm(".include \"include/gba.inc\"");
 
 #include "decomp/asm_08002470.c"
 
-#include "asm/graphics_table/asm_0800247c.s"
+#include "decomp/asm_0800247c.c"
 
-#include "asm/graphics_table/asm_080024a4.s"
+#include "decomp/asm_080024a4.c"
 
 #include "decomp/asm_080024d0.c"
 
