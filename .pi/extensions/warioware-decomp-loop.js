@@ -108,7 +108,7 @@ function buildChunkPrompt(chunk) {
     "## Step 4b — Use spare capacity to convert an existing naked asm file to real C only when it has a clear C-shaped plan",
     "This is a maintenance pass, not a fallback for a stubborn primary candidate. Only do it after the main chunk goal is done or the candidate queue is blocked, and only if you can explain the exact C-shaping plan before you start.",
     "Use the documented effort checklist: pure C, register pinning, asm volatile barriers/clobbers, statement reordering, type shaping, load-base-first, pointer shaping, and goto loops.",
-    "Make at least 5 distinct C-shaping attempts before deciding the file is a true hard case. If the function is one of the documented hard cases, keep it naked and record why. If a primary candidate is merely close but not exact, keep iterating on C; do not 'solve' the mismatch by wrapping asm.",
+    "There is no attempt limit. If it does not match, keep iterating in real C or pick another real-C candidate. If the function is one of the documented hard cases, leave it untouched and record why; do not create a new naked asm wrapper.",
     "",
     "## Step 5 — Iterate with isolated compile",
     "Call `compile_and_view_asm` with your current C code.",

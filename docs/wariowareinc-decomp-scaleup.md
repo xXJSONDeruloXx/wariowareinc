@@ -11,7 +11,7 @@ Prefer this file + the other docs in `/docs`
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
 - `src/decomp/*.c`: **1046 decompiled function files** = **873 standalone_tu** + **173 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
-- Remaining naked asm files: **9** (func_0800BEC0, func_0800C080, func_080113EC, func_08011774, func_08014E88, sprite_anim_get_cel_total, sprite_get_anim_duration, sprite_set_x, sprite_set_y)
+- Remaining naked asm files: **12** (func_08001D5C, func_0800BEC0, func_0800C080, func_080113EC, func_08011774, func_08014E88, func_080EE830, sprite_anim_get_cel_total, sprite_get_anim_duration, sprite_set_x_y, sprite_set_x, sprite_set_y)
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.

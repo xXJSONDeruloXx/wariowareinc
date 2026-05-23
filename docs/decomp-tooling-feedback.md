@@ -48,9 +48,11 @@ Use this file to record where the current decomp tools helped, where they missed
   - The loop prompt still made the naked-asm maintenance pass feel optional and low-friction, which is too easy for weaker agents to abuse when a candidate is only a register-allocation mismatch away from perfect.
   - Included-stub real-C conversions can fail late on host-TU symbol collisions if helper typedef names are reused across files.
 - Manual workaround:
-  - Tightened the loop prompt and the workflow docs to say: keep iterating on C when a candidate is close, and only revisit naked asm with a concrete C-shaped plan after the main chunk is done or blocked.
+  - Tightened the loop prompt and workflow docs to say: keep iterating on C when a candidate is close; never turn a near-miss into naked asm progress. Existing naked files are maintenance-only targets for removal.
   - Added a reminder to use unique helper typedef names (or anonymous structs) inside included-stub decomp files.
+- Tooling implemented:
+  - Added `.pi/extensions/warioware-decomp-guard.js` to block `compile_and_view_asm` / `apply_conversion` C payloads, `write` / `edit` changes, suspicious `bash` writes, and `git add` / `git commit` attempts that introduce or preserve naked/original asm in changed `src/decomp/*.c` files.
+  - Added `decomp_guard_check` so agents can explicitly scan changed `src/decomp` files before committing.
 - Desired tooling improvement:
-  - Add a stronger visible cue in the chunk loop UI when the agent is about to switch from a near-miss C candidate to a naked asm target.
   - Consider a lint/pass that flags duplicate helper typedef names across `src/decomp/*.c` includes before `apply_conversion` runs.
 

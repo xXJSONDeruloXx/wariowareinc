@@ -1,231 +1,247 @@
 /**
  * WarioWare Decomp Guard Extension
  *
- * Enforces code quality and safety rules for the decompilation project:
+ * This is the hard guardrail for the autonomous decomp loop. Prompt text is
+ * not enough: this extension blocks tool calls that try to turn near-miss C
+ * into naked/original asm wrappers.
  *
- * 1. BLOCKS inline asm containing ARM/Thumb instructions in src/decomp/*.c
- *    (the anti-cheese rule — decompilation means writing REAL C, not
- *    embedding assembly in C wrappers)
- *
- * 2. BLOCKS direct edits to asm/ (auto-generated from ROM)
- *
- * 3. BLOCKS edits to build/ (generated artifacts)
- *
- * 4. BLOCKS git commit --no-verify
- *
- * 5. INJECTS decomp coding standards into the system prompt every turn
- *
- * Allowed exceptions for inline asm:
- *   - __attribute__((naked)) functions (body IS asm by design)
- *   - GBA BIOS SVC calls: asm volatile("svc #N")
- *   - Empty barrier hints: asm volatile("" : ...)
- *
- * Blocked inline asm patterns in non-naked decomp functions:
- *   - asm volatile("bl ...")     → use real C function calls
- *   - asm volatile("ldr/str/...") → use real C pointer dereference
- *   - asm volatile("sub sp/...")  → use real C local variables
- *   - asm volatile("mov/bx/...")  → use real C control flow
+ * Policy:
+ * - new naked asm / whole-function inline asm in src/decomp/*.c is banned
+ * - existing legacy naked files may remain only while untouched
+ * - editing a legacy naked file is allowed only if the result removes the asm
+ * - asm/ and build/ remain generated/protected paths
  */
 
-import * as fs from "node:fs";
-import * as path from "node:path";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import fs from "node:fs";
+import path from "node:path";
+import { execFileSync } from "node:child_process";
+import { Type } from "typebox";
 
-// ARM/Thumb instruction mnemonics that indicate real inline asm
-// (not just compiler shaping hints)
-const BLOCKED_MNEMONICS =
-  /\b(bl|bx|blr|ldr|str|strh|strb|ldrh|ldrb|push|pop|add\s+sp|sub\s+sp|mov\s+r|adds\s+r|subs\s+r|cmp\s+r|bne|beq|bge|blt|ble|bhi|blo|bpl|bmi|svc|swi|stm|ldm|lsls\s+r|lsrs\s+r|asrs\s+r|ands\s+r|orrs\s+r|eors\s+r|bics\s+r|rsbs\s+r|negs\s+r|muls|r[0-9])\b/i;
+const REPO_SENTINEL = "wariowareinc.ld";
+const GUARD_NAME = "warioware-decomp-guard";
 
-// Patterns that are ALLOWED even in asm volatile
-const ALLOWED_PATTERNS = [
-  /^\s*""/,                    // empty string barriers: asm volatile("" : ...)
-  /svc\s+#\d+/,               // GBA BIOS calls: asm volatile("svc #6")
-  /swi\s+#\d+/,               // GBA BIOS calls (alt syntax)
-];
+const SOURCE_EXT_RE = /\.(?:c|h|s)$/i;
+const DECOMP_SOURCE_RE = /(^|\/)src\/decomp\/[^/]+\.c$/;
 
-export default function decompGuard(pi: ExtensionAPI) {
-  // ── Tool Call Guard ──────────────────────────────────────────────────
+const LEGACY_NAKED_ASM_FILES = new Set([
+  "src/decomp/asm_08001d5c.c",
+  "src/decomp/asm_0800bec0.c",
+  "src/decomp/asm_0800c080.c",
+  "src/decomp/asm_080113ec.c",
+  "src/decomp/asm_08011774.c",
+  "src/decomp/asm_08014e88.c",
+  "src/decomp/asm_080ee830.c",
+  "src/decomp/asm_080eed9c.c",
+  "src/decomp/asm_080eedc0.c",
+  "src/decomp/asm_080ef224.c",
+  "src/decomp/asm_080ef264.c",
+  "src/decomp/asm_080ef298.c",
+]);
 
+function findRepoRoot(startDir) {
+  let current = path.resolve(startDir);
+  while (true) {
+    if (fs.existsSync(path.join(current, REPO_SENTINEL))) return current;
+    const parent = path.dirname(current);
+    if (parent === current) return path.resolve(startDir);
+    current = parent;
+  }
+}
+
+function relPath(repoRoot, p) {
+  const abs = path.isAbsolute(p) ? p : path.join(repoRoot, p);
+  return path.relative(repoRoot, abs).replaceAll(path.sep, "/");
+}
+
+function isManualOverrideEnabled() {
+  return process.env.WARIOWARE_ALLOW_NAKED_ASM === "1";
+}
+
+function nakedAsmReason(text, context = "code") {
+  if (!text) return "";
+
+  if (/__attribute__\s*\(\s*\(\s*naked\s*\)\s*\)/.test(text)) {
+    return `${context} contains __attribute__((naked))`;
+  }
+  if (/#\s*include\s+["<][^"<]*asm\/[^"<]*\.s[">]/.test(text)) {
+    return `${context} includes an asm .s stub`;
+  }
+  if (/thumb_func_start\b/.test(text)) {
+    return `${context} contains thumb_func_start/original asm stub text`;
+  }
+
+  const hasAsmBlock = /\basm\s+(?:volatile\s*)?\(/.test(text) || /\basm\s*\(/.test(text);
+  const looksLikeWholeFunctionAsm = /\.syntax\s+(?:unified|divided)|\.ltorg\b|\.balign\b|\.word\b|\bmov\s+pc\b|\bpush\s*\{[^}]*\blr\b/i.test(text);
+  if (hasAsmBlock && looksLikeWholeFunctionAsm) {
+    return `${context} contains a whole-function inline asm block`;
+  }
+
+  return "";
+}
+
+function changedFiles(repoRoot, stagedOnly = false) {
+  const args = stagedOnly ? ["diff", "--cached", "--name-only"] : ["status", "--porcelain"];
+  const out = execFileSync("git", args, { cwd: repoRoot, encoding: "utf8" }).trim();
+  if (!out) return [];
+  if (stagedOnly) return out.split(/\n+/).filter(Boolean).map((p) => p.replaceAll(path.sep, "/"));
+  return out.split(/\n+/)
+    .map((line) => line.slice(3).replace(/^.* -> /, "").replaceAll(path.sep, "/"))
+    .filter(Boolean);
+}
+
+function scanChangedSources(repoRoot, stagedOnly = false) {
+  const violations = [];
+  for (const rel of changedFiles(repoRoot, stagedOnly)) {
+    if (!SOURCE_EXT_RE.test(rel)) continue;
+    if (!DECOMP_SOURCE_RE.test(rel)) continue;
+    const abs = path.join(repoRoot, rel);
+    if (!fs.existsSync(abs)) continue;
+    const text = fs.readFileSync(abs, "utf8");
+    const reason = nakedAsmReason(text, rel);
+    if (reason) violations.push({ path: rel, reason });
+  }
+  return violations;
+}
+
+function scanAllNakedAsm(repoRoot) {
+  const dir = path.join(repoRoot, "src", "decomp");
+  const violations = [];
+  if (!fs.existsSync(dir)) return violations;
+  for (const name of fs.readdirSync(dir)) {
+    if (!name.endsWith(".c")) continue;
+    const rel = `src/decomp/${name}`;
+    const text = fs.readFileSync(path.join(dir, name), "utf8");
+    const reason = nakedAsmReason(text, rel);
+    if (!reason) continue;
+    violations.push({ path: rel, reason, legacy: LEGACY_NAKED_ASM_FILES.has(rel) });
+  }
+  return violations;
+}
+
+function formatViolations(violations) {
+  return violations.map((v) => `- ${v.path}: ${v.reason}`).join("\n");
+}
+
+function guardBlock(reason, ctx) {
+  const message = `Blocked by ${GUARD_NAME}: ${reason}`;
+  if (ctx?.hasUI) ctx.ui.notify(message, "warning");
+  return { block: true, reason: message };
+}
+
+function inspectDirectCodeTool(event, ctx) {
+  const input = event.input ?? {};
+  const code = input.cCode ?? input.code ?? "";
+  const reason = nakedAsmReason(String(code), event.toolName);
+  if (reason) {
+    return guardBlock(`${reason}. Naked asm wrappers are banned as decomp progress; keep iterating in real C or choose another real-C candidate.`, ctx);
+  }
+  return undefined;
+}
+
+function inspectWriteOrEdit(event, repoRoot, ctx) {
+  const input = event.input ?? {};
+  const rawPath = input.path;
+  if (!rawPath) return undefined;
+  const rel = relPath(repoRoot, String(rawPath));
+
+  if (rel.startsWith("build/")) {
+    return guardBlock(`build/ is generated output; do not edit ${rel} directly.`, ctx);
+  }
+
+  if (rel.startsWith("asm/") && !rel.startsWith("asm/converted/")) {
+    return guardBlock(`asm/ contains original/generated stubs; use apply_conversion instead of editing ${rel} directly.`, ctx);
+  }
+
+  if (!DECOMP_SOURCE_RE.test(rel)) return undefined;
+
+  if (event.toolName === "write") {
+    const reason = nakedAsmReason(String(input.content ?? ""), rel);
+    if (reason) return guardBlock(`${reason}. Write real C instead of naked asm.`, ctx);
+  }
+
+  if (event.toolName === "edit") {
+    for (const edit of input.edits ?? []) {
+      const reason = nakedAsmReason(String(edit?.newText ?? ""), rel);
+      if (reason) return guardBlock(`${reason}. Edit must remove naked asm, not add or preserve it.`, ctx);
+    }
+  }
+
+  return undefined;
+}
+
+function inspectBash(event, repoRoot, ctx) {
+  const command = String(event.input?.command ?? "");
+
+  if (/\bgit\s+commit\b[^\n;]*\s--no-verify\b/.test(command)) {
+    return guardBlock("git commit --no-verify is not allowed; verification hooks must run.", ctx);
+  }
+
+  if (/\b(?:cp|mv|cat|tee)\b[\s\S]*(?:^|\s)asm\/[\w/.-]+\.s[\s\S]*src\/decomp\/[\w.-]+\.c/.test(command)) {
+    return guardBlock("bash command appears to copy/include an asm stub into src/decomp. Write real C instead.", ctx);
+  }
+
+  if (/\bgit\s+(?:add|commit)\b/.test(command)) {
+    const stagedOnly = /\bgit\s+commit\b/.test(command);
+    const violations = scanChangedSources(repoRoot, stagedOnly);
+    if (violations.length) {
+      return guardBlock(`changed src/decomp file(s) still contain naked/original asm:\n${formatViolations(violations)}\nConvert to real C or leave the legacy file untouched.`, ctx);
+    }
+  }
+
+  const writesDecomp = /src\/decomp\/[^\s'";]+\.c/.test(command);
+  const suspicious = /__attribute__\s*\(\s*\(\s*naked\s*\)\s*\)|thumb_func_start\b|#\s*include\s+["<][^"<]*asm\/[^"<]*\.s[">]/.test(command);
+  if (writesDecomp && suspicious) {
+    return guardBlock("bash command appears to write naked/original asm into src/decomp. Use real C instead.", ctx);
+  }
+
+  return undefined;
+}
+
+export default function (pi) {
   pi.on("tool_call", async (event, ctx) => {
-    const { toolName, input } = event;
+    if (isManualOverrideEnabled()) return undefined;
 
-    // ── Rule 1: Block inline asm in src/decomp/ writes/edits ────────
-    if (toolName === "write" || toolName === "edit") {
-      const filePath = (input.path as string) || "";
+    const repoRoot = findRepoRoot(ctx.cwd ?? process.cwd());
 
-      // Check if this is a src/decomp/*.c file
-      const normalizedPath = filePath.replace(/\\/g, "/");
-      const isDecompFile =
-        normalizedPath.includes("src/decomp/") &&
-        normalizedPath.endsWith(".c");
-
-      if (isDecompFile) {
-        // Get the content to check
-        const content =
-          (input.content as string) ||
-          (input.edits as Array<{ newText: string }>)?.map((e) => e.newText).join("\n") ||
-          "";
-
-        if (content) {
-          // Skip check if the file uses __attribute__((naked))
-          // (naked functions ARE asm by design)
-          if (/__attribute__\s*\(\s*\(\s*naked\s*\)\s*\)/.test(content)) {
-            return undefined; // allow
-          }
-
-          // Find all asm volatile blocks and check for blocked mnemonics
-          const asmVolatileRegex = /asm\s+volatile\s*\(/g;
-          let match;
-          const violations: string[] = [];
-
-          while ((match = asmVolatileRegex.exec(content)) !== null) {
-            const startIdx = match.index;
-
-            // Extract the asm string content (rough — finds the string literal)
-            // Look for the string starting after the opening paren
-            const afterParen = content.slice(
-              startIdx + match[0].length,
-              startIdx + match[0].length + 500
-            );
-
-            // Find the string literal (either "..." or R"...")
-            const strMatch = afterParen.match(/^\s*"/);
-            if (!strMatch) continue;
-
-            // Find closing quote (simple approach — handles most cases)
-            let strContent = "";
-            let i = afterParen.indexOf('"') + 1;
-            let escaped = false;
-            while (i < afterParen.length) {
-              const ch = afterParen[i];
-              if (escaped) {
-                strContent += ch;
-                escaped = false;
-              } else if (ch === "\\") {
-                escaped = true;
-              } else if (ch === '"') {
-                break;
-              } else {
-                strContent += ch;
-              }
-              i++;
-            }
-
-            // Check allowed patterns first
-            const isAllowed = ALLOWED_PATTERNS.some((p) => p.test(strContent));
-            if (isAllowed) continue;
-
-            // Check for blocked mnemonics
-            if (BLOCKED_MNEMONICS.test(strContent)) {
-              // Find line number for reporting
-              const beforeMatch = content.slice(0, startIdx);
-              const lineNum = beforeMatch.split("\n").length;
-              const firstInstruction = strContent
-                .split("\n")
-                .map((l: string) => l.trim())
-                .filter((l: string) => l.length > 0)[0];
-              violations.push(
-                `Line ${lineNum}: asm volatile("${firstInstruction?.slice(0, 60)}...")`
-              );
-            }
-          }
-
-          if (violations.length > 0) {
-            const violationList = violations.join("\n  ");
-            if (ctx.hasUI) {
-              ctx.ui.notify(
-                `BLOCKED: Inline ARM/Thumb asm in decomp file\n  ${violationList}`,
-                "error"
-              );
-            }
-            return {
-              block: true,
-              reason: `🚫 INLINE ASM BLOCKED in ${path.basename(filePath)}:\n\n  ${violationList}\n\nDecompilation means writing REAL C CODE that the compiler translates to matching assembly.\nEmbedding assembly instructions in C is NOT decompilation — it's hiding the asm.\n\nInstead:\n  • Use real C function calls instead of asm volatile("bl ...")\n  • Use real C pointer dereference instead of asm volatile("ldr/str...")\n  • Use real C local variables instead of asm volatile("sub sp/add sp...")\n  • Use real C if/switch/goto instead of asm volatile("cmp/bne/beq...")\n  • Use __attribute__((naked)) if the function truly cannot be expressed in C\n\nSee docs/decomp-pattern-library.md for legitimate C shaping techniques.`,
-            };
-          }
-        }
-      }
+    if (event.toolName === "apply_conversion" || event.toolName === "compile_and_view_asm") {
+      return inspectDirectCodeTool(event, ctx);
     }
 
-    // ── Rule 2: Block edits to asm/ (except asm/converted/) ─────────
-    if (toolName === "write" || toolName === "edit") {
-      const filePath = (input.path as string || "").replace(/\\/g, "/");
-      if (
-        filePath.includes("/asm/") &&
-        !filePath.includes("/asm/converted/")
-      ) {
-        if (ctx.hasUI) {
-          ctx.ui.notify(`Blocked edit to asm/: ${path.basename(filePath)}`, "warning");
-        }
-        return {
-          block: true,
-          reason: `Files in asm/ are auto-generated from the original ROM and must not be edited directly. Use apply_conversion to move stubs to asm/converted/. Path: ${filePath}`,
-        };
-      }
+    if (event.toolName === "write" || event.toolName === "edit") {
+      return inspectWriteOrEdit(event, repoRoot, ctx);
     }
 
-    // ── Rule 3: Block edits to build/ ──────────────────────────────
-    if (toolName === "write" || toolName === "edit") {
-      const filePath = (input.path as string || "").replace(/\\/g, "/");
-      if (filePath.includes("/build/")) {
-        return {
-          block: true,
-          reason: `Files in build/ are generated artifacts. Run the build to regenerate them. Path: ${filePath}`,
-        };
-      }
+    if (event.toolName === "bash") {
+      return inspectBash(event, repoRoot, ctx);
     }
 
-    // ── Rule 4: Block git commit --no-verify ───────────────────────
-    if (toolName === "bash") {
-      const command = (input.command as string) || "";
-      if (/git\s+commit\s+.*--no-verify/.test(command)) {
-        return {
-          block: true,
-          reason: `git commit --no-verify is not allowed. All commits must pass pre-commit checks to ensure ROM integrity.`,
-        };
-      }
-    }
-
-    return undefined; // allow all other tool calls
+    return undefined;
   });
 
-  // ── System Prompt Injection ──────────────────────────────────────────
-
   pi.on("before_agent_start", async (event) => {
-    const decompRules = `
-## WarioWare Decomp Quality Rules (ENFORCED BY GUARD EXTENSION)
-
-### 🚫 ABSOLUTELY NO inline asm in src/decomp/*.c (EXCEPT naked functions)
-
-Decompilation means writing **real C code** that the compiler translates to matching assembly. Do NOT embed ARM/Thumb assembly instructions inside C function bodies using \`asm volatile(...)\`. This is enforced by the decomp-guard Pi extension which will BLOCK any write/edit that contains:
-
-- \`asm volatile("bl ...")\` → Use real C function calls
-- \`asm volatile("ldr/str/strh/ldrb/...")\` → Use real C pointer dereference
-- \`asm volatile("sub sp/add sp")\` → Use real C local variables
-- \`asm volatile("mov rN/bx/pop/push")\` → Use real C control flow
-- \`asm volatile("cmp/bne/beq/...")\` → Use real C conditionals
-
-**Allowed exceptions** (the guard lets these through):
-- \`__attribute__((naked))\` functions — the entire body IS asm by design (use sparingly)
-- \`asm volatile("svc #N")\` — GBA BIOS hardware interface
-- \`asm volatile("" : ...)\` — empty-string compiler shaping hints / barriers
-
-**If you can't match a function in pure C:**
-1. Try different C shaping techniques from docs/decomp-pattern-library.md
-2. Try different variable declaration orders (C89 matters)
-3. Try different types (s16 vs u16 vs s32 can change codegen)
-4. As a LAST RESORT, use \`__attribute__((naked))\` with full asm body
-5. If even naked doesn't work, SKIP the function — don't cheese it
-
-### Other enforced rules
-- Do NOT edit files in \`asm/\` (auto-generated from ROM)
-- Do NOT edit files in \`build/\` (generated artifacts)
-- Do NOT use \`git commit --no-verify\`
-- Always verify with Docker build, not local make
-`;
-
     return {
-      systemPrompt: event.systemPrompt + decompRules,
+      systemPrompt: `${event.systemPrompt}\n\n## WarioWare Decomp Guard (tool-enforced)\n- New naked asm / whole-function inline asm wrappers in src/decomp/*.c are blocked by the project extension.\n- Existing legacy naked asm files may be left untouched or converted to real C; editing them while they still contain naked/original asm is blocked at commit time.\n- If a function does not match, keep iterating in real C or select another real-C candidate. Do not pivot to asm.\n- Use decomp_guard_check before committing chunks that touched src/decomp.`,
     };
+  });
+
+  pi.registerTool({
+    name: "decomp_guard_check",
+    label: "Decomp Guard Check",
+    description: "Scan WarioWare decomp changes for banned naked/original asm wrappers.",
+    parameters: Type.Object({
+      stagedOnly: Type.Optional(Type.Boolean({ description: "Only scan staged files" })),
+      includeLegacy: Type.Optional(Type.Boolean({ description: "Include pre-existing legacy naked asm files in the report" })),
+    }),
+    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+      const repoRoot = findRepoRoot(ctx.cwd ?? process.cwd());
+      const violations = params?.includeLegacy
+        ? scanAllNakedAsm(repoRoot).filter((v) => params.includeLegacy || !v.legacy)
+        : scanChangedSources(repoRoot, Boolean(params?.stagedOnly));
+      const active = violations.filter((v) => !v.legacy);
+      const text = violations.length
+        ? `${active.length ? "❌" : "ℹ️"} Decomp guard found ${violations.length} naked/original asm file(s):\n${violations.map((v) => `- ${v.path}${v.legacy ? " (legacy)" : ""}: ${v.reason}`).join("\n")}`
+        : "✅ Decomp guard found no banned naked/original asm in changed src/decomp files.";
+      return { content: [{ type: "text", text }], details: { violations, activeCount: active.length } };
+    },
   });
 }

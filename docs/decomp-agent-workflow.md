@@ -154,6 +154,16 @@ When triggered, document:
 - Keep declarations before statements (C89)
 - Reuse known-good spellings from prior accepted siblings whenever possible
 
+## Programmatic anti-ASM guardrail
+
+The project extension `.pi/extensions/warioware-decomp-guard.js` blocks common naked/original-asm cop-outs at the tool layer:
+- `compile_and_view_asm` / `apply_conversion` calls whose `cCode` contains `__attribute__((naked))`, whole-function inline asm, `thumb_func_start`, or direct `asm/*.s` includes
+- `write` / `edit` attempts that add those patterns to `src/decomp/*.c`
+- `bash` commands that appear to write naked/original asm into `src/decomp/*.c`
+- `git add` / `git commit` when changed `src/decomp/*.c` files still contain banned naked/original asm patterns
+
+Use the `decomp_guard_check` tool before committing if a chunk touched `src/decomp`. Existing legacy naked files are allowed only while untouched; converting them to real C is allowed and encouraged.
+
 ## Naked asm → real C conversion (maintenance pass only)
 
 Each chunk MAY spend spare effort converting an existing `__attribute__((naked))` decomp file to real C with register pinning + asm volatile barriers. This is a dedicated maintenance pass, not a fallback when the primary candidate is stubborn.
@@ -162,8 +172,8 @@ Each chunk MAY spend spare effort converting an existing `__attribute__((naked))
 1. List naked asm files: `grep -rl '__attribute__((naked))' src/decomp/`
 2. Pick only a file with a clear C-shaping plan and a documented reason it is probably convertible.
 3. Write a real C version using register pinning + asm volatile barriers/clobbers. Use `asm volatile("bl callee")` for individual calls that need specific register ordering, but avoid `__attribute__((naked))`.
-4. Keep iterating until perfect, or until you've tried at least 5 distinct shapings.
-5. If it still won't match, stop, document the blocker, and leave the naked asm in place. Do not use naked asm as a fallback for a near-miss primary conversion.
+4. Keep iterating until perfect, or pick another real-C candidate if this file is not yielding.
+5. If it still won't match, stop, document the blocker, and leave the existing naked asm untouched. Do not create a new naked asm wrapper and do not use naked asm as a fallback for a near-miss primary conversion.
 
 **Known hard cases that should stay naked:**
 - Functions using `_call_via_r1` (no C equivalent)
