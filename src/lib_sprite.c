@@ -6,7 +6,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "asm/lib_sprite/asm_080ee7b4.s"
 
-#include "asm/lib_sprite/asm_080ee830.s"
+#include "decomp/asm_080ee830.c"
 
 #include "asm/lib_sprite/asm_080ee874.s"
 
