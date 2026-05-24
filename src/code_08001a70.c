@@ -16,7 +16,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "decomp/asm_08001c08.c"
 
-#include "asm/code_08001a70/asm_08001c74.s"
+#include "decomp/asm_08001c74.c"
 
 #include "asm/code_08001a70/asm_08001cd0.s"
 

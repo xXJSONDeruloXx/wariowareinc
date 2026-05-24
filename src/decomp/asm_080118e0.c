@@ -4,7 +4,7 @@
 #include "src/scenes/main_menu.h"
 
 extern void scene_set_current_thread(u32);
-extern void func_080117A8(u8);
+extern void func_080117A8(s32);
 extern void func_08011864(u8);
 extern u32 D_083FBBF8;
 

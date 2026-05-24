@@ -7,9 +7,9 @@ Prefer this file + the other docs in `/docs`
 - Verified on branch: `docs/macabeus-tooling-assessment`
 - Verified working tree: `batch 136` — converted 13 of 14 legacy naked/original asm wrappers out of legacy quarantine
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
-- `matched_code_percent`: **6.454100%**
+- `matched_code_percent`: **6.454101%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1051 decompiled function files** = **873 standalone_tu** + **178 included_stub**
+- `src/decomp/*.c`: **1055 decompiled function files** = **873 standalone_tu** + **182 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
 
