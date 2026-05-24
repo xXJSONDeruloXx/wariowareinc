@@ -381,7 +381,7 @@ u32 get_current_mem_id(void) {
 // [https://decomp.me/scratch/UsJl5] increase lives and clamp them
 #include "decomp/asm_0800a098.c"
 
-#include "asm/beatscript/asm_0800a0c4.s"
+#include "decomp/asm_0800a0c4.c"
 
 #include "decomp/asm_0800a128.c"
 
