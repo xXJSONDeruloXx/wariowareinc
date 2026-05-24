@@ -1,6 +1,7 @@
 # Decomp pattern library
 
 ## Build / verification rule (critical)
+- As of the strengthened decomp guard, new `src/decomp/*.c` progress may not use non-empty inline asm. Historical notes below mention prior `asm volatile("bl ...")`, `ldrsh`, `svc`, `add`, or `stm` shims; treat those as legacy context, not allowed techniques for new conversions. Empty asm barriers/clobbers remain allowed for C shaping.
 - Always verify with Docker before committing: `docker run --rm -v $(pwd):/workspace devkitpro/devkitarm:latest /bin/bash -c "cd /workspace && make -j4"`
 - The local `tools/agbcc/bin/agbcc` is not a reliable macOS host-native path; Docker is the only supported local verification path for this repo
 - A chunk is not done until `wariowareinc.gba: OK` is confirmed in the Docker build output
@@ -251,8 +252,8 @@ Without the s32 casts, the compiler treats the MUL result as unsigned and genera
 
 1. **Pure C** with correct types, statement ordering, and local variables
 2. **Register-pinned variables** (`register type asm("rN")`) to control register allocation
-3. **asm volatile barriers** (`asm volatile("" : "+r"(x))`) to prevent instruction reordering or register swaps
-4. **asm volatile clobbers** (`asm volatile("" ::: "r1")`) to force specific register choices
+3. **empty asm barriers only** (`asm volatile("" : "+r"(x))`) to prevent instruction reordering or register swaps
+4. **empty asm clobbers only** (`asm volatile("" ::: "r1")`) to force specific register choices
 5. **Statement reordering** — declaration order affects instruction order in agbcc
 6. **Type shaping** — `u16` vs `s32`, `(u32)` casts for LSRS vs ASRS, non-void return type for POP{R1};BX R1 epilogue
 7. **Load-base-first trick** — assign global base to a local pointer before computing offsets
@@ -287,7 +288,7 @@ These reasons justify leaving an existing legacy naked file untouched or marking
 - `func_080CD564`: register-pin the destination pointer to `r3`; use separate pinned `r2`/`r1` temporaries so the two word copies match `LDR R2/STR R2` then `LDR R1/STR R1`.
 - `func_080EE830`: a normal C function pointer local (`func = func_080efc88; func((void *)r2)`) can reproduce `LDR R1, =func_080efc88; BL _call_via_r1`; use `r0 = r3 + r0` for the command-skip pointer add to preserve operand order.
 - `sprite_anim_get_cel_total` / `sprite_get_anim_duration`: declare the helpers as `u32` to avoid callee return sign-extension, then preserve the original caller code by spelling the cel-total assignment as `(sprite_anim_get_cel_total(anim) << 24) >> 24`.
-- `func_08011774` / `func_08014E88`: agbcc will often lower `*(s16 *)(base + r2)` to an address add plus zero-offset `ldrsh`; a single narrow `asm volatile("ldrsh %0, [%1, %2]")` preserves the indexed `LDRSH` while keeping the rest of the function in C. Treat this as a last-resort narrow instruction workaround, not a whole-function asm escape hatch.
+- `func_08011774` / `func_08014E88`: legacy cleanup used a single narrow `asm volatile("ldrsh %0, [%1, %2]")` to preserve indexed `LDRSH`. Under the strengthened guard this is historical context only; new progress must find a pure-C/register-pinned spelling or block the candidate.
 
 
 ## Families still worth mining heavily
