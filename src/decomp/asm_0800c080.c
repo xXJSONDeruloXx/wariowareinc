@@ -13,11 +13,11 @@ typedef struct {
     u16 unk8;
 } Func0800C080TaskArgs;
 
-void *func_0800C080(s16 arg0, u16 arg1, s16 arg2, s16 arg3, s16 arg4) {
+void *func_0800C080(s16 arg0, s16 arg1, s16 arg2, s16 arg3, s16 arg4) {
     Func0800C080TaskArgs stackArgs;
 
     stackArgs.unk0 = arg0;
-    stackArgs.unk2 = arg1;
+    stackArgs.unk2 = (u16)arg1;
     stackArgs.unk4 = arg2;
     stackArgs.unk6 = arg3;
     stackArgs.unk8 = arg4;

@@ -10,10 +10,10 @@ If an agent resumes cold, read these first:
 5. `docs/decomp-tooling-feedback.md` — tooling gaps, workarounds, and improvement notes
 
 ## Current verified baseline
-- Verified working tree: `batch 136` — converted 13 of 14 legacy naked/original asm wrappers out of legacy quarantine
+- Verified working tree: `batch 146` — converted `func_0800C0BC` as a real-C included stub and preserved ROM identity
 - `build/report.json`: **1350 / 5960 matched functions** (**22.6510%**) · **6.457678%** matched code
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1067 decompiled function files** = **873 standalone_tu** + **194 included_stub**
+- `src/decomp/*.c`: **1068 decompiled function files** = **873 standalone_tu** + **195 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
 - 80% target at the current function total: **4765 / 5956**

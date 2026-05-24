@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 136` — converted 13 of 14 legacy naked/original asm wrappers out of legacy quarantine
+- Verified working tree: `batch 146` — converted `func_0800C0BC` as a real-C included stub and preserved ROM identity
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
 - `matched_code_percent`: **6.457678%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1067 decompiled function files** = **873 standalone_tu** + **194 included_stub**
+- `src/decomp/*.c`: **1068 decompiled function files** = **873 standalone_tu** + **195 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
 
@@ -21,6 +21,13 @@ At the current `total_functions` count (`5956`), that means:
 - current gap: **3409** more matched functions
 
 ## What just landed
+
+### Batch 146 — accepted
+- Metric delta: **+0 report matched functions**, **+1 included_stub decomp file**, **+0.000000% matched code** (6.4576783 → 6.4576783)
+- Matched code: **6.4576783%**
+- Accepted function:
+  - `func_0800C0BC` bitmap_font coordinate task wrapper: calls `func_08006F84(arg0, &sp4, &sp6)` then launches `func_0800C080(arg0, sp4, sp6, (s16)arg1, (s16)arg2)`. Uses a signed `func_0800C080` arg1 declaration in the same TU so the caller emits `LDRSH` for the generated x coordinate; `func_0800C080` casts that arg back to `u16` internally to preserve its original zero-extension.
+- Notes: This is a sibling of the bitmap_font task-launcher family. The important integration fix was a same-TU callee prototype adjustment: the callee body stays byte-identical by casting to `u16`, while callers that pass signed coordinate output can get the original signed load.
 
 ### Batch 128 — accepted
 - Metric delta: **+0 report matched functions**, **+2 included_stub decomp files**, **+0.000754% matched code** (6.4524055 → 6.453159%)
