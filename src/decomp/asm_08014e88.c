@@ -3,7 +3,7 @@
 #include "scenes.h"
 #include "src/lib_sprite.h"
 
-extern void func_08014E38(s32);
+extern void func_08014E38(void);
 
 typedef void (*Func08014E88SetPalette)(struct SpriteHandler *, s32, s32);
 
@@ -14,7 +14,7 @@ void func_08014E88(s32 arg0) {
     register u32 r4 asm("r4");
 
     r4 = r0;
-    func_08014E38(r0);
+    func_08014E38();
     r0 = (u32)gSpriteHandler;
     r1 = (u32)gCurrentSceneData;
     r2 = 0xCA;

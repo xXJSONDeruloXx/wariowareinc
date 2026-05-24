@@ -104,15 +104,15 @@ void func_0800BC0C(void) {}
 
 #include "asm/bitmap_font/asm_0800c15c.s"
 
-#include "asm/bitmap_font/asm_0800c1c0.s"
+#include "decomp/asm_0800c1c0.c"
 
 #include "asm/bitmap_font/asm_0800c218.s"
 
-#include "asm/bitmap_font/asm_0800c298.s"
+#include "decomp/asm_0800c298.c"
 
 #include "asm/bitmap_font/asm_0800c2e4.s"
 
-#include "asm/bitmap_font/asm_0800c344.s"
+#include "decomp/asm_0800c344.c"
 
 #include "asm/bitmap_font/asm_0800c3ac.s"
 
@@ -120,6 +120,6 @@ void func_0800BC0C(void) {}
 
 #include "asm/bitmap_font/asm_0800c4e0.s"
 
-#include "asm/bitmap_font/asm_0800c548.s"
+#include "decomp/asm_0800c548.c"
 
 #include "asm/bitmap_font/asm_0800c5a0.s"
