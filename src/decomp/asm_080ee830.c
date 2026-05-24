@@ -1,45 +1,40 @@
 #if __INCLUDE_LEVEL__ > 0
 #include "global.h"
 
-__attribute__((naked)) s32 func_080EE830(void *arg0) {
-    asm volatile(
-        ".syntax unified\n"
-        "push {lr}\n"
-        "adds r2, r0, #0\n"
-        "ldr r1, [r2]\n"
-        "ldrh r0, [r1]\n"
-        "strb r0, [r2, #9]\n"
-        "lsls r0, r0, #0x18\n"
-        "cmp r0, #0\n"
-        "bne _080EE844\n"
-        "movs r0, #0\n"
-        "b _080EE86A\n"
-        "_080EE844:\n"
-        "adds r3, r1, #2\n"
-        "str r3, [r2]\n"
-        "movs r0, #0\n"
-        "strb r0, [r2, #8]\n"
-        "movs r0, #0xc\n"
-        "ldrsb r0, [r2, r0]\n"
-        "cmp r0, #0\n"
-        "bge _080EE862\n"
-        "ldrb r1, [r2, #9]\n"
-        "subs r1, #1\n"
-        "lsls r0, r1, #1\n"
-        "adds r0, r1\n"
-        "lsls r0, r0, #1\n"
-        "adds r0, r3, r0\n"
-        "str r0, [r2]\n"
-        "_080EE862:\n"
-        "ldr r1, =func_080efc88\n"
-        "adds r0, r2, #0\n"
-        "bl _call_via_r1\n"
-        "_080EE86A:\n"
-        "pop {r1}\n"
-        "bx r1\n"
-        ".balign 4, 0\n"
-        ".ltorg\n"
-        ".syntax divided\n"
-    );
+extern s32 func_080efc88(void *);
+
+s32 func_080EE830(void *arg0) {
+    register u32 r0 asm("r0");
+    register u32 r1 asm("r1");
+    register u32 r2 asm("r2") = (u32)arg0;
+    register u32 r3 asm("r3");
+    s32 (*func)(void *);
+
+    r1 = *(u32 *)r2;
+    r0 = *(u16 *)r1;
+    *(u8 *)(r2 + 9) = r0;
+    r0 <<= 24;
+    if (r0 != 0) goto nonzero;
+    r0 = 0;
+    goto done;
+nonzero:
+    r3 = r1 + 2;
+    *(u32 *)r2 = r3;
+    r0 = 0;
+    *(u8 *)(r2 + 8) = r0;
+    r0 = *(s8 *)(r2 + 0xC);
+    if ((s32)r0 >= 0) goto call;
+    r1 = *(u8 *)(r2 + 9);
+    r1 -= 1;
+    r0 = r1 << 1;
+    r0 += r1;
+    r0 <<= 1;
+    r0 = r3 + r0;
+    *(u32 *)r2 = r0;
+call:
+    func = func_080efc88;
+    r0 = (u32)func((void *)r2);
+done:
+    return r0;
 }
 #endif

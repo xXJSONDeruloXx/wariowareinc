@@ -5,13 +5,13 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 135` — converted 7 legacy naked/original asm wrappers to real C
+- Verified working tree: `batch 136` — converted 13 of 14 legacy naked/original asm wrappers out of legacy quarantine
 - `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
 - `matched_code_percent`: **6.453723%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
 - `src/decomp/*.c`: **1046 decompiled function files** = **873 standalone_tu** + **173 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
-- Remaining naked/original asm wrapper files: **7** (func_0800BEC0, func_080113EC, func_08011774, func_08014E88, func_080EE830, sprite_anim_get_cel_total, sprite_get_anim_duration)
+- Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.

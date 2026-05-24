@@ -263,6 +263,9 @@ These reasons justify leaving an existing legacy naked file untouched or marking
 - `func_08001D5C`: register-pinned C can preserve the four halfword matrix stores once the 5th stack arg is loaded into a normal C parameter and all args are shaped as `s32` before explicit `<< 16` / `>> 16` truncation.
 - `sprite_set_x`, `sprite_set_y`, `sprite_set_x_y`: use `s32` value parameters to prevent early caller-side truncation, preserve handler in `r5` before truncating value args, and use ordinary C stores after the `sprite_is_invalid` guard. For `sprite_set_x_y`, let the y temporary be an unpinned local so agbcc naturally saves/restores `r7`.
 - `func_080CD564`: register-pin the destination pointer to `r3`; use separate pinned `r2`/`r1` temporaries so the two word copies match `LDR R2/STR R2` then `LDR R1/STR R1`.
+- `func_080EE830`: a normal C function pointer local (`func = func_080efc88; func((void *)r2)`) can reproduce `LDR R1, =func_080efc88; BL _call_via_r1`; use `r0 = r3 + r0` for the command-skip pointer add to preserve operand order.
+- `sprite_anim_get_cel_total` / `sprite_get_anim_duration`: declare the helpers as `u32` to avoid callee return sign-extension, then preserve the original caller code by spelling the cel-total assignment as `(sprite_anim_get_cel_total(anim) << 24) >> 24`.
+- `func_08011774` / `func_08014E88`: agbcc will often lower `*(s16 *)(base + r2)` to an address add plus zero-offset `ldrsh`; a single narrow `asm volatile("ldrsh %0, [%1, %2]")` preserves the indexed `LDRSH` while keeping the rest of the function in C. Treat this as a last-resort narrow instruction workaround, not a whole-function asm escape hatch.
 
 
 ## Families still worth mining heavily

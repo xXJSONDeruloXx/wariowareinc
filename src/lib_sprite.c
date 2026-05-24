@@ -115,7 +115,7 @@ void sprite_set_anim(struct SpriteHandler *handler, s16 id, struct Animation *an
     }
 
     sprite = &handler->sprites[id];
-    sprite->celTotal = sprite_anim_get_cel_total(anim);
+    sprite->celTotal = (sprite_anim_get_cel_total(anim) << 24) >> 24;
     sprite->animation = anim;
     sprite->totalDuration = sprite_get_anim_duration(anim);
 

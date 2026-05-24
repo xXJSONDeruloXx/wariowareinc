@@ -198,6 +198,6 @@ extern u32 sprite_handler_get_mem_id(struct SpriteHandler *);
 extern void sprite_id_delete(struct SpriteHandler *, u32);
 
 // EXTERNS
-extern s8 sprite_anim_get_cel_total(struct Animation *);
-extern s16 sprite_get_anim_duration(struct Animation *);
+extern u32 sprite_anim_get_cel_total(struct Animation *);
+extern u32 sprite_get_anim_duration(struct Animation *);
 extern s32 sprite_is_invalid(void*, s16);

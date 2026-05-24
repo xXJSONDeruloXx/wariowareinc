@@ -68,3 +68,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - Desired tooling improvement:
   - Add first-class support for comparing an already-converted `src/decomp/*.c` against its `asm/converted/*.s` target so legacy wrapper cleanup can iterate without full ROM builds.
 
+## Batch 136 cleanup — reducing legacy quarantine to one file
+- Tools that helped:
+  - Full ROM verification caught operand-order differences (`r0 + r3` vs `r3 + r0`) and caller-side codegen ripples from changing helper return prototypes.
+  - The guard's changed-file scan stayed useful while shrinking the legacy allowlist; converted files now need no legacy exception.
+- Remaining blocker:
+  - `func_0800BEC0` is the only naked/whole-function wrapper left. Pure C still hits the documented `CMP #1/BGE` vs `CMP #0/BGT` optimizer trap.
+- Follow-up idea:
+  - Decide whether a very small branch/compare inline-asm workaround is acceptable for `func_0800BEC0`, or keep it quarantined until a pure-C spelling is found.
+
