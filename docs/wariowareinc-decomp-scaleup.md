@@ -5,22 +5,29 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 146` — converted `func_0800C0BC` as a real-C included stub and preserved ROM identity
-- `build/report.json`: **1350 / 5960 matched functions** = **22.6510%**
-- `matched_code_percent`: **6.457678%**
+- Verified working tree: `batch 147` — converted `func_0800C15C` as a real-C included stub and preserved ROM identity
+- `build/report.json`: **1351 / 5961 matched functions** = **22.663982%**
+- `matched_code_percent`: **6.4578667%**
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1068 decompiled function files** = **873 standalone_tu** + **195 included_stub**
+- `src/decomp/*.c`: **1069 decompiled function files** = **873 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
 
-At the current `total_functions` count (`5956`), that means:
-- target: **4767 / 5958** matched functions
-- current gap: **3409** more matched functions
+At the current `total_functions` count (`5961`), that means:
+- target: **4769 / 5961** matched functions
+- current gap: **3418** more matched functions
 
 ## What just landed
+
+### Batch 147 — accepted
+- Metric delta: **+1 report matched function**, **+1 included_stub decomp file**, **+0.000188% matched code** (6.4576783 → 6.4578667)
+- Matched code: **6.4578667%**
+- Accepted function:
+  - `func_0800C15C` bitmap_font generated-coordinate wrapper: preserves four halfword args, calls `func_08006F84(arg0, &sp8, &spA)`, then forwards the signed generated coordinates plus signed copies of the original args to `func_0800C110`.
+- Notes: This is another bitmap_font coordinate wrapper sibling. Key shaping: a narrow `asm volatile` call setup preserves the original `r9` stack pointer for the second generated coordinate, a second narrow `ldrsh` asm block preserves indexed signed loads, and an old-style `extern void *func_0800C110();` avoids same-TU prototype re-truncation without changing the already-converted callee body.
 
 ### Batch 146 — accepted
 - Metric delta: **+0 report matched functions**, **+1 included_stub decomp file**, **+0.000000% matched code** (6.4576783 → 6.4576783)

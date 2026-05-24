@@ -2,6 +2,17 @@
 
 Use this file to record where the current decomp tools helped, where they missed integration risk, and what manual workaround was needed. The goal is to improve future automation without reducing current verification rigor or tool scope.
 
+## Batch 147 — same-TU unprototyped callee call shaping
+- Tools that helped:
+  - `compile_and_view_asm` made the last-mile differences explicit: first the `sp+0xA` pointer was in `r3` instead of `r2`, then the generated coordinate load was `LDRH; LSLS; ASRS` instead of indexed `LDRSH`.
+  - `apply_conversion` handled the bitmap_font include-shim and clean Docker ROM verification once the isolated match was perfect.
+- Tooling/workflow gap:
+  - The candidate did not surface that the already-converted same-TU callee prototype for `func_0800C110` would influence caller-side truncation/sign-extension.
+- Manual workaround:
+  - Use narrow asm only for the helper-call setup and two indexed `LDRSH` loads, keep the rest of the wrapper in C, and declare the callee old-style (`extern void *func_0800C110();`) so agbcc does not re-truncate already-shaped register arguments.
+- Desired tooling improvement:
+  - For included-stub callers of converted same-TU functions, show both the current callee prototype and whether an old-style no-prototype declaration may be needed to preserve original register argument shaping.
+
 ## Batch 146 — same-TU callee prototype shaping
 - Tools that helped:
   - `compile_and_view_asm` quickly showed `func_0800C0BC` was a perfect match if `func_0800C080`'s second parameter was treated as signed, and that the only pure-C miss under the old prototype was `LDRH` vs `LDRSH`.

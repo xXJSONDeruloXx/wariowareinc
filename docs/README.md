@@ -10,14 +10,14 @@ If an agent resumes cold, read these first:
 5. `docs/decomp-tooling-feedback.md` — tooling gaps, workarounds, and improvement notes
 
 ## Current verified baseline
-- Verified working tree: `batch 146` — converted `func_0800C0BC` as a real-C included stub and preserved ROM identity
-- `build/report.json`: **1350 / 5960 matched functions** (**22.6510%**) · **6.457678%** matched code
+- Verified working tree: `batch 147` — converted `func_0800C15C` as a real-C included stub and preserved ROM identity
+- `build/report.json`: **1351 / 5961 matched functions** (**22.663982%**) · **6.4578667%** matched code
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1068 decompiled function files** = **873 standalone_tu** + **195 included_stub**
+- `src/decomp/*.c`: **1069 decompiled function files** = **873 standalone_tu** + **196 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
-- 80% target at the current function total: **4765 / 5956**
-- Remaining gap to 80%: **3409 matched functions**
+- 80% target at the current function total: **4769 / 5961**
+- Remaining gap to 80%: **3418 matched functions**
 
 ## How autonomous continuation should work
 - Prefer the repo-local fresh-context commands over pifinity/Ralph:
