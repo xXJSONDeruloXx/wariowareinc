@@ -1,13 +1,12 @@
 #include "global.h"
 
-void func_080CD564(void *arg0, void *arg1) {
-    asm volatile(
-        ".syntax unified\n"
-        "adds r3, r0, #0\n"
-        "ldr r2, [r1, #0x28]\n"
-        "str r2, [r3, #0x28]\n"
-        "ldr r1, [r1, #0x2c]\n"
-        "str r1, [r3, #0x2c]\n"
-        ".syntax divided\n"
-    );
+void func_080CD564(u32 *arg0, u32 *arg1) {
+    register u32 *dst asm("r3") = arg0;
+    register u32 value1 asm("r2");
+    register u32 value2 asm("r1");
+
+    value1 = arg1[10];
+    dst[10] = value1;
+    value2 = arg1[11];
+    dst[11] = value2;
 }

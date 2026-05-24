@@ -1,43 +1,42 @@
 #if __INCLUDE_LEVEL__ > 0
 #include "global.h"
+#include "types.h"
+#include "src/lib_sprite.h"
 
-__attribute__((naked)) void sprite_set_x_y(void) {
-    asm volatile(
-        ".syntax unified\n"
-        "push {r4, r5, r6, r7, lr}\n"
-        "adds r5, r0, #0\n"
-        "lsls r2, r2, #16\n"
-        "lsrs r6, r2, #16\n"
-        "lsls r3, r3, #16\n"
-        "lsrs r7, r3, #16\n"
-        "ldr r2, _080EF260\n"
-        "movs r0, #6\n"
-        "strb r0, [r2]\n"
-        "lsls r1, r1, #16\n"
-        "asrs r4, r1, #16\n"
-        "adds r0, r5, #0\n"
-        "adds r1, r4, #0\n"
-        "bl sprite_is_invalid\n"
-        "cmp r0, #0\n"
-        "bne 1f\n"
-        "ldr r0, [r5, #8]\n"
-        "lsls r1, r4, #3\n"
-        "subs r1, r4\n"
-        "lsls r1, r1, #3\n"
-        "adds r0, r1, r0\n"
-        "strh r6, [r0, #2]\n"
-        "ldr r0, [r5, #8]\n"
-        "adds r1, r0\n"
-        "strh r7, [r1, #4]\n"
-        "1:\n"
-        "pop {r4, r5, r6, r7}\n"
-        "pop {r0}\n"
-        "bx r0\n"
-        ".balign 4, 0\n"
-        "_080EF260:\n"
-        ".word D_03000E70\n"
-        ".ltorg\n"
-        ".syntax divided\n"
-    );
+void sprite_set_x_y(void *handler, s32 id, s32 x, s32 y) {
+    register u32 r0 asm("r0") = (u32)handler;
+    register u32 r1 asm("r1") = (u32)id;
+    register u32 r2 asm("r2") = (u32)x;
+    register u32 r3 asm("r3") = (u32)y;
+    register u32 r4 asm("r4");
+    register u32 r5 asm("r5");
+    u32 xVal;
+    u32 yVal;
+
+    r5 = r0;
+    asm volatile("" : "+r"(r0), "+r"(r5));
+    r2 <<= 16;
+    xVal = r2 >> 16;
+    r3 <<= 16;
+    yVal = r3 >> 16;
+    r2 = (u32)&D_03000E70;
+    r0 = 6;
+    *(u8 *)r2 = r0;
+    r1 <<= 16;
+    r4 = (u32)((s32)r1 >> 16);
+    r0 = r5;
+    r1 = r4;
+    r0 = sprite_is_invalid((void *)r0, r1);
+    if (r0 != 0) goto done;
+    r0 = *(u32 *)(r5 + 8);
+    r1 = r4 << 3;
+    r1 -= r4;
+    r1 <<= 3;
+    r0 = r1 + r0;
+    *(u16 *)(r0 + 2) = xVal;
+    r0 = *(u32 *)(r5 + 8);
+    r1 += r0;
+    *(u16 *)(r1 + 4) = yVal;
+done:;
 }
 #endif

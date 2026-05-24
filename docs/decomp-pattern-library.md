@@ -257,6 +257,14 @@ These reasons justify leaving an existing legacy naked file untouched or marking
 **Included-stub helper typedef collision trap:** each `src/decomp/*.c` file is included into the host TU, so generic helper typedef names like `TaskArgs` can collide across files. Prefer unique typedef names or anonymous local structs inside each decomp file.
 
 
+### Legacy naked-wrapper cleanup wins
+- `func_08002468`: use explicit `u32` shift temporaries (`result = *ptr; result <<= 31; result >>= 31;`) instead of `& 1` to force the original `LDRB; LSLS #31; LSRS #31` sequence.
+- `func_0800C080`: same family as `func_0800C110`; a local task-argument struct plus non-void `return start_new_task(...)` preserves the stack block and `POP {R1}; BX R1` epilogue without naked asm.
+- `func_08001D5C`: register-pinned C can preserve the four halfword matrix stores once the 5th stack arg is loaded into a normal C parameter and all args are shaped as `s32` before explicit `<< 16` / `>> 16` truncation.
+- `sprite_set_x`, `sprite_set_y`, `sprite_set_x_y`: use `s32` value parameters to prevent early caller-side truncation, preserve handler in `r5` before truncating value args, and use ordinary C stores after the `sprite_is_invalid` guard. For `sprite_set_x_y`, let the y temporary be an unpinned local so agbcc naturally saves/restores `r7`.
+- `func_080CD564`: register-pin the destination pointer to `r3`; use separate pinned `r2`/`r1` temporaries so the two word copies match `LDR R2/STR R2` then `LDR R1/STR R1`.
+
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers
