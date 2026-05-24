@@ -303,7 +303,7 @@ void func_0801208C(void) {
 
 #include "../decomp/asm_08013e44.c"
 
-#include "asm/scenes/main_menu/asm_08013e64.s"
+#include "../decomp/asm_08013e64.c"
 
 #include "../decomp/asm_08013ec0.c"
 
