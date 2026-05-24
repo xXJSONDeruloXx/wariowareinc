@@ -11,9 +11,9 @@ If an agent resumes cold, read these first:
 
 ## Current verified baseline
 - Verified working tree: `batch 136` — converted 13 of 14 legacy naked/original asm wrappers out of legacy quarantine
-- `build/report.json`: **1350 / 5960 matched functions** (**22.6510%**) · **6.454101%** matched code
+- `build/report.json`: **1350 / 5960 matched functions** (**22.6510%**) · **6.454288%** matched code
 - `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1055 decompiled function files** = **873 standalone_tu** + **182 included_stub**
+- `src/decomp/*.c`: **1057 decompiled function files** = **873 standalone_tu** + **184 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
 - 80% target at the current function total: **4765 / 5956**

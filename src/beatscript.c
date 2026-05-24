@@ -317,7 +317,7 @@ void func_08009F00(u32 arg) {
 }
 
 // u32 scene_change_music(struct SongHeader *music, u32 override)
-#include "asm/beatscript/asm_08009f14.s"
+#include "decomp/asm_08009f14.c"
 
 void scene_set_music(struct SongHeader *music) {
     scene_change_music(music, TRUE);
