@@ -5,10 +5,10 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Guard/loop hardening — non-empty inline asm ban and unstoppable loop
 - Tools that helped:
   - Recent chunks proved the naked-asm guard works, but also showed weaker agents can still hide meaningful instruction sequences inside non-empty `asm volatile` blocks.
-  - The loop already had a `blocked` field on `decomp_chunk_done`, but blocked/text-marker/no-signal paths were not equally robust about keeping the stream moving.
+  - The loop already had a deprecated no-progress compatibility field on `decomp_chunk_done`, but no-progress/text-marker/no-signal paths were not equally robust about keeping the stream moving.
 - Tooling implemented:
   - `.pi/extensions/warioware-decomp-guard.js` now blocks new non-empty statement-form inline asm in `src/decomp/*.c` payloads and file edits. Empty asm barriers/clobbers remain allowed; register-pinning declarations like `register u32 r0 asm("r0")` are not treated as inline asm statements.
-  - `.pi/extensions/warioware-decomp-loop.js` now compacts and advances even when a chunk calls `decomp_chunk_done(blocked=true)`, prints the blocked marker, or ends without a completion signal. Blocked means "try a different candidate next," not "stop the stream."
+  - `.pi/extensions/warioware-decomp-loop.js` now has no blocked loop state: no-progress chunks, the legacy text marker, and missing completion signals all compact and advance immediately. No-progress means "try a different candidate next," not "stop the stream."
 - Follow-up idea:
   - If accepted legacy non-empty inline asm files are edited later, convert them to pure C/empty-barrier C instead of preserving the instruction shim.
 

@@ -10,7 +10,7 @@ const REPO_SENTINEL = "wariowareinc.ld";
 
 // Text-based fallback markers (used if agent prints text instead of calling the tool)
 const DONE_MARKER = "<DECOMP_CHUNK_DONE>";
-const BLOCKED_MARKER = "<DECOMP_BLOCKED>";
+const NO_PROGRESS_MARKER = "<DECOMP_BLOCKED>"; // legacy text marker name, treated as no-progress
 
 // ── Module-level (fresh per-session due to jiti moduleCache: false) ───────────
 // These are intentionally session-scoped. The loop advances within a single
@@ -41,7 +41,7 @@ function defaultState() {
     chunk: 0,
     advanceRequested: false,
     lastStatus: "idle",
-    lastBlockedReason: "",
+    lastNoProgressReason: "",
     lastChunkSummary: "",
     updatedAt: new Date().toISOString(),
   };
@@ -106,7 +106,7 @@ function buildChunkPrompt(chunk) {
     "If m2c is unavailable or weak on the function, write C from the asm and documented patterns, then test it.",
     "",
     "## Step 4b — Use spare capacity to convert an existing naked asm file to real C only when it has a clear C-shaped plan",
-    "This is a maintenance pass, not a fallback for a stubborn primary candidate. Only do it after the main chunk goal is done or the candidate queue is blocked, and only if you can explain the exact C-shaping plan before you start.",
+    "This is a maintenance pass, not a fallback for a stubborn primary candidate. Only do it after the main chunk goal is done or the candidate queue yields no progress, and only if you can explain the exact C-shaping plan before you start.",
     "Use the documented effort checklist: pure C, register pinning, empty asm barriers/clobbers only, statement reordering, type shaping, load-base-first, pointer shaping, and goto loops.",
     "There is no attempt limit. If it does not match, keep iterating in real C or pick another real-C candidate. If the function is one of the documented hard cases, leave it untouched and record why; do not create a new naked asm wrapper.",
     "",
@@ -128,7 +128,7 @@ function buildChunkPrompt(chunk) {
     "4. Update docs (README, scaleup, batch-history, pattern-library if new patterns)",
     "5. git add -A && git commit -m 'feat: ...' && git push",
     "6. Call the `decomp_chunk_done` tool with a brief summary.",
-    "   If blocked at any step, call `decomp_chunk_done` with blocked=true and a reason.",
+    "   If no progress was made, still call `decomp_chunk_done` with a concise no-progress summary; the loop will immediately continue.",
     "",
     "## Rules",
     "- Do not create or rely on Ralph loops.",
@@ -137,7 +137,7 @@ function buildChunkPrompt(chunk) {
     "- Do not add non-empty inline asm. Empty asm barriers/clobbers are allowed; instruction/call shims are not.",
     "- A 100% isolated compile match is not accepted progress unless preflight is standalone_tu and the clean ROM build is byte-identical.",
     "- Preserve byte-identical ROM at every accepted milestone.",
-    "- You MUST call `decomp_chunk_done` before your final response, whether successful or blocked.",
+    "- You MUST call `decomp_chunk_done` when the chunk is finished or no-progress; after calling it, do not send a final explanatory response — let the loop advance.",
   ].join("\n");
 }
 
@@ -158,7 +158,6 @@ function getChunkActivity(state) {
 }
 
 function getLoopPhase(state) {
-  if (state.lastStatus === "blocked") return { label: "blocked", color: "error" };
   if (state.lastStatus === "no-signal") return { label: "stale", color: "warning" };
   if (state.lastStatus === "advancing" || state.lastStatus === "compacting") {
     return { label: state.lastStatus, color: "accent" };
@@ -177,7 +176,6 @@ function formatStatus(state) {
   const bits = [`loop ${power.label}`, `chunk ${state.chunk}`, activity.label, `state ${phase.label}`];
   if (state.advanceRequested) bits.push("advance pending");
   if (state.lastStatus === "no-signal") bits.push("last run ended without decomp_chunk_done");
-  if (state.lastStatus === "blocked" && state.lastBlockedReason) bits.push(state.lastBlockedReason);
   return bits.join(" · ");
 }
 
@@ -208,9 +206,6 @@ function buildLoopLines(theme, width, state) {
   }
   lines.push(truncateToWidth(theme.fg(detailColor, detail), width));
 
-  if (state.lastStatus === "blocked" && state.lastBlockedReason) {
-    lines.push(truncateToWidth(theme.fg("error", state.lastBlockedReason), width));
-  }
 
   lines.push(divider);
   return lines;
@@ -300,124 +295,65 @@ export default function wariowareDecompLoop(pi) {
     name: "decomp_chunk_done",
     label: "Decomp Chunk Done",
     description:
-      "Signal that this decomp chunk is complete. " +
-      "Call this at the end of every chunk — whether work was done, partially done, or blocked. " +
+      "Signal that this decomp chunk is complete or no-progress. " +
       "If the loop is enabled, prior context is compacted to a single summary line and the next " +
-      "chunk starts immediately after, with essentially fresh context.",
+      "chunk starts immediately after, with essentially fresh context. " +
+      "Do not send a final explanatory response after calling this tool.",
     parameters: Type.Object({
       summary: Type.String({
         description: "1-3 sentence summary: what was done, which function(s), current metrics",
       }),
       blocked: Type.Optional(
         Type.Boolean({
-          description: "Set true if you could not make meaningful progress. NOTE: This does NOT stop the loop; the next chunk will start automatically to try a different candidate.",
+          description: "Deprecated compatibility flag for no-progress chunks. This never creates a blocked loop state; the next chunk starts automatically.",
         }),
       ),
       blockedReason: Type.Optional(
         Type.String({
-          description: "If blocked=true, brief reason (e.g. 'no Docker', 'repeated mismatch on all candidates')",
+          description: "Optional no-progress reason (e.g. 'no Docker', 'candidate mismatch')",
         }),
       ),
     }),
     async execute(_id, { summary, blocked = false, blockedReason }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
       const state = loadState(repoRoot);
+      const finalSummary = blocked && blockedReason
+        ? `${summary} No-progress reason: ${blockedReason}`
+        : summary;
 
-      if (blocked) {
-        // NOTE: Loop continues even when blocked - blocked just means this
-        // candidate/chunk failed, not that the autonomous stream should halt.
-        state.lastBlockedReason = blockedReason || summary;
-        state.lastChunkSummary = summary;
+      state.lastChunkSummary = finalSummary;
+      state.lastNoProgressReason = blockedReason || "";
 
-        if (!state.enabled) {
-          state.lastStatus = "blocked";
-          state.advanceRequested = false;
-          saveState(repoRoot, state);
-          applyWidget(latestCtx, repoRoot);
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Chunk ${state.chunk} marked blocked.\nReason: ${blockedReason || summary}`,
-              },
-            ],
-            details: { blocked: true, loopContinuing: false, reason: blockedReason || summary },
-          };
-        }
-
-        const nextChunkNum = state.chunk + 1;
-        const nextPrompt = buildChunkPrompt(nextChunkNum);
-        state.lastStatus = "compacting";
+      if (!state.enabled) {
+        // Single-shot /decomp-next — just mark done, no advancement.
+        // Even no-progress chunks are "done" here; there is no blocked state.
+        state.lastStatus = "done";
         state.advanceRequested = false;
         saveState(repoRoot, state);
         applyWidget(latestCtx, repoRoot);
-        if (latestCtx?.hasUI) {
-          latestCtx.ui.notify(
-            `decomp loop blocked at chunk ${state.chunk}: ${blockedReason || summary}. Compacting and advancing...`,
-            "warning",
-          );
-        }
-
-        const doAdvance = () => {
-          const s = loadState(repoRoot);
-          s.chunk = nextChunkNum;
-          s.advanceRequested = false;
-          s.lastStatus = "running";
-          saveState(repoRoot, s);
-          applyWidget(latestCtx, repoRoot);
-          try {
-            loopPi.sendUserMessage(nextPrompt);
-          } catch {
-            try { loopPi.sendUserMessage(nextPrompt, { deliverAs: "followUp" }); } catch {
-              const retry = loadState(repoRoot);
-              retry.advanceRequested = true;
-              retry.lastStatus = "waiting-to-advance";
-              saveState(repoRoot, retry);
-            }
-          }
-        };
-
-        ctx.compact({
-          onComplete: doAdvance,
-          onError: doAdvance,
-        });
-
         return {
-          content: [
-            {
-              type: "text",
-              text:
-                `Chunk ${state.chunk} blocked. Compacting context, then starting chunk ${nextChunkNum}.\n` +
-                `Reason: ${blockedReason || summary}`,
-            },
-          ],
-          details: { blocked: true, loopContinuing: true, reason: blockedReason || summary, nextChunkNum },
-        };
-      }
-
-      state.lastChunkSummary = summary;
-
-      if (!state.enabled) {
-        // Single-shot /decomp-next — just mark done, no advancement
-        state.lastStatus = "done";
-        saveState(repoRoot, state);
-        applyWidget(latestCtx, repoRoot);
-        return {
-          content: [{ type: "text", text: `Chunk ${state.chunk} done (loop off). Summary: ${summary}` }],
-          details: { chunkDone: true, chunkNum: state.chunk, willAdvance: false },
+          content: [{ type: "text", text: `Chunk ${state.chunk} done (loop off). Summary: ${finalSummary}` }],
+          details: { chunkDone: true, chunkNum: state.chunk, willAdvance: false, noProgress: Boolean(blocked) },
         };
       }
 
       // Loop is on — compact then immediately send next chunk prompt.
-      // compact() is fire-and-forget with onComplete/onError callbacks.
-      // The next chunk prompt arrives AFTER compact finishes so the agent
-      // sees only [one-line compact summary] + [fresh chunk N+1 prompt].
+      // No-progress chunks use the same path as successful chunks; the stream
+      // should never pause in a special blocked state.
       const nextChunkNum = state.chunk + 1;
       const nextPrompt = buildChunkPrompt(nextChunkNum);
 
       state.lastStatus = "compacting";
+      state.advanceRequested = false;
       saveState(repoRoot, state);
       applyWidget(latestCtx, repoRoot);
+
+      if (blocked && latestCtx?.hasUI) {
+        latestCtx.ui.notify(
+          `decomp loop no-progress at chunk ${state.chunk}; compacting and advancing`,
+          "warning",
+        );
+      }
 
       const doAdvance = () => {
         const s = loadState(repoRoot);
@@ -429,7 +365,12 @@ export default function wariowareDecompLoop(pi) {
         try {
           loopPi.sendUserMessage(nextPrompt);
         } catch {
-          try { loopPi.sendUserMessage(nextPrompt, { deliverAs: "followUp" }); } catch { /* delivery fallback failed */ }
+          try { loopPi.sendUserMessage(nextPrompt, { deliverAs: "followUp" }); } catch {
+            const retry = loadState(repoRoot);
+            retry.advanceRequested = true;
+            retry.lastStatus = "waiting-to-advance";
+            saveState(repoRoot, retry);
+          }
         }
       };
 
@@ -443,11 +384,12 @@ export default function wariowareDecompLoop(pi) {
           {
             type: "text",
             text:
-              `Chunk ${state.chunk} complete. Compacting context, then starting chunk ${nextChunkNum}.\n` +
-              `Summary: ${summary}`,
+              `Chunk ${state.chunk} complete. Compacting context, then starting chunk ${nextChunkNum}.
+` +
+              `Summary: ${finalSummary}`,
           },
         ],
-        details: { chunkDone: true, chunkNum: state.chunk, willAdvance: true, nextChunkNum },
+        details: { chunkDone: true, chunkNum: state.chunk, willAdvance: true, nextChunkNum, noProgress: Boolean(blocked) },
       };
     },
   });
@@ -574,7 +516,7 @@ export default function wariowareDecompLoop(pi) {
     }
 
     // Already handled by decomp_chunk_done tool call → nothing to do here
-    if (state.advanceRequested || state.lastStatus === "blocked") {
+    if (state.advanceRequested) {
       applyWidget(ctx, repoRoot);
       return;
     }
@@ -582,15 +524,15 @@ export default function wariowareDecompLoop(pi) {
     // Fallback: detect text markers in case the agent printed them instead of calling the tool
     const text = extractAssistantText(event.messages);
 
-    if (text.includes(BLOCKED_MARKER)) {
-      const idx = text.lastIndexOf(BLOCKED_MARKER);
-      const tail = text.slice(idx + BLOCKED_MARKER.length).trim().split(/\r?\n/)[0] ?? "";
+    if (text.includes(NO_PROGRESS_MARKER)) {
+      const idx = text.lastIndexOf(NO_PROGRESS_MARKER);
+      const tail = text.slice(idx + NO_PROGRESS_MARKER.length).trim().split(/\r?\n/)[0] ?? "";
       state.advanceRequested = true;
       state.lastStatus = "waiting-to-advance";
-      state.lastBlockedReason = tail;
+      state.lastNoProgressReason = tail;
       saveState(repoRoot, state);
       applyWidget(ctx, repoRoot);
-      if (ctx.hasUI) ctx.ui.notify(`decomp loop blocked: ${tail || "(no reason)"}; advancing`, "warning");
+      if (ctx.hasUI) ctx.ui.notify(`decomp loop no-progress marker: ${tail || "(no reason)"}; advancing`, "warning");
       return;
     }
 
@@ -606,7 +548,7 @@ export default function wariowareDecompLoop(pi) {
     // decomp_chunk_done should not stall an unattended loop.
     state.advanceRequested = true;
     state.lastStatus = "waiting-to-advance";
-    state.lastBlockedReason = "last run ended without decomp_chunk_done";
+    state.lastNoProgressReason = "last run ended without decomp_chunk_done";
     saveState(repoRoot, state);
     applyWidget(ctx, repoRoot);
     if (ctx.hasUI) ctx.ui.notify("decomp loop: no completion signal; advancing anyway", "warning");
