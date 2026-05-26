@@ -40,6 +40,22 @@ else
 fi
 
 if [ -z "$source_file" ]; then
+  # Fallback: try searching for decomp/ asm_*.c includes (project convention)
+  asm_basename="$(basename "$asm_path" .s)"
+  source_file=""
+  for inc in "decomp/${asm_basename}.c" "src/decomp/${asm_basename}.c"; do
+    if command -v rg &>/dev/null; then
+      source_file="$(rg -l -F "#include \"$inc\"" src | head -n 1 || true)"
+    else
+      source_file="$(find src -name '*.c' -exec grep -lF "#include \"$inc\"" {} \; 2>/dev/null | head -n 1)"
+    fi
+    if [ -n "$source_file" ]; then
+      break
+    fi
+  done
+fi
+
+if [ -z "$source_file" ]; then
   echo "Could not find source file including stub: $asm_path" >&2
   echo "Tip: If this is a standalone TU (not #included from C), this script won't work." >&2
   echo "Try reading the asm file directly or checking include/ for shared headers." >&2
