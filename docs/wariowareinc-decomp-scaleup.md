@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 147` — converted `func_0800C15C` as a real-C included stub and preserved ROM identity
-- `build/report.json`: **1351 / 5961 matched functions** = **22.663982%**
-- `matched_code_percent`: **6.4578667%**
-- `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1069 decompiled function files** = **873 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 148` — converted `func_0800C128` as a real-C included stub and preserved ROM identity
+- `build/report.json`: **1352 / 5962 matched functions** = **22.67796%**
+- `matched_code_percent`: **6.4580551%**
+- `tools/gen_objdiff.py`: **893 linked C TUs / 5795 non-C units**
+- `src/decomp/*.c`: **1070 decompiled function files** = **874 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
 
@@ -21,6 +21,13 @@ At the current `total_functions` count (`5961`), that means:
 - current gap: **3418** more matched functions
 
 ## What just landed
+
+### Batch 148 — accepted
+- Metric delta: **+1 report matched function**, **+1 included_stub decomp file**, **+0.000188% matched code** (6.4578667 → 6.4580551)
+- Matched code: **6.4580551%**
+- Accepted function:
+  - `func_0800C128` bitmap_font font-size lookup: conditional `gCurrentSceneData+0x193 == 1` guard, calls `func_08006F84`, tests `D_03006518.unk51[2]`, conditionally calls `func_0800C15C`. Key patterns: `s32` return type to match original `POP {R1}; BX R1` epilogue, `extern void func_0800C15C(u32, u32, u32, u32)` to match caller-side 4-arg push, `bitmap_font_get_text_width` declared with `u32` return type matching the callee's epilogue.
+- Notes: Sibling of `func_0800C0BC` and `func_0800C15C` in the bitmap_font coordinate-wrapper family. Uses the same `func_08006F84` generated-coordinate pattern. The `s32` return type is essential — without it, agbcc generates `MOV R0, #0` as the default return instead of the original's `POP {R1}; BX R1` epilogue.
 
 ### Batch 147 — accepted
 - Metric delta: **+1 report matched function**, **+1 included_stub decomp file**, **+0.000188% matched code** (6.4576783 → 6.4578667)

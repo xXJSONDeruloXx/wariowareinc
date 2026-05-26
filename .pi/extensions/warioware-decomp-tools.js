@@ -31,10 +31,9 @@ function resolveScript(repoRoot, ...parts) {
   const ext = path.parse(unixPath).ext;
 
   if (isWindows && ext === ".sh") {
-    // Try .cmd wrapper first, fall back to running via bash
-    const cmdPath = `${base}.cmd`;
-    if (fs.existsSync(cmdPath)) return cmdPath;
-    // MSYS2 bash needs /c/ style paths, not C:/ (Docker volume mounts break)
+    // Always run .sh files via bash for reliable Docker volume mounts.
+    // runScript() adds MSYS_NO_PATHCONV=1 to prevent path mangling.
+    // .cmd wrappers are for manual use only — they don't set the env var.
     const msysPath = unixPath
       .replace(/[\\/]/g, "/")
       .replace(/^([A-Za-z]):\//, (m, drive) => "/" + drive.toLowerCase() + "/");
@@ -706,8 +705,11 @@ function registerGetFunctionContext(pi) {
     }),
     async execute(_id, { functionName }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
+      const rawScriptPath = path.join(repoRoot, "tools/mizuchi/get-context.sh");
       const script = resolveScript(repoRoot, "tools/mizuchi/get-context.sh");
-      const scriptPath = typeof script === "object" ? script.args[0] : script;
+      // fs.existsSync() on Windows can't handle MSYS2 /c/... paths,
+      // so check the original Windows path
+      const scriptPath = fs.existsSync(rawScriptPath) ? rawScriptPath : typeof script === "object" ? script.args[0] : script;
 
       if (!fs.existsSync(scriptPath)) {
         return {
