@@ -8,6 +8,8 @@ If an agent resumes cold, read these first:
 3. `docs/decomp-pattern-library.md` — proven families, code-shaping rules, known traps
 4. `docs/decomp-batch-history.md` — accepted batch history
 5. `docs/decomp-tooling-feedback.md` — tooling gaps, workarounds, and improvement notes
+6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and their fixes
+6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (new)
 
 ## Current verified baseline
 - Verified working tree: `batch 147` — converted `func_0800C15C` as a real-C included stub and preserved ROM identity
@@ -44,6 +46,7 @@ If an agent resumes cold, read these first:
 - `docs/decomp-pattern-library.md`
 - `docs/decomp-batch-history.md`
 - `docs/decomp-tooling-feedback.md`
+- `docs/windows-tooling-notes.md`
 
 ### Reference / historical docs
 - `docs/wariowareinc-decomp-progress-audit.md` — early audit + smoke-test archive; not the live source of truth

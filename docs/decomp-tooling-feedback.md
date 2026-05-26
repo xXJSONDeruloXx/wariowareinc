@@ -2,6 +2,10 @@
 
 Use this file to record where the current decomp tools helped, where they missed integration risk, and what manual workaround was needed. The goal is to improve future automation without reducing current verification rigor or tool scope.
 
+### Related docs
+- `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
+- `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
+
 ## Guard/loop hardening — non-empty inline asm ban and unstoppable loop
 - Tools that helped:
   - Recent chunks proved the naked-asm guard works, but also showed weaker agents can still hide meaningful instruction sequences inside non-empty `asm volatile` blocks.

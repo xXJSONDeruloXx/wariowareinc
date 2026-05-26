@@ -12,13 +12,69 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { execFileSync, execSync } from "node:child_process";
+import { execFileSync, execSync, spawn } from "node:child_process";
 import { Type } from "typebox";
 
 const REPO_SENTINEL = "wariowareinc.ld";
 const DB_FILE = "mizuchi-db.json";
 const DOCKER_IMAGE = "devkitpro/devkitarm:latest";
 const MIZUCHI_ENV_VARS = ["MIZUCHI_ROOT", "PI_MIZUCHI_ROOT"];
+const isWindows = os.platform() === "win32";
+
+/** Resolve a Unix-style script path to the correct executable for this platform.
+ *  On Windows, .sh scripts must go through bash or be replaced by .cmd wrappers.
+ *  On Unix, .cmd/.exe files are skipped.
+ */
+function resolveScript(repoRoot, ...parts) {
+  const unixPath = path.join(repoRoot, ...parts);
+  const base = path.parse(unixPath).name;
+  const ext = path.parse(unixPath).ext;
+
+  if (isWindows && ext === ".sh") {
+    // Try .cmd wrapper first, fall back to running via bash
+    const cmdPath = `${base}.cmd`;
+    if (fs.existsSync(cmdPath)) return cmdPath;
+    // MSYS2 bash needs /c/ style paths, not C:/ (Docker volume mounts break)
+    const msysPath = unixPath
+      .replace(/[\\/]/g, "/")
+      .replace(/^([A-Za-z]):\//, (m, drive) => "/" + drive.toLowerCase() + "/");
+    return { bash: "bash", args: [msysPath] };
+  }
+
+  // objdiff-cli on Windows needs .exe extension
+  if (isWindows && base === "objdiff-cli" && !fs.existsSync(unixPath)) {
+    const exePath = `${unixPath}.exe`;
+    if (fs.existsSync(exePath)) return exePath;
+  }
+
+  return unixPath;
+}
+
+/** Run a script, handling the Windows/bash-wrapped case. */
+function runScript(script, args = [], opts = {}) {
+  const env = { ...process.env };
+  // Prevent MSYS2 from mangling Docker volume paths like /workspace
+  env.MSYS_NO_PATHCONV = "1";
+
+  if (isWindows && typeof script === "object" && script.bash) {
+    // script = { bash: "bash", args: ["/path/to/script.sh"] }
+    return execFileSync(script.bash, [script.args[0], ...args], { ...opts, env, stdio: "pipe" });
+  }
+  return execFileSync(script, args, { ...opts, env, stdio: "pipe" });
+}
+
+/** Find the m2c Python binary for this platform. */
+function findM2cPython(mizuchiRoot) {
+  // Unix venv
+  const unixVenv = path.join(mizuchiRoot, "vendor/m2c/.venv/bin/python3");
+  if (fs.existsSync(unixVenv)) return unixVenv;
+
+  // Windows venv (only works if Node.js can access it natively)
+  const winVenv = path.join(mizuchiRoot, "vendor/m2c/.venv/Scripts/python.exe");
+  if (fs.existsSync(winVenv)) return winVenv;
+
+  return null;
+}
 
 function shellQuote(value) {
   return `'${String(value).replace(/'/g, `'"'"'`)}'`;
@@ -576,18 +632,18 @@ function registerCompileAndViewAsm(pi) {
         fs.writeFileSync(cFile, cCode, "utf8");
 
         // Compile
-        const compileScript = path.join(repoRoot, "tools/mizuchi/compile-in-docker.sh");
-        execFileSync(compileScript, [cFile, compiledObj, functionName], {
+        const compileScript = resolveScript(repoRoot, "tools/mizuchi/compile-in-docker.sh");
+        runScript(compileScript, [cFile, compiledObj, functionName], {
           cwd: repoRoot,
           timeout: 120_000,
           stdio: "pipe",
         });
 
         // Diff
-        const objdiffCli = path.join(repoRoot, "tools/objdiff-cli");
+        const objdiffCli = resolveScript(repoRoot, "tools/objdiff-cli");
         let diffJson;
         try {
-          diffJson = execFileSync(
+          diffJson = runScript(
             objdiffCli,
             [
               "diff",
@@ -650,9 +706,10 @@ function registerGetFunctionContext(pi) {
     }),
     async execute(_id, { functionName }, _signal, _onUpdate, ctx) {
       const repoRoot = findRepoRoot(ctx.cwd);
-      const script = path.join(repoRoot, "tools/mizuchi/get-context.sh");
+      const script = resolveScript(repoRoot, "tools/mizuchi/get-context.sh");
+      const scriptPath = typeof script === "object" ? script.args[0] : script;
 
-      if (!fs.existsSync(script)) {
+      if (!fs.existsSync(scriptPath)) {
         return {
           content: [{ type: "text", text: "ERROR: tools/mizuchi/get-context.sh not found" }],
           details: { error: "script_missing" },
@@ -660,7 +717,7 @@ function registerGetFunctionContext(pi) {
       }
 
       try {
-        const output = execFileSync(script, [functionName], {
+        const output = runScript(script, [functionName], {
           cwd: repoRoot,
           timeout: 120_000,
           stdio: "pipe",
@@ -787,8 +844,7 @@ function registerM2cDecompile(pi) {
       }
 
       const m2cPy = path.join(mizuchi.root, "vendor/m2c/m2c.py");
-      // setup-m2c.sh creates venv at vendor/m2c/.venv
-      const venvPython = path.join(mizuchi.root, "vendor/m2c/.venv/bin/python3");
+      const venvPython = findM2cPython(mizuchi.root);
 
       // Check setup
       if (!fs.existsSync(m2cPy)) {
@@ -805,8 +861,6 @@ function registerM2cDecompile(pi) {
           details: { error: "m2c_not_setup", preflight: pf, mizuchi },
         };
       }
-
-      const python = fs.existsSync(venvPython) ? venvPython : "python3";
 
       // Get asm for the function from mizuchi-db.json
       if (!fn) {
@@ -843,6 +897,8 @@ function registerM2cDecompile(pi) {
       try {
         fs.writeFileSync(asmTmp, asmForM2c, "utf8");
 
+        // Use local venv Python if found, otherwise fall back to system python3
+        const python = fs.existsSync(venvPython) ? venvPython : "python3";
         const output = execFileSync(python, [m2cPy, "-t", target, asmTmp], {
           cwd: repoRoot,
           timeout: 30_000,
@@ -1326,9 +1382,8 @@ function registerSetupCommand(pi) {
     );
     check(
       "tools/objdiff-cli (executable)",
-      fs.existsSync(path.join(repoRoot, "tools/objdiff-cli")) &&
-        (fs.statSync(path.join(repoRoot, "tools/objdiff-cli")).mode & 0o111) !== 0,
-      "chmod +x tools/objdiff-cli",
+      fs.existsSync(path.join(repoRoot, "tools/objdiff-cli")) || fs.existsSync(path.join(repoRoot, "tools/objdiff-cli.exe")),
+      isWindows ? "Download objdiff-cli from https://github.com/nickbock/objdiff/releases" : "chmod +x tools/objdiff-cli",
     );
     check(
       "mizuchi-db.json",
