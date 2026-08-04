@@ -28,7 +28,8 @@ void func_08014DFC(u32 arg0, u32 arg1) {
     r2 <<= 1;
     r1 = r3 + r2;
     *(u32 *)r1 = r0;
-    asm volatile("add r5, #4" : "+r"(r5));
+    asm volatile("" : "+r"(r5) : : "cc");
+    r5 += 4;
     r0 = r3 + r5;
     *(u32 *)r0 = r4;
     func_0800C7A4(0);

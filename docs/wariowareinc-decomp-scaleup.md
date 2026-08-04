@@ -5,14 +5,14 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 160` — strict-ROM maintenance pass removing the `func_080141C8` ADD shim
+- Verified working tree: `batch 161` — strict-ROM maintenance pass removing the `func_08014DFC` ADD shim
 - `build/report.json`: **1362 / 5960 matched functions** = **22.852348%**
 - `matched_code_percent`: **6.4803877%**
 - `tools/gen_objdiff.py`: **902 linked C TUs / 5785 non-C units**
 - `src/decomp/*.c`: **1079 decompiled function files** = **883 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
-- Maintenance state: **26 legacy inline-asm shims removed** from included-stub files with no ROM change; **5 files** still contain non-empty inline asm for unresolved instruction-level cases.
+- Maintenance state: **27 legacy inline-asm shims removed** from included-stub files with no ROM change; **4 files** still contain non-empty inline asm for unresolved instruction-level cases.
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
@@ -22,6 +22,12 @@ At the current `total_functions` count (`5960`), that means:
 - current gap: **3406** more matched functions
 
 ## What just landed
+
+### Batch 161 — accepted (`func_08014DFC` real-C ADD shaping)
+- Metric delta: **+0 report matched functions / +1 legacy file reshaped / +0 ROM delta**. The report remains **1362 / 5960** matched functions with **6.4803877%** matched code.
+- `func_08014DFC` now uses an empty condition-code barrier before ordinary `r5 += 4`; agbcc emits the target two-operand `ADDS R5,#4` without a non-empty instruction shim.
+- Verification: the isolated `main_menu.c` object instruction stream matched the target through the literal pool, and a clean Docker `NONMATCHING=0` build reported **`wariowareinc.gba: OK`** with the baseline ROM SHA-1 unchanged.
+- Remaining non-empty inline-asm files: `asm_0800bec0.c`, `asm_0800c15c.c`, `asm_08015a4c.c`, and `asm_080ee61c.c`.
 
 ### Batch 160 — accepted (`func_080141C8` real-C ADD shaping)
 - Metric delta: **+0 report matched functions / +1 legacy file reshaped / +0 ROM delta**. The report remains **1362 / 5960** matched functions with **6.4803877%** matched code.

@@ -139,3 +139,7 @@ Use this file to record where the current decomp tools helped, where they missed
 - A small isolated compiler probe showed that `asm volatile("" : "+r"(r2) : : "cc")` immediately before ordinary `r2 += 2` forces the exact Thumb `ADDS R2,#2`; the same empty barrier is allowed by the strengthened guard because it contains no instruction text.
 - `func_080141C8` matched in the linked `main_menu.c` object and passed a clean `NONMATCHING=0` Docker build. This is a useful new shaping rule, while the analogous `R5 += 4` case remains unresolved.
 - The maintenance count is now **26 reshaped files**, with five non-empty inline-asm files remaining.
+
+## Batch 161 — callee-saved register ADD shaping (2026-08-04)
+- The condition-code barrier pattern transferred unchanged from `R2` to callee-saved `R5`: ordinary `r5 += 4` emits `ADDS R5,#4` after `asm volatile("" : "+r"(r5) : : "cc")`.
+- `func_08014DFC` passed the linked object check and clean Docker ROM gate. The maintenance count is now **27 reshaped files**, with four non-empty inline-asm files remaining.
