@@ -14,6 +14,7 @@
 ## Proven high-yield families
 ### Easy filler / utility
 - standalone `BX LR` leaves (simple `void func(void) {}` matches in final linked ROM despite object-level NOP padding diff 0x0000 vs 0xC046)
+- **Explicit zero padding after a standalone function**: if the source asm has a literal `.short 0x0000` before alignment, add `__attribute__((section(".text"))) const u16 _padding_<address> = 0;` after the C body. This restores the ROM bytes; the standalone report may count the padding symbol as an additional matched text symbol.
 - simple tail-call wrappers
 - 3-word struct stores: `a0[0] = a1; a0[1] = a2; a0[2] = a3;` — agbcc generates separate STR instructions (matching the original), while devkitARM gcc uses STMIA. **Must verify with the agbcc toolchain or the full Docker build, not devkitARM gcc alone**
 - simple void-call wrappers

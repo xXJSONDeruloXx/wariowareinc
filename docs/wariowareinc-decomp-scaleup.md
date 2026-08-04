@@ -5,22 +5,28 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 155` — strict-ROM re-hoist of `func_080F2F78` after the ABI-gap sibling checkpoint
-- `build/report.json`: **1358 / 5961 matched functions** = **22.781412%**
-- `matched_code_percent`: **6.4747767%**
-- `tools/gen_objdiff.py`: **899 linked C TUs / 5788 non-C units**
-- `src/decomp/*.c`: **1076 decompiled function files** = **880 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 156` — strict-ROM re-hoist of `func_08073650` with explicit zero padding
+- `build/report.json`: **1360 / 5962 matched functions** = **22.811136%**
+- `matched_code_percent`: **6.476374%**
+- `tools/gen_objdiff.py`: **900 linked C TUs / 5787 non-C units**
+- `src/decomp/*.c`: **1077 decompiled function files** = **881 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
 
-At the current `total_functions` count (`5961`), that means:
-- target: **4769 / 5961** matched functions
-- current gap: **3411** more matched functions
+At the current `total_functions` count (`5962`), that means:
+- target: **4770 / 5962** matched functions
+- current gap: **3410** more matched functions
 
 ## What just landed
+
+### Batch 156 — accepted (strict padding-aware re-hoist)
+- Metric delta: **+2 report matched symbols**, **+1 real standalone function**, **+1 linked C TU**, **+0 ROM delta**. The second report symbol is the explicit zero-padding word required after the function; the fresh report is **1360 / 5962** with **900 C / 5787 asm-only** units.
+- Matched function:
+  - `func_08073650`: calls `func_08072048` and `func_08073540`, returning the latter's value. The C TU includes a `.text`-section zero padding word so the original `0x0000` halfword after the function is preserved instead of agbcc's normal alignment NOP.
+- Verification: isolated object comparison was **100.0% / 0 diffs** across 5 instructions, a clean Docker `NONMATCHING=0` build reported **`wariowareinc.gba: OK`**, and the ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 
 ### Batch 155 — accepted (strict adapter-assisted re-hoist)
 - Metric delta: **+1 report matched function**, **+1 standalone_tu decomp file**, **+1 linked C TU**, **+0 ROM delta**. The fresh report is **1358 / 5961** with **899 C / 5788 asm-only** units.
