@@ -147,3 +147,7 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Batch 162 — compiler-generated STMIA (2026-08-04)
 - A small pointer-loop probe showed that agbcc emits `STMIA` when the store pointer is a `u32 *` and the source uses `*r2++ = r1`; this was more effective than manually pinning an integer address and trying to model the store as a byte/word assignment.
 - `func_08015A4C` matched through its literal pool and passed the clean Docker ROM gate. The maintenance count is now **28 reshaped files**, with three non-empty inline-asm files remaining.
+
+## Batch 163 — pure-C generated-coordinate wrapper (2026-08-04)
+- An isolated pure-C probe showed that non-volatile `s16` locals are important: `volatile` forces `LDRH` plus explicit sign-extension, while ordinary locals let agbcc select the target indexed `LDRSH` form. A typed `func_08006F84(s16, s16 *, s16 *)` declaration also reproduced the target `SB = SP+0xA` setup.
+- `func_0800C15C` matched in the integrated bitmap-font object and passed the clean Docker ROM gate. The maintenance count is now **29 reshaped files**, with two non-empty inline-asm files remaining.

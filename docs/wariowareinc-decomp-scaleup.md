@@ -5,14 +5,14 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 162` — strict-ROM maintenance pass removing the `func_08015A4C` STM shim
+- Verified working tree: `batch 163` — strict-ROM maintenance pass removing the `func_0800C15C` stack/register shims
 - `build/report.json`: **1362 / 5960 matched functions** = **22.852348%**
 - `matched_code_percent`: **6.4803877%**
 - `tools/gen_objdiff.py`: **902 linked C TUs / 5785 non-C units**
 - `src/decomp/*.c`: **1079 decompiled function files** = **883 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
-- Maintenance state: **28 legacy inline-asm shims removed** from included-stub files with no ROM change; **3 files** still contain non-empty inline asm for unresolved instruction-level cases.
+- Maintenance state: **29 legacy inline-asm shims removed** from included-stub files with no ROM change; **2 files** still contain non-empty inline asm for unresolved instruction-level cases.
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
@@ -22,6 +22,12 @@ At the current `total_functions` count (`5960`), that means:
 - current gap: **3406** more matched functions
 
 ## What just landed
+
+### Batch 163 — accepted (`func_0800C15C` real-C stack/register shaping)
+- Metric delta: **+0 report matched functions / +1 legacy file reshaped / +0 ROM delta**. The report remains **1362 / 5960** matched functions with **6.4803877%** matched code.
+- `func_0800C15C` now uses ordinary non-volatile `s16` stack locals and a typed `func_08006F84` call. agbcc naturally emits the target `SB = SP+0xA` setup and both indexed `LDRSH` loads; the old two narrow instruction blocks are gone.
+- Verification: the integrated `bitmap_font.c` object instruction stream matched the target through the epilogue and padding, and a clean Docker `NONMATCHING=0` build reported **`wariowareinc.gba: OK`** with the baseline ROM SHA-1 unchanged.
+- Remaining non-empty inline-asm files: `asm_0800bec0.c` and `asm_080ee61c.c`.
 
 ### Batch 162 — accepted (`func_08015A4C` real-C STM shaping)
 - Metric delta: **+0 report matched functions / +1 legacy file reshaped / +0 ROM delta**. The report remains **1362 / 5960** matched functions with **6.4803877%** matched code.
@@ -48,7 +54,7 @@ At the current `total_functions` count (`5960`), that means:
   - Main-menu/sprite call and indexed-load wrappers: `func_08011584`, `func_08011774`, `func_080117A8`, `func_080118E0`, `func_08012058`, `func_08012658`, `func_08012700`, `func_08012D3C`, `func_08012DCC`, `func_08013388`, `func_080136A4`, `func_08014374`, `func_08014810`, `func_08014E38`, `func_08014E88`, `func_08014F38`, `func_08014FA8`.
   - Sprite-library helpers: `sprite_delete`, `func_080EF358`.
 - The successful pattern was ordinary C calls through unique ABI-shaping function-pointer typedefs with `s32`/`u32` parameters, plus register-pinned C for indexed loads and operand order. An ordinary C indirect call also reproduced `_call_via_r0`.
-- The earlier rejected instruction-shaping attempts for `func_0800BEC0`, the two ADD forms, and the STM loop were subsequently resolved in Batches 160–162. The remaining hard cases are the `CMP #1`/`BGE` wrapper, the stack/register wrapper, and the literal `svc` instruction.
+- The earlier rejected instruction-shaping attempts for `func_0800BEC0`, the two ADD forms, the STM loop, and the stack/register wrapper were subsequently resolved in Batches 160–163. The remaining hard cases are the `CMP #1`/`BGE` wrapper and the literal `svc` instruction.
 - Verification: each accepted source reshape passed the strict Docker ROM gate; the final clean build reported **`wariowareinc.gba: OK`**, the ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`, and `make report` plus `tools/gen_objdiff.py` refreshed the metrics above.
 
 ### Batch 158 — accepted (strict literal-pool re-hoist)
@@ -124,7 +130,7 @@ At the current `total_functions` count (`5960`), that means:
 - Matched code: **6.4578667%**
 - Accepted function:
   - `func_0800C15C` bitmap_font generated-coordinate wrapper: preserves four halfword args, calls `func_08006F84(arg0, &sp8, &spA)`, then forwards the signed generated coordinates plus signed copies of the original args to `func_0800C110`.
-- Notes: This is another bitmap_font coordinate wrapper sibling. Key shaping: a narrow `asm volatile` call setup preserves the original `r9` stack pointer for the second generated coordinate, a second narrow `ldrsh` asm block preserves indexed signed loads, and an old-style `extern void *func_0800C110();` avoids same-TU prototype re-truncation without changing the already-converted callee body.
+- Notes: This is another bitmap_font coordinate wrapper sibling. The original acceptance used narrow call/load shims for the `r9` stack pointer and indexed signed loads; Batch 163 replaced both with ordinary C by using non-volatile `s16` locals and a typed `func_08006F84` declaration, without changing the already-converted callee body.
 
 ### Batch 146 — accepted
 - Metric delta: **+0 report matched functions**, **+1 included_stub decomp file**, **+0.000000% matched code** (6.4576783 → 6.4576783)
