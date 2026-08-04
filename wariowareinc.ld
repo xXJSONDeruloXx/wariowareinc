@@ -5257,7 +5257,7 @@ SECTIONS {
         build/asm/asm_080f2f04.s.o(.text*);
         build/asm/asm_080f2f34.s.o(.text*);
         build/src/decomp/asm_080f2f64.c.o(.text*);
-        build/asm/asm_080f2f68.s.o(.text*);
+        build/src/decomp/asm_080f2f68.c.o(.text*);
         build/asm/asm_080f2f78.s.o(.text*);
         build/asm/asm_080f2f88.s.o(.text*);
         build/asm/asm_080f2fd0.s.o(.text*);
