@@ -5,14 +5,14 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 165` — strict-ROM cleanup moving the irreducible BIOS SVC wrapper back to standalone assembly
-- `build/report.json`: **1361 / 5960 matched functions** = **22.835571%**
-- `matched_code_percent`: **6.4799843%**
-- `tools/gen_objdiff.py`: **901 linked C TUs / 5786 non-C units**
-- `src/decomp/*.c`: **1078 decompiled function files** = **882 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 166` — strict-ROM C conversion of the BIOS SVC wrapper through a reproducible agbcc backend builtin
+- `build/report.json`: **1362 / 5960 matched functions** = **22.852348%**
+- `matched_code_percent`: **6.4803877%**
+- `tools/gen_objdiff.py`: **902 linked C TUs / 5785 non-C units**
+- `src/decomp/*.c`: **1079 decompiled function files** = **883 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
-- Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` now contains no non-empty inline asm. The BIOS `func_080EE61C` wrapper is intentionally asm-only because agbcc cannot emit `SVC #6` from C.
+- Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
@@ -21,7 +21,13 @@ At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
 - current gap: **3407** more matched functions
 
-### Batch 165 — accepted (honest BIOS SVC exception)
+### Batch 166 — accepted (real-C BIOS SVC lowering)
+- `func_080EE61C` is restored as `src/decomp/asm_080ee61c.c`; the standalone assembly source and linker entry were removed. The C body calls `__builtin_swi_div()`, whose fixed BIOS ABI consumes the incoming `r0/r1` values and returns the quotient in `r0`.
+- Added `tools/agbcc-swi.patch`, a reproducible target-specific agbcc extension: the builtin expands to a backend `swi_div` instruction pattern that emits `SVC #6`. CI applies the patch before building agbcc.
+- Verification: the generated C object is exactly `SVC #6; BX LR` (`df06 4770`), the inline-asm audit is empty, and a clean Docker build reports **`wariowareinc.gba: OK`**. Both ROMs hash to `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1362 / 5960** matched functions, **6.4803877%** matched code, and **902 C / 5785 asm-only** objdiff units. This is +1 C-linked unit and +1 matched function over Batch 165.
+
+### Batch 165 — accepted (historical BIOS SVC exception)
 - `func_080EE61C` was moved from the legacy inline-asm C shim back to `asm/asm_080ee61c.s`, with the linker selecting the standalone object at the original address. The emitted function remains exactly `SVC #6; BX LR`.
 - This is intentionally not counted as a C decompilation: ordinary C division lowers to a `__divsi3` call, and the bundled agbcc has no SVC/SWI builtin. m2c/asmlift can recover the division semantics but cannot make agbcc emit this BIOS instruction.
 - Verification: clean Docker `NONMATCHING=0` build reported **`wariowareinc.gba: OK`**; `build/wariowareinc.gba` and `baserom.gba` both hash to `3f556448d290fa5406d6ed367fee16cc02387ad3`. The fresh report is **1361 / 5960** with **901 C / 5786 asm-only** units, and the `src/decomp` non-empty-asm audit is empty.

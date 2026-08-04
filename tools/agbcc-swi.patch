@@ -1,0 +1,46 @@
+diff --git a/gcc/c-decl.c b/gcc/c-decl.c
+index a710701..1228809 100755
+--- a/gcc/c-decl.c
++++ b/gcc/c-decl.c
+@@ -3471,0 +3472,6 @@ init_decl_processing ()
++  /* The GBA BIOS signed division entry point.  This is deliberately a
++     target-specific builtin rather than a source-level asm escape: the
++     compiler owns the SVC instruction and the C caller remains ordinary.  */
++  builtin_function ("__builtin_swi_div", default_function_type,
++			    BUILT_IN_SWI_DIV, NULL);
++
+diff --git a/gcc/expr.c b/gcc/expr.c
+index fea930c..bf80351 100755
+--- a/gcc/expr.c
++++ b/gcc/expr.c
+@@ -7452,0 +7453,9 @@ get_memory_rtx(tree exp)
++/* Expand the GBA BIOS signed division service.  The service has a fixed ABI:
++   r0 and r1 are its inputs and r0 receives the quotient.  */
++static rtx
++expand_swi_div (tree arglist, rtx target)
++{
++    emit_insn(gen_swi_div());
++    return gen_rtx_REG(SImode, 0);
++}
++
+@@ -8281,0 +8291,3 @@ expand_builtin(tree exp, rtx target, rtx subtarget, enum machine_mode mode, int
++    case BUILT_IN_SWI_DIV:
++        return expand_swi_div(arglist, target);
++
+diff --git a/gcc/thumb.md b/gcc/thumb.md
+index f78624f..003de59 100755
+--- a/gcc/thumb.md
++++ b/gcc/thumb.md
+@@ -1053,0 +1054,6 @@
++(define_insn "swi_div"
++  [(unspec_volatile [(const_int 0)] 6)]
++  ""
++  "svc\\t#6"
++  [(set_attr "length" "2")])
++
+diff --git a/gcc/tree.h b/gcc/tree.h
+index bc2872b..ea17991 100755
+--- a/gcc/tree.h
++++ b/gcc/tree.h
+@@ -112,0 +113 @@ enum built_in_function
++  BUILT_IN_SWI_DIV,

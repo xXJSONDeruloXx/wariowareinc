@@ -163,3 +163,10 @@ Use this file to record where the current decomp tools helped, where they missed
 - m2c/asmlift therefore cannot solve this particular compiler/ISA boundary. The honest project form is a standalone `asm/asm_080ee61c.s` source with the original two instructions, while all `src/decomp` C files remain free of non-empty instruction asm.
 - The clean Docker ROM gate passed with `wariowareinc.gba: OK`; both ROMs hash to `3f556448d290fa5406d6ed367fee16cc02387ad3`. The report moves from **1362 / 5960** to **1361 / 5960** and from **902 C / 5785 asm-only** to **901 C / 5786 asm-only** solely because objdiff no longer classifies this function as C-produced output.
 - Durable rule: do not trade an honest asm-only BIOS exception for a fake C wrapper or a non-empty inline-asm shim merely to preserve the decompilation counter.
+
+## Batch 166 — compiler-level BIOS SVC lowering (2026-08-04)
+- The remaining wrapper is now real C. A target-specific `__builtin_swi_div()` was added to the bundled agbcc front end and expanded through a Thumb `define_insn` backend pattern; the source function itself contains no instruction-bearing inline asm.
+- The builtin intentionally takes no source arguments: the BIOS service consumes the function's incoming `r0`/`r1` ABI values directly and returns its `r0` result. Passing the C parameters through an ordinary builtin call caused old agbcc to create stack home stores, so the fixed-ABI spelling is important.
+- The isolated and integrated object both disassemble to exactly `SVC #6; BX LR` (`df06 4770`). The clean Docker ROM gate passed, with both ROMs at SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Reproducibility lesson: the compiler change is tracked in `tools/agbcc-swi.patch`, and `.github/workflows/report.yaml` applies it after cloning agbcc. This keeps the project C source honest without relying on a machine-local compiler binary or source-level asm escape.
+- Tool assessment: m2c/asmlift correctly exposed the signed-division semantics, but the decisive step was extending the target compiler; adapters cannot repair a missing ISA lowering by themselves.

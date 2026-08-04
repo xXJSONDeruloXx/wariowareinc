@@ -11,15 +11,15 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 165` — strict-ROM cleanup moving the irreducible BIOS SVC wrapper back to standalone assembly
-- `build/report.json`: **1361 / 5960 matched functions** (**22.835571%**) · **6.4799843%** matched code
-- `tools/gen_objdiff.py`: **901 linked C TUs / 5786 non-C units**
-- `src/decomp/*.c`: **1078 decompiled function files** = **882 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 166` — strict-ROM C conversion of the BIOS SVC wrapper through a reproducible agbcc backend builtin
+- `build/report.json`: **1362 / 5960 matched functions** (**22.852348%**) · **6.4803877%** matched code
+- `tools/gen_objdiff.py`: **902 linked C TUs / 5785 non-C units**
+- `src/decomp/*.c`: **1079 decompiled function files** = **883 standalone_tu** + **196 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **30 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining non-empty inline-asm decomp files: **0**
-- `func_080EE61C` remains an intentional asm-only BIOS function in `asm/asm_080ee61c.s`; agbcc has no C lowering for `SVC #6`
+- `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 80% target at the current function total: **4768 / 5960**
 - Remaining gap to 80%: **3407 matched functions**
 
