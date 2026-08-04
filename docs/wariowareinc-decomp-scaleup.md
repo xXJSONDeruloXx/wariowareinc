@@ -5,10 +5,10 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 148` — converted `func_0800C128` as a real-C included stub and preserved ROM identity
-- `build/report.json`: **1352 / 5962 matched functions** = **22.67796%**
-- `matched_code_percent`: **6.4580551%**
-- `tools/gen_objdiff.py`: **893 linked C TUs / 5795 non-C units**
+- Verified working tree: `batch 149` — strict-ROM re-hoist of `func_08003D28` after rolling back to the last byte-identical baseline
+- `build/report.json`: **1352 / 5961 matched functions** = **22.680758%**
+- `matched_code_percent`: **6.45988%**
+- `tools/gen_objdiff.py`: **893 linked C TUs / 5794 non-C units**
 - `src/decomp/*.c`: **1070 decompiled function files** = **874 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
@@ -18,9 +18,16 @@ Reach at least **80% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5961`), that means:
 - target: **4769 / 5961** matched functions
-- current gap: **3418** more matched functions
+- current gap: **3417** more matched functions
 
 ## What just landed
+
+### Batch 149 — accepted (strict re-hoist)
+- Metric delta: **+0 report matched functions**, **+1 standalone_tu decomp file**, **+1 linked C TU**, **+0 ROM delta**. The fresh report recount is **1352 / 5961** with **893 C / 5794 asm-only** units.
+- Matched function:
+  - `func_08003D28`: byte-mask setter. m2c produced the semantic skeleton; asmlift was attempted but declined the candidate because of the project type context. The final real-C spelling uses register pins and an empty compiler barrier to preserve the original `MOVS`/`LSLS`/`RSBS` sequence.
+- Verification: isolated object comparison was **100.0% / 0 diffs**, a clean Docker `NONMATCHING=0` build reported **`wariowareinc.gba: OK`**, and the ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Tooling: restored `tools/asmlift_warioware.py` and `tools/asmlift-compile.sh` as a reusable m2c/asmlift adapter; the scripts do not alter the ROM unless a candidate is explicitly adopted.
 
 ### Batch 148 — accepted
 - Metric delta: **+1 report matched function**, **+1 included_stub decomp file**, **+0.000188% matched code** (6.4578667 → 6.4580551)

@@ -12,14 +12,14 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (new)
 
 ## Current verified baseline
-- Verified working tree: `batch 147` — converted `func_0800C15C` as a real-C included stub and preserved ROM identity
-- `build/report.json`: **1351 / 5961 matched functions** (**22.663982%**) · **6.4578667%** matched code
-- `tools/gen_objdiff.py`: **892 linked C TUs / 5795 non-C units**
-- `src/decomp/*.c`: **1069 decompiled function files** = **873 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 149` — strict-ROM re-hoist of `func_08003D28` after rolling back to the last byte-identical baseline
+- `build/report.json`: **1352 / 5961 matched functions** (**22.680758%**) · **6.45988%** matched code
+- `tools/gen_objdiff.py`: **893 linked C TUs / 5794 non-C units**
+- `src/decomp/*.c`: **1070 decompiled function files** = **874 standalone_tu** + **196 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
 - 80% target at the current function total: **4769 / 5961**
-- Remaining gap to 80%: **3418 matched functions**
+- Remaining gap to 80%: **3417 matched functions**
 
 ## How autonomous continuation should work
 - Prefer the repo-local fresh-context commands over pifinity/Ralph:

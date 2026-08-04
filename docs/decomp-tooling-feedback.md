@@ -6,6 +6,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## m2c/asmlift adapter — strict re-hoist (2026-08-04)
+- The restored `tools/asmlift_warioware.py` adapter finds an unconverted Splat assembly source, normalizes its address-commented Thumb syntax, runs the sibling Mizuchi `m2c`, and can pass an optional candidate through the globally installed `asmlift` executable.
+- `tools/asmlift-compile.sh` supplies project headers and reuses the Docker compiler bridge, so generated candidates can be tested in the same agbcc context as normal decompilation units.
+- On `func_08003D28`, m2c provided the correct mask-operation skeleton and asmlift was useful as a second attempted synthesis path, but asmlift declined the candidate because its generated type context did not compile against this project. The accepted spelling still required manual register pins and an empty barrier for the `MOVS`/`LSLS`/`RSBS` instruction shape.
+- Strict workflow lesson: adapters are candidate generators and diagnostics only. Every adopted function still needs an isolated object diff plus a clean `NONMATCHING=0` Docker build with `wariowareinc.gba: OK`; this first re-hoist preserved the baseline ROM SHA-1 exactly.
+
 ## Guard/loop hardening — non-empty inline asm ban and unstoppable loop
 - Tools that helped:
   - Recent chunks proved the naked-asm guard works, but also showed weaker agents can still hide meaningful instruction sequences inside non-empty `asm volatile` blocks.
@@ -112,4 +118,3 @@ Use this file to record where the current decomp tools helped, where they missed
   - `func_0800BEC0` is the only naked/whole-function wrapper left. Pure C still hits the documented `CMP #1/BGE` vs `CMP #0/BGT` optimizer trap.
 - Follow-up idea:
   - Decide whether a very small branch/compare inline-asm workaround is acceptable for `func_0800BEC0`, or keep it quarantined until a pure-C spelling is found.
-
