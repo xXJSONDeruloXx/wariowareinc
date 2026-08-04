@@ -11,14 +11,14 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 159` — strict-ROM maintenance pass reshaping legacy inline-asm shims into real C
+- Verified working tree: `batch 160` — strict-ROM maintenance pass removing the `func_080141C8` ADD shim
 - `build/report.json`: **1362 / 5960 matched functions** (**22.852348%**) · **6.4803877%** matched code
 - `tools/gen_objdiff.py`: **902 linked C TUs / 5785 non-C units**
 - `src/decomp/*.c`: **1079 decompiled function files** = **883 standalone_tu** + **196 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Latest accepted maintenance pass: **25 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
+- Latest accepted maintenance pass: **26 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
-- Remaining non-empty inline-asm decomp files: **6** (`asm_0800bec0.c`, `asm_0800c15c.c`, `asm_080141c8.c`, `asm_08014dfc.c`, `asm_08015a4c.c`, `asm_080ee61c.c`)
+- Remaining non-empty inline-asm decomp files: **5** (`asm_0800bec0.c`, `asm_0800c15c.c`, `asm_08014dfc.c`, `asm_08015a4c.c`, `asm_080ee61c.c`)
 - 80% target at the current function total: **4768 / 5960**
 - Remaining gap to 80%: **3406 matched functions**
 

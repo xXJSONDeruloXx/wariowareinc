@@ -300,7 +300,7 @@ These reasons justify leaving an existing legacy naked file untouched or marking
 - **ABI-shaped ordinary calls**: When a header prototype uses `s16`/`s8` or `u16` but the target already has a sign-extended or widened value in an ABI register, call through a unique local function-pointer typedef with `s32`/`u32` parameters. This preserves register reuse while keeping the source as real C. The accepted pass applies this to `sprite_set_visible`, `sprite_set_base_palette`, `sprite_set_anim_cel`, `sprite_set_x_y`, `func_08011504`, `play_sound`, `schedule_function_call`, `sprite_is_invalid`, `__udivsi3`, and related wrappers.
 - **Indirect call via R0**: `((void (*)(void))r0)();` is ordinary C and emits the target `_call_via_r0` helper, replacing the old non-empty `bl _call_via_r0` shim.
 - **Indexed signed loads**: `r1 = *(s16 *)(base + offset)` recovers the target `LDRSH`; pin `base`/`offset` and use the source-level addition order when the encoding matters. In `func_08012DCC`, `offset += ids` was required to preserve `ADDS R1,R2` rather than the reversed operand encoding.
-- **In-place two-operand ADD remains a compiler trap**: ordinary `r5 += 4` and `r2 += 2` either fold into an address or become a three-operand ADD, even with barriers. The legacy shims remain in `func_08014DFC` and `func_080141C8` until a real-C spelling is found.
+- **In-place two-operand ADD shaping**: an empty barrier that clobbers condition codes immediately before ordinary `r2 += 2` makes agbcc emit the target `ADDS R2,#2`; this removed the shim from `func_080141C8`. The same approach has not recovered `ADDS R5,#4` in `func_08014DFC`, where agbcc still folds or selects a three-operand form.
 
 
 ## Families still worth mining heavily

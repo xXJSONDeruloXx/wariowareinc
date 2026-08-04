@@ -27,7 +27,8 @@ void func_080141C8(void) {
     r2 <<= 1;
     r0 = r1 + r2;
     *(u16 *)r0 = r2;
-    asm volatile("add r2, #2" : "+r"(r2));
+    asm volatile("" : "+r"(r2) : : "cc");
+    r2 += 2;
     r0 = r1 + r2;
     *(u16 *)r0 = r4;
     r0 = 0x82;

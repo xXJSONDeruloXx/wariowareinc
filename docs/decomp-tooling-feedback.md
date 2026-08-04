@@ -134,3 +134,8 @@ Use this file to record where the current decomp tools helped, where they missed
 - Register-pinned C recovered the two indexed `LDRSH` loads and the exact operand order in `func_08012DCC`; ordinary C indirect dispatch reproduced `_call_via_r0`. A first `func_08012DCC` spelling missed by one byte, so the strict ROM gate caught and corrected the addition order.
 - The same strict gate rejected pure-C attempts for the two-operand in-place `ADD` forms in `func_080141C8` and `func_08014DFC`, and the known `func_0800BEC0` compare trap remains. Those shims were restored rather than weakening the byte-matching rule.
 - Metrics are unchanged because the 25 files were already C-linked included stubs: **1362 / 5960**, **6.4803877%** matched code, and **902 C / 5785 asm-only** objdiff units. The final clean Docker build still reports `wariowareinc.gba: OK`; six files with non-empty inline asm remain (`asm_0800bec0.c`, `asm_0800c15c.c`, `asm_080141c8.c`, `asm_08014dfc.c`, `asm_08015a4c.c`, `asm_080ee61c.c`).
+
+## Batch 160 — condition-code barrier for two-operand ADD (2026-08-04)
+- A small isolated compiler probe showed that `asm volatile("" : "+r"(r2) : : "cc")` immediately before ordinary `r2 += 2` forces the exact Thumb `ADDS R2,#2`; the same empty barrier is allowed by the strengthened guard because it contains no instruction text.
+- `func_080141C8` matched in the linked `main_menu.c` object and passed a clean `NONMATCHING=0` Docker build. This is a useful new shaping rule, while the analogous `R5 += 4` case remains unresolved.
+- The maintenance count is now **26 reshaped files**, with five non-empty inline-asm files remaining.
