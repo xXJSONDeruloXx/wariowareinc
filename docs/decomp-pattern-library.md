@@ -174,12 +174,13 @@ Without the s32 casts, the compiler treats the MUL result as unsigned and genera
   loop:
       r2 += 0xC;
   start:
-      if (*(void **)r2 != NULL)
-          goto loop;
-      func_0800247C(r2);
+  if (*(void **)r2 != NULL)
+      goto loop;
+  func_0800247C(r2);
   }
   ```
   This preserves the original instruction order (`ADDS R2,#0xC` before `LDR R0,[R2]`) and the specific register allocation the original asm uses.
+- **Raw 32-byte record setter**: when the target keeps the byte-normalized value in `r2`, the index shift in `r1`, the first record base in `r3`, and uses `ADDS R3,R1,R3`, pin `r0`–`r3`, compute `r3 = (u8 *)((u32)r1 + (u32)r3)`, then reload the base into `r0` and use `r1 += (u32)r0` for the second store. Example: `func_080F26BC`.
 - **BLS vs BLE for loop conditions**: `u32 i; while (i <= 2)` generates `BLS` (unsigned lower-or-same), while `s32 i; while (i <= 2)` generates `BLE` (signed less-or-equal). Check the original's branch type to determine the correct counter type. Using the wrong type produces different bytes even though the loop semantics are identical for non-negative values.
 - **LSLS sign-bit test pattern**: When the original tests a specific bit using `LSLS R0, #0x1D; CMP R0, #0; BGE`, write `s32 val = ptr[N]; val = val << 0x1D; if (val >= 0) return; callee();`. Do NOT use `if (val & 4)` — that generates `MOVS R1, #4; ANDS; CMP; BEQ` which is different code.
 - **Literal-pool AND mask** — `gGraphicsBuffer.DISPCNT &= 0xEFFF` compound assignment produces the right register allocation. Using a local `u16 val; val = ...; val &= ...; gGraphicsBuffer.DISPCNT = val;` produces wrong register allocation (AND result in R1 instead of R0).

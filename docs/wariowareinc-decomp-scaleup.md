@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 152` — strict-ROM re-hoist of `func_0803FED0` after the adapter-assisted leaf checkpoints
-- `build/report.json`: **1355 / 5961 matched functions** = **22.731085%**
-- `matched_code_percent`: **6.4695425%**
-- `tools/gen_objdiff.py`: **896 linked C TUs / 5791 non-C units**
-- `src/decomp/*.c`: **1073 decompiled function files** = **877 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 153` — strict-ROM re-hoist of `func_080F26BC` after the adapter-assisted leaf checkpoints
+- `build/report.json`: **1356 / 5961 matched functions** = **22.74786%**
+- `matched_code_percent`: **6.4715557%**
+- `tools/gen_objdiff.py`: **897 linked C TUs / 5790 non-C units**
+- `src/decomp/*.c`: **1074 decompiled function files** = **878 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
 
@@ -18,9 +18,15 @@ Reach at least **80% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5961`), that means:
 - target: **4769 / 5961** matched functions
-- current gap: **3414** more matched functions
+- current gap: **3413** more matched functions
 
 ## What just landed
+
+### Batch 153 — accepted (strict adapter-assisted re-hoist)
+- Metric delta: **+1 report matched function**, **+1 standalone_tu decomp file**, **+1 linked C TU**, **+0 ROM delta**. The fresh report is **1356 / 5961** with **897 C / 5790 asm-only** units.
+- Matched function:
+  - `func_080F26BC`: normalizes a byte value, computes a 32-byte record offset, and stores it at record offsets `0x1D` and `0x1E`. m2c supplied the raw structure layout; register-pinned C plus an explicit three-register pointer expression preserved the original `ADDS R3,R1,R3` and reload/store sequence.
+- Verification: isolated object comparison was **100.0% / 0 diffs** across 10 instructions, a clean Docker `NONMATCHING=0` build reported **`wariowareinc.gba: OK`**, and the ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 
 ### Batch 152 — accepted (strict leaf re-hoist)
 - Metric delta: **+1 report matched function**, **+1 standalone_tu decomp file**, **+1 linked C TU**, **+0 ROM delta**. The fresh report is **1355 / 5961** with **896 C / 5791 asm-only** units.
