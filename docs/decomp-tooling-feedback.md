@@ -143,3 +143,7 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Batch 161 — callee-saved register ADD shaping (2026-08-04)
 - The condition-code barrier pattern transferred unchanged from `R2` to callee-saved `R5`: ordinary `r5 += 4` emits `ADDS R5,#4` after `asm volatile("" : "+r"(r5) : : "cc")`.
 - `func_08014DFC` passed the linked object check and clean Docker ROM gate. The maintenance count is now **27 reshaped files**, with four non-empty inline-asm files remaining.
+
+## Batch 162 — compiler-generated STMIA (2026-08-04)
+- A small pointer-loop probe showed that agbcc emits `STMIA` when the store pointer is a `u32 *` and the source uses `*r2++ = r1`; this was more effective than manually pinning an integer address and trying to model the store as a byte/word assignment.
+- `func_08015A4C` matched through its literal pool and passed the clean Docker ROM gate. The maintenance count is now **28 reshaped files**, with three non-empty inline-asm files remaining.

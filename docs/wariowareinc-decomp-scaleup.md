@@ -5,14 +5,14 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 161` — strict-ROM maintenance pass removing the `func_08014DFC` ADD shim
+- Verified working tree: `batch 162` — strict-ROM maintenance pass removing the `func_08015A4C` STM shim
 - `build/report.json`: **1362 / 5960 matched functions** = **22.852348%**
 - `matched_code_percent`: **6.4803877%**
 - `tools/gen_objdiff.py`: **902 linked C TUs / 5785 non-C units**
 - `src/decomp/*.c`: **1079 decompiled function files** = **883 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
-- Maintenance state: **27 legacy inline-asm shims removed** from included-stub files with no ROM change; **4 files** still contain non-empty inline asm for unresolved instruction-level cases.
+- Maintenance state: **28 legacy inline-asm shims removed** from included-stub files with no ROM change; **3 files** still contain non-empty inline asm for unresolved instruction-level cases.
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
@@ -22,6 +22,12 @@ At the current `total_functions` count (`5960`), that means:
 - current gap: **3406** more matched functions
 
 ## What just landed
+
+### Batch 162 — accepted (`func_08015A4C` real-C STM shaping)
+- Metric delta: **+0 report matched functions / +1 legacy file reshaped / +0 ROM delta**. The report remains **1362 / 5960** matched functions with **6.4803877%** matched code.
+- `func_08015A4C` now keeps the store pointer as a `u32 *` and uses ordinary `*r2++ = r1`; agbcc emits the target `STMIA R2!,{R1}` and preserves the original loop branch.
+- Verification: the isolated `main_menu.c` object instruction stream matched the target through the literal pool, and a clean Docker `NONMATCHING=0` build reported **`wariowareinc.gba: OK`** with the baseline ROM SHA-1 unchanged.
+- Remaining non-empty inline-asm files: `asm_0800bec0.c`, `asm_0800c15c.c`, and `asm_080ee61c.c`.
 
 ### Batch 161 — accepted (`func_08014DFC` real-C ADD shaping)
 - Metric delta: **+0 report matched functions / +1 legacy file reshaped / +0 ROM delta**. The report remains **1362 / 5960** matched functions with **6.4803877%** matched code.
@@ -42,7 +48,7 @@ At the current `total_functions` count (`5960`), that means:
   - Main-menu/sprite call and indexed-load wrappers: `func_08011584`, `func_08011774`, `func_080117A8`, `func_080118E0`, `func_08012058`, `func_08012658`, `func_08012700`, `func_08012D3C`, `func_08012DCC`, `func_08013388`, `func_080136A4`, `func_08014374`, `func_08014810`, `func_08014E38`, `func_08014E88`, `func_08014F38`, `func_08014FA8`.
   - Sprite-library helpers: `sprite_delete`, `func_080EF358`.
 - The successful pattern was ordinary C calls through unique ABI-shaping function-pointer typedefs with `s32`/`u32` parameters, plus register-pinned C for indexed loads and operand order. An ordinary C indirect call also reproduced `_call_via_r0`.
-- Rejected instruction-shaping attempts remain unchanged: `func_0800BEC0` still has the `CMP #1`/`BGE` compare trap; `func_080141C8` and `func_08014DFC` still require their two-operand `ADD` shims. The `STM` loop, `svc`, and stack/register wrapper remain in `asm_08015A4C.c`, `asm_0800ee61c.c`, and `asm_0800c15c.c` respectively.
+- The earlier rejected instruction-shaping attempts for `func_0800BEC0`, the two ADD forms, and the STM loop were subsequently resolved in Batches 160–162. The remaining hard cases are the `CMP #1`/`BGE` wrapper, the stack/register wrapper, and the literal `svc` instruction.
 - Verification: each accepted source reshape passed the strict Docker ROM gate; the final clean build reported **`wariowareinc.gba: OK`**, the ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`, and `make report` plus `tools/gen_objdiff.py` refreshed the metrics above.
 
 ### Batch 158 — accepted (strict literal-pool re-hoist)
@@ -218,8 +224,8 @@ At the current `total_functions` count (`5960`), that means:
   - `func_08016E6C` language_select check: tests `D_030035E0` halfword, conditionally calls `func_08016CBC(D_083AD90C)`, then `func_08016D00()`; if result nonzero sets `gCurrentScene = 5`. Uses `extern u32 D_083AD90C` for proper symbol reference in literal pool. Real C with register pins.
   - `func_08001B70` code_08001a70 task finder: iterates 0..0x1F checking `D_03000118[i]` and `D_03000140[i]`, calls `func_08001B28(i)` when both match. Real C with register pins.
   - `func_08001E20` code_08001a70 task counter: similar to func_08001B70 but counts matching entries instead of calling a function. Returns count in R0. No BL calls — leaf function. Real C with register pins.
-  - `func_08015A4C` main_menu scene buffer fill: loads `gCurrentSceneData`, reads offset 0xB4 flag, if set reads halfword at 0xC2 and ORs with 0x40000; fills 16 words at `data[0xC]+0x240` using inline `STM` instruction. No BL calls — leaf function. Uses `asm volatile("stm %2!, {%1}")` for STM store loop. Real C with register pins.
-- Notes: Eight functions in one chunk — most productive session yet. Three identical scene-init functions (func_080126C8/func_08013428/func_080143F0) were all first-try matches. New pattern: `asm volatile STM` for store-multiple loops that the compiler cannot generate from pure C. The `u32 sp[]` local array pattern correctly handles stack-based function arguments for `dma3_set`. Using `extern u32 D_083AD90C` + `&D_083AD90C` produces proper symbol references in literal pool instead of raw address constants.
+  - `func_08015A4C` main_menu scene buffer fill: loads `gCurrentSceneData`, reads offset 0xB4 flag, if set reads halfword at 0xC2 and ORs with 0x40000; fills 16 words at `data[0xC]+0x240` using a compiler-generated `STMIA` store loop. No BL calls — leaf function. The former inline `STM` shim was removed in Batch 162.
+- Notes: Eight functions in one chunk — most productive session yet. Three identical scene-init functions (func_080126C8/func_08013428/func_080143F0) were all first-try matches. The `u32 sp[]` local array pattern correctly handles stack-based function arguments for `dma3_set`. Using `extern u32 D_083AD90C` + `&D_083AD90C` produces proper symbol references in literal pool instead of raw address constants.
 
 ### Batch 120 — accepted
 - Metric delta: **+1 report matched function**, **+6 included_stub decomp files** (matched code increased)

@@ -301,6 +301,7 @@ These reasons justify leaving an existing legacy naked file untouched or marking
 - **Indirect call via R0**: `((void (*)(void))r0)();` is ordinary C and emits the target `_call_via_r0` helper, replacing the old non-empty `bl _call_via_r0` shim.
 - **Indexed signed loads**: `r1 = *(s16 *)(base + offset)` recovers the target `LDRSH`; pin `base`/`offset` and use the source-level addition order when the encoding matters. In `func_08012DCC`, `offset += ids` was required to preserve `ADDS R1,R2` rather than the reversed operand encoding.
 - **In-place two-operand ADD shaping**: an empty barrier that clobbers condition codes immediately before ordinary `rN += imm` makes agbcc emit the target two-operand form. This removed the shims from both `func_080141C8` (`ADDS R2,#2`) and `func_08014DFC` (`ADDS R5,#4`).
+- **Compiler-generated STMIA**: keep a sequential fill pointer as a `u32 *` and write with `*r2++ = r1`; agbcc can select `STMIA R2!,{R1}` for the loop. This removed the former `stm` shim from `func_08015A4C`.
 
 
 ## Families still worth mining heavily
