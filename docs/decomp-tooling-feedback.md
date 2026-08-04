@@ -15,6 +15,7 @@ Use this file to record where the current decomp tools helped, where they missed
 - On `func_0803FED0`, the adapter exposed the global-halfword semantics but initially folded the non-zero offset into the literal address. An empty barrier on a local absolute pointer recovered the original base literal plus `[base, #2]` load; isolated objdiff and the strict ROM build both confirmed the workaround.
 - On `func_080F26BC`, m2c correctly identified the raw record offsets, while the first C spelling lost the target's three-register add and loaded the base too late. Register pins plus `r3 = (u8 *)((u32)r1 + (u32)r3)` recovered `ADDS R3,R1,R3`; this was exact in isolation and in the strict ROM.
 - On `func_080F2F68`, m2c surfaced a non-obvious ABI gap: the function uses its third incoming argument from `R2`, so a two-parameter C spelling sign-extended `R1` instead. Modeling the unused middle parameter made the call setup exact without inline instruction shims.
+- On `func_080F2F78`, the same adapter insight transferred directly to the signed-byte sibling: only the shift width changed from 16 to 24, and the strict object/ROM gates confirmed the family spelling.
 - Strict workflow lesson: adapters are candidate generators and diagnostics only. Every adopted function still needs an isolated object diff plus a clean `NONMATCHING=0` Docker build with `wariowareinc.gba: OK`; this first re-hoist preserved the baseline ROM SHA-1 exactly.
 
 ## Guard/loop hardening — non-empty inline asm ban and unstoppable loop
