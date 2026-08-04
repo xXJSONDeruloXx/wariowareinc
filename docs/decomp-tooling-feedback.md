@@ -151,3 +151,8 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Batch 163 — pure-C generated-coordinate wrapper (2026-08-04)
 - An isolated pure-C probe showed that non-volatile `s16` locals are important: `volatile` forces `LDRH` plus explicit sign-extension, while ordinary locals let agbcc select the target indexed `LDRSH` form. A typed `func_08006F84(s16, s16 *, s16 *)` declaration also reproduced the target `SB = SP+0xA` setup.
 - `func_0800C15C` matched in the integrated bitmap-font object and passed the clean Docker ROM gate. The maintenance count is now **29 reshaped files**, with two non-empty inline-asm files remaining.
+
+## Batch 164 — pure-C range-dispatch shaping (2026-08-04)
+- The documented direct-comparison trap was not a fundamental blocker for a byte-valued switch. An ordinary `switch` with cases 1–3 and 4 still gave the wrong lower-bound-first tree; adding a redundant `case -10` that shares the default target makes agbcc retain the target upper-bound-first range dispatch without any non-empty inline asm. The case is unreachable because the switch value is loaded from a `u8` byte.
+- `func_0800BEC0` matched byte-for-byte in the integrated bitmap-font object, including its literal-pool padding, and passed the clean Docker ROM gate. The maintenance count is now **30 reshaped files**, with only the BIOS `svc #6` wrapper still containing non-empty inline asm.
+- This is a compiler-shaping workaround, so keep the value-domain justification beside the switch; do not generalize the redundant case to a signed value whose negative range is reachable.

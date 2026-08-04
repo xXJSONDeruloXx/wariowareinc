@@ -3,43 +3,27 @@
 #include "include/types.h"
 #include "include/scenes.h"
 
-__attribute__((naked)) u32 func_0800BEC0(void) {
-    asm volatile(
-        ".syntax unified\n"
-        "push {lr}\n"
-        "ldr r0, _0800BED8\n"
-        "ldr r0, [r0]\n"
-        "ldr r1, _0800BEDC\n"
-        "adds r0, r0, r1\n"
-        "ldrb r0, [r0]\n"
-        "cmp r0, #3\n"
-        "bgt _0800BEE0\n"
-        "cmp r0, #1\n"
-        "bge _0800BEE6\n"
-        "b _0800BEEE\n"
-        ".balign 4, 0\n"
-        "_0800BED8:\n"
-        ".word gCurrentSceneData\n"
-        ".balign 4, 0\n"
-        "_0800BEDC:\n"
-        ".word 0x00000195\n"
-        "_0800BEE0:\n"
-        "cmp r0, #4\n"
-        "beq _0800BEEA\n"
-        "b _0800BEEE\n"
-        "_0800BEE6:\n"
-        "movs r0, #1\n"
-        "b _0800BEF0\n"
-        "_0800BEEA:\n"
-        "movs r0, #2\n"
-        "b _0800BEF0\n"
-        "_0800BEEE:\n"
-        "movs r0, #0\n"
-        "_0800BEF0:\n"
-        "pop {r1}\n"
-        "bx r1\n"
-        ".ltorg\n"
-        ".syntax divided\n"
-    );
+u32 func_0800BEC0(void) {
+    s32 value;
+
+    value = ((u8 *)gCurrentSceneData)[0x195];
+    switch (value) {
+    case -10:
+        goto zero;
+    case 1:
+    case 2:
+    case 3:
+        goto one;
+    case 4:
+        goto two;
+    default:
+        goto zero;
+    }
+one:
+    return 1;
+two:
+    return 2;
+zero:
+    return 0;
 }
 #endif

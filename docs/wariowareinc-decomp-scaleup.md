@@ -5,14 +5,14 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 163` — strict-ROM maintenance pass removing the `func_0800C15C` stack/register shims
+- Verified working tree: `batch 164` — strict-ROM maintenance pass removing the `func_0800BEC0` whole-function asm wrapper
 - `build/report.json`: **1362 / 5960 matched functions** = **22.852348%**
 - `matched_code_percent`: **6.4803877%**
 - `tools/gen_objdiff.py`: **902 linked C TUs / 5785 non-C units**
 - `src/decomp/*.c`: **1079 decompiled function files** = **883 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
-- Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
-- Maintenance state: **29 legacy inline-asm shims removed** from included-stub files with no ROM change; **2 files** still contain non-empty inline asm for unresolved instruction-level cases.
+- Remaining naked/original asm wrapper files: **0**
+- Maintenance state: **30 legacy inline-asm shims removed** from included-stub files with no ROM change; **1 file** still contains non-empty inline asm for the unresolved BIOS `svc` instruction.
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
@@ -22,6 +22,12 @@ At the current `total_functions` count (`5960`), that means:
 - current gap: **3406** more matched functions
 
 ## What just landed
+
+### Batch 164 — accepted (`func_0800BEC0` real-C range-dispatch shaping)
+- Metric delta: **+0 report matched functions / +1 legacy file reshaped / +0 ROM delta**. The report remains **1362 / 5960** matched functions with **6.4803877%** matched code.
+- `func_0800BEC0` now uses an ordinary C `switch` over the byte read from `gCurrentSceneData + 0x195`. A redundant `case -10` (unreachable for a loaded `u8`, and sharing the default result) makes agbcc retain the target range-dispatch sequence, including `CMP #1; BGE`; cases 1–3 return 1, case 4 returns 2, and all other byte values return 0.
+- Verification: the integrated `bitmap_font.c` object matched the target function section byte-for-byte, including literal-pool padding, and a clean Docker `NONMATCHING=0` build reported **`wariowareinc.gba: OK`** with the baseline ROM SHA-1 unchanged.
+- Remaining non-empty inline-asm file: `asm_080ee61c.c` (the BIOS `svc #6` wrapper).
 
 ### Batch 163 — accepted (`func_0800C15C` real-C stack/register shaping)
 - Metric delta: **+0 report matched functions / +1 legacy file reshaped / +0 ROM delta**. The report remains **1362 / 5960** matched functions with **6.4803877%** matched code.
@@ -54,7 +60,7 @@ At the current `total_functions` count (`5960`), that means:
   - Main-menu/sprite call and indexed-load wrappers: `func_08011584`, `func_08011774`, `func_080117A8`, `func_080118E0`, `func_08012058`, `func_08012658`, `func_08012700`, `func_08012D3C`, `func_08012DCC`, `func_08013388`, `func_080136A4`, `func_08014374`, `func_08014810`, `func_08014E38`, `func_08014E88`, `func_08014F38`, `func_08014FA8`.
   - Sprite-library helpers: `sprite_delete`, `func_080EF358`.
 - The successful pattern was ordinary C calls through unique ABI-shaping function-pointer typedefs with `s32`/`u32` parameters, plus register-pinned C for indexed loads and operand order. An ordinary C indirect call also reproduced `_call_via_r0`.
-- The earlier rejected instruction-shaping attempts for `func_0800BEC0`, the two ADD forms, the STM loop, and the stack/register wrapper were subsequently resolved in Batches 160–163. The remaining hard cases are the `CMP #1`/`BGE` wrapper and the literal `svc` instruction.
+- The earlier rejected instruction-shaping attempts for `func_0800BEC0`, the two ADD forms, the STM loop, and the stack/register wrapper were subsequently resolved in Batches 160–164. The remaining hard case is the literal `svc` instruction.
 - Verification: each accepted source reshape passed the strict Docker ROM gate; the final clean build reported **`wariowareinc.gba: OK`**, the ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`, and `make report` plus `tools/gen_objdiff.py` refreshed the metrics above.
 
 ### Batch 158 — accepted (strict literal-pool re-hoist)
