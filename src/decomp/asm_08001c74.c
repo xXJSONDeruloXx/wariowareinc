@@ -14,14 +14,15 @@ void func_08001C74(void *out, s32 angle, u32 idx) {
     register u32 r4 asm("r4");
     register u32 r5 asm("r5") = (u32)out;
 
-    asm volatile("mov r4, r2" : "+r"(r4) : "r"(r2));
+    r4 = r2;
+    asm volatile("" : "+r"(r4));
     r4 <<= 16;
     r4 >>= 16;
     r1 <<= 16;
     r1 = (u32)((s32)r1 >> 16);
     r0 = 0x80;
     r0 <<= 9;
-    asm volatile("bl __divsi3" :: "r"(r0), "r"(r1) : "r0", "r1", "r2", "r3", "lr", "memory");
+    r0 = __divsi3((s32)r0, (s32)r1);
 
     r2 = 0xFF;
     r2 &= r4;

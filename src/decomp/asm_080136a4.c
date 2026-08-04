@@ -9,6 +9,8 @@ extern void scene_set_current_thread(u32);
 extern u32 func_080135E8(u32);
 extern void func_08015A88(void);
 
+typedef void (*Func080136A4SetAnimCel)(struct SpriteHandler *, s32, s32);
+
 void func_080136A4(void) {
     register u32 r0 asm("r0");
     register u32 r1 asm("r1");
@@ -23,7 +25,7 @@ void func_080136A4(void) {
     r2 = 0xC;
     r1 = *(s16 *)(r1 + r2);
     r2 = 0;
-    asm volatile("bl sprite_set_anim_cel" :: "r"(r0), "r"(r1), "r"(r2) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func080136A4SetAnimCel)sprite_set_anim_cel)((struct SpriteHandler *)r0, r1, r2);
     r0 = (u32)&gCurrentSceneData;
     r1 = *(u32 *)r0;
     r1 += 0xDD;

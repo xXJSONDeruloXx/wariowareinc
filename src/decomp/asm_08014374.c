@@ -5,6 +5,8 @@
 extern u32 get_current_language(void);
 extern u32 D_083AB320[];
 
+typedef void (*Func08014374Load)(u32);
+
 void func_08014374(void) {
     register u32 r0 asm("r0");
     register u32 r1 asm("r1");
@@ -20,6 +22,6 @@ void func_08014374(void) {
     r1 <<= 2;
     r1 += r0;
     r0 = *(u32 *)r1;
-    asm volatile("bl func_08015A88" :: "r"(r0));
+    ((Func08014374Load)func_08015A88)(r0);
 }
 #endif

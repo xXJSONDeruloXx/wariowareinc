@@ -7,6 +7,8 @@ extern void func_08011730(u32);
 extern u8 D_083AA0C4[];
 extern void func_08011920(void);
 
+typedef void (*Func08012058Schedule)(s32, s32, u32, u32);
+
 void func_08012058(void) {
     register u32 r0 asm("r0");
     register u32 r1 asm("r1");
@@ -25,7 +27,7 @@ void func_08012058(void) {
     r1 = *(s16 *)(r1 + r2);
     r2 = (u32)func_08011920 + 1;
     r3 = 0;
-    asm volatile("bl func_08011504" :: "r"(r0), "r"(r1), "r"(r2), "r"(r3) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08012058Schedule)func_08011504)(r0, r1, r2, r3);
     func_08011730(0);
 }
 #endif

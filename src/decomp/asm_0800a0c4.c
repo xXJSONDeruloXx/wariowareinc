@@ -7,6 +7,8 @@ extern void func_0800C974(void);
 extern u32 get_current_mem_id(void);
 extern void schedule_function_call(u16, void *, u32, u32);
 
+typedef void (*Func0800A0C4Schedule)(u32, void *, u32, u32);
+
 void func_0800A0C4(s32 arg0) {
     register u32 r0 asm("r0") = (u32)arg0;
     register u32 r1 asm("r1");
@@ -54,7 +56,7 @@ have_r4:
     r2 = r2 + r3;
     r3 = *(u16 *)r2;
     r2 = r4;
-    asm volatile("bl schedule_function_call" :: "r"(r0), "r"(r1), "r"(r2), "r"(r3) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func0800A0C4Schedule)schedule_function_call)(r0, (void *)r1, r2, r3);
 
 done:
     return;

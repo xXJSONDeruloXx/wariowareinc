@@ -7,6 +7,9 @@ extern s32 sprite_is_invalid(void *, s16);
 extern void sprite_remove_z_link(void *, s16);
 extern void sprite_handler_dealloc_id(void *, s16);
 
+typedef s32 (*FuncSpriteInvalid)(void *, s32);
+typedef void (*FuncSpriteLink)(void *, s32);
+
 void sprite_delete(void *arg0, s32 arg1) {
     register u32 r0 asm("r0") = (u32)arg0;
     register u32 r1 asm("r1") = (u32)arg1;
@@ -24,7 +27,7 @@ void sprite_delete(void *arg0, s32 arg1) {
     r4 = (u32)((s32)r1 >> 16);
     r0 = r5;
     r1 = r4;
-    asm volatile("bl sprite_is_invalid" : "=r"(r0) : "r"(r0), "r"(r1) : "r2", "r3", "lr", "memory");
+    r0 = ((FuncSpriteInvalid)sprite_is_invalid)((void *)r0, r1);
     if (r0 != 0) goto done;
     r2 = *(u32 *)(r5 + 8);
     r1 = r4 << 3;
@@ -45,10 +48,10 @@ void sprite_delete(void *arg0, s32 arg1) {
     *(u8 *)(r1 + 1) = r0;
     r0 = r5;
     r1 = r4;
-    asm volatile("bl sprite_remove_z_link" :: "r"(r0), "r"(r1) : "r2", "r3", "lr", "memory");
+    ((FuncSpriteLink)sprite_remove_z_link)((void *)r0, r1);
     r0 = r5;
     r1 = r4;
-    asm volatile("bl sprite_handler_dealloc_id" :: "r"(r0), "r"(r1) : "r2", "r3", "lr", "memory");
+    ((FuncSpriteLink)sprite_handler_dealloc_id)((void *)r0, r1);
 done:;
 }
 #endif

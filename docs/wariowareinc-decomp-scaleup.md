@@ -5,13 +5,14 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 158` — strict-ROM re-hoist of `func_08007E8C` with a literal-pool section check
+- Verified working tree: `batch 159` — strict-ROM maintenance pass reshaping legacy inline-asm shims into real C
 - `build/report.json`: **1362 / 5960 matched functions** = **22.852348%**
 - `matched_code_percent`: **6.4803877%**
 - `tools/gen_objdiff.py`: **902 linked C TUs / 5785 non-C units**
 - `src/decomp/*.c`: **1079 decompiled function files** = **883 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files: **1** (func_0800BEC0)
+- Maintenance state: **25 legacy inline-asm shims removed** from included-stub files with no ROM change; **6 files** still contain non-empty inline asm for unresolved instruction-level cases.
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
@@ -21,6 +22,16 @@ At the current `total_functions` count (`5960`), that means:
 - current gap: **3406** more matched functions
 
 ## What just landed
+
+### Batch 159 — accepted (legacy inline-asm reshaping; strict ROM maintenance)
+- Metric delta: **+0 report matched functions / +25 legacy files reshaped / +0 ROM delta**. These included stubs were already counted as C-linked units, so the report remains **1362 / 5960** matched functions with **6.4803877%** matched code and **902 C / 5785 asm-only** objdiff units.
+- Real-C reshapes:
+  - Bitmap/font and scene wrappers: `func_08001C74`, `func_0800A0C4`, `func_0800BB74`, `func_0800BBCC`, `func_0800BC10`, `func_0800BC50`.
+  - Main-menu/sprite call and indexed-load wrappers: `func_08011584`, `func_08011774`, `func_080117A8`, `func_080118E0`, `func_08012058`, `func_08012658`, `func_08012700`, `func_08012D3C`, `func_08012DCC`, `func_08013388`, `func_080136A4`, `func_08014374`, `func_08014810`, `func_08014E38`, `func_08014E88`, `func_08014F38`, `func_08014FA8`.
+  - Sprite-library helpers: `sprite_delete`, `func_080EF358`.
+- The successful pattern was ordinary C calls through unique ABI-shaping function-pointer typedefs with `s32`/`u32` parameters, plus register-pinned C for indexed loads and operand order. An ordinary C indirect call also reproduced `_call_via_r0`.
+- Rejected instruction-shaping attempts remain unchanged: `func_0800BEC0` still has the `CMP #1`/`BGE` compare trap; `func_080141C8` and `func_08014DFC` still require their two-operand `ADD` shims. The `STM` loop, `svc`, and stack/register wrapper remain in `asm_08015A4C.c`, `asm_0800ee61c.c`, and `asm_0800c15c.c` respectively.
+- Verification: each accepted source reshape passed the strict Docker ROM gate; the final clean build reported **`wariowareinc.gba: OK`**, the ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`, and `make report` plus `tools/gen_objdiff.py` refreshed the metrics above.
 
 ### Batch 158 — accepted (strict literal-pool re-hoist)
 - Metric delta: **+1 report matched function** with a fresh total-function recount of **5960** (down one from the prior report), **+1 standalone_tu decomp file**, **+1 linked C TU**, **+0 ROM delta**. The fresh report is **1362 / 5960** with **902 C / 5785 asm-only** units.

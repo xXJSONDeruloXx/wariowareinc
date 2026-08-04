@@ -6,6 +6,10 @@
 extern void func_08011774(void);
 extern void func_0800C77C(u32);
 extern u8 D_083A9CE0;
+extern void sprite_set_x_y(void *, s32, s32, s32);
+
+typedef void (*Func080117A8SetAnimCel)(struct SpriteHandler *, s32, s32);
+typedef void (*Func080117A8SetXY)(void *, s32, s32, s32);
 
 void func_080117A8(s32 arg0) {
     register u32 r0 asm("r0");
@@ -28,7 +32,7 @@ void func_080117A8(s32 arg0) {
     r2 = 2;
     r1 = *(s16 *)(r1 + r2);
     r2 = 0;
-    asm volatile("bl sprite_set_anim_cel" :: "r"(r0), "r"(r1), "r"(r2) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func080117A8SetAnimCel)sprite_set_anim_cel)((struct SpriteHandler *)r0, r1, r2);
 
     r0 = (u32)&D_083A9CE0;
     r4 = r4 << 2;
@@ -43,7 +47,7 @@ void func_080117A8(s32 arg0) {
     r2 = *(s16 *)(r3 + r4);
     r4 = 2;
     r3 = *(s16 *)(r3 + r4);
-    asm volatile("bl sprite_set_x_y" :: "r"(r0), "r"(r1), "r"(r2), "r"(r3) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func080117A8SetXY)sprite_set_x_y)((void *)r0, r1, r2, r3);
 
     r0 = 0xA;
     func_0800C77C(r0);

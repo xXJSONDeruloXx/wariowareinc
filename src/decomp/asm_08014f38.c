@@ -7,6 +7,9 @@ extern void *gCurrentSceneData;
 extern void scene_set_current_thread(u32);
 extern void func_08014E88(s32);
 
+typedef void (*Func08014F38CallE88)(s32);
+typedef void (*Func08014F38SetVisible)(struct SpriteHandler *, s32, s32);
+
 void func_08014F38(void) {
     register u32 r0 asm("r0");
     register u32 r1 asm("r1");
@@ -24,7 +27,7 @@ void func_08014F38(void) {
     r0 = r0 + r1;
     r2 = 0;
     r0 = *(s16 *)(r0 + r2);
-    asm volatile("bl func_08014E88" :: "r"(r0) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08014F38CallE88)func_08014E88)((s32)r0);
 
     r4 = 0;
     goto loop_check;
@@ -42,7 +45,7 @@ loop_body:
     r2 = 0;
     r1 = *(s16 *)(r1 + r2);
     r2 = 1;
-    asm volatile("bl sprite_set_visible" :: "r"(r0), "r"(r1), "r"(r2) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08014F38SetVisible)sprite_set_visible)((struct SpriteHandler *)r0, r1, r2);
     r4 += 1;
 
 loop_check:

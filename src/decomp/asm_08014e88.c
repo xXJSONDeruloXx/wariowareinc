@@ -24,7 +24,7 @@ void func_08014E88(s32 arg0) {
     r4 <<= 1;
     r4 += r1;
     r2 = 2;
-    asm volatile("ldrsh %0, [%1, %2]" : "=r"(r1) : "r"(r4), "r"(r2));
+    r1 = *(s16 *)(r4 + r2);
     r2 = 0xC;
     ((Func08014E88SetPalette)sprite_set_base_palette)((struct SpriteHandler *)r0, r1, r2);
 }

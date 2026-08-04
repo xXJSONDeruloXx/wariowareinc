@@ -7,6 +7,9 @@ extern void func_08012658(void);
 extern u8 D_083AA0C4[];
 extern u32 D_083FBB1C;
 
+typedef void (*Func08012700Schedule)(s32, s32, u32, u32);
+typedef struct SoundPlayer *(*Func08012700PlaySound)(u32);
+
 void func_08012700(u32 arg0) {
     register u32 r0 asm("r0") = arg0;
     register u32 r1 asm("r1");
@@ -30,12 +33,12 @@ void func_08012700(u32 arg0) {
     r2 = 2;
     r1 = *(s16 *)(r1 + r2);
     r2 = (u32)func_08012658 + 1;
-    asm volatile("bl func_08011504" :: "r"(r0), "r"(r1), "r"(r2), "r"(r3) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08012700Schedule)func_08011504)(r0, r1, r2, r3);
     goto after;
 else_branch:
     func_08012658();
 after:
     r0 = (u32)&D_083FBB1C;
-    asm volatile("bl play_sound" :: "r"(r0) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08012700PlaySound)play_sound)(r0);
 }
 #endif

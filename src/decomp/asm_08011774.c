@@ -21,7 +21,7 @@ loop:
     r1 = r4 << 1;
     r1 += r2;
     r2 = 2;
-    asm volatile("ldrsh %0, [%1, %2]" : "=r"(r1) : "r"(r1), "r"(r2));
+    r1 = *(s16 *)(r1 + r2);
     r2 = 1;
     ((Func08011774SetCel)sprite_set_anim_cel)((struct SpriteHandler *)r0, r1, r2);
     r4 += 1;

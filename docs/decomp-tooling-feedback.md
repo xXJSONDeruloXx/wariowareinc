@@ -127,3 +127,10 @@ Use this file to record where the current decomp tools helped, where they missed
   - `func_0800BEC0` is the only naked/whole-function wrapper left. Pure C still hits the documented `CMP #1/BGE` vs `CMP #0/BGT` optimizer trap.
 - Follow-up idea:
   - Decide whether a very small branch/compare inline-asm workaround is acceptable for `func_0800BEC0`, or keep it quarantined until a pure-C spelling is found.
+
+## Legacy inline-asm reshaping pass (2026-08-04)
+- The repo-local m2c/asmlift adapter was not needed for this maintenance pass; direct source/target instruction comparison plus the Docker agbcc build was the faster path for these already-understood wrappers. m2c/asmlift remains useful for discovering and synthesizing new functions, as recorded in the earlier re-hoist section.
+- The repeatable solution was an ABI-shaping function-pointer typedef: widen `s16`/`s8`/`u16` helper parameters to `s32`/`u32` at the local call site so already-shaped ABI registers are not re-truncated or swapped. This converted the old non-empty BL shims to ordinary C calls across 25 included-stub files.
+- Register-pinned C recovered the two indexed `LDRSH` loads and the exact operand order in `func_08012DCC`; ordinary C indirect dispatch reproduced `_call_via_r0`. A first `func_08012DCC` spelling missed by one byte, so the strict ROM gate caught and corrected the addition order.
+- The same strict gate rejected pure-C attempts for the two-operand in-place `ADD` forms in `func_080141C8` and `func_08014DFC`, and the known `func_0800BEC0` compare trap remains. Those shims were restored rather than weakening the byte-matching rule.
+- Metrics are unchanged because the 25 files were already C-linked included stubs: **1362 / 5960**, **6.4803877%** matched code, and **902 C / 5785 asm-only** objdiff units. The final clean Docker build still reports `wariowareinc.gba: OK`; six files with non-empty inline asm remain (`asm_0800bec0.c`, `asm_0800c15c.c`, `asm_080141c8.c`, `asm_08014dfc.c`, `asm_08015a4c.c`, `asm_080ee61c.c`).

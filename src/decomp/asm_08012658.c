@@ -11,6 +11,9 @@ extern void func_08012420(u32);
 extern void func_08015C38(void);
 extern u32 func_08012C18(u32);
 extern void func_08015A88(void);
+extern void sprite_set_x_y(void *, s32, s32, s32);
+
+typedef void (*Func08012658SetXY)(void *, s32, s32, s32);
 
 void func_08012658(void) {
     register u32 r0 asm("r0");
@@ -39,7 +42,7 @@ void func_08012658(void) {
     r2 = *(s16 *)(r3 + r5);
     r5 = 2;
     r3 = *(s16 *)(r3 + r5);
-    asm volatile("bl sprite_set_x_y" :: "r"(r0), "r"(r1), "r"(r2), "r"(r3) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08012658SetXY)sprite_set_x_y)((void *)r0, r1, r2, r3);
 
     r0 = *(u8 *)r4;
     func_08012420(r0);

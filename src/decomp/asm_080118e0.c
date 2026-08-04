@@ -8,6 +8,8 @@ extern void func_080117A8(s32);
 extern void func_08011864(u8);
 extern u32 D_083FBBF8;
 
+typedef struct SoundPlayer *(*Func080118E0PlaySound)(u32);
+
 void func_080118E0(void) {
     register u32 r0 asm("r0");
     register u32 r1 asm("r1");
@@ -29,6 +31,6 @@ void func_080118E0(void) {
     r0 &= r2;
     *(u8 *)r1 = r0;
     r0 = (u32)&D_083FBBF8;
-    asm volatile("bl play_sound" :: "r"(r0) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func080118E0PlaySound)play_sound)(r0);
 }
 #endif

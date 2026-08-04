@@ -6,6 +6,9 @@ extern u8 D_03000E70;
 extern s32 sprite_is_invalid(void *, s16);
 extern u32 __udivsi3(u32, u32);
 
+typedef s32 (*Func080EF358SpriteInvalid)(void *, s32);
+typedef u32 (*Func080EF358Udiv)(u32, u32);
+
 u32 func_080EF358(void *arg0, s32 arg1) {
     register u32 r0 asm("r0") = (u32)arg0;
     register u32 r1 asm("r1") = (u32)arg1;
@@ -22,7 +25,7 @@ u32 func_080EF358(void *arg0, s32 arg1) {
     r4 = (u32)((s32)r1 >> 16);
     r0 = r5;
     r1 = r4;
-    asm volatile("bl sprite_is_invalid" : "=r"(r0) : "r"(r0), "r"(r1) : "r2", "r3", "lr", "memory");
+    r0 = ((Func080EF358SpriteInvalid)sprite_is_invalid)((void *)r0, r1);
     if (r0 == 0) goto body;
     r0 = 0;
     goto done;
@@ -51,7 +54,7 @@ after_loop:
     r3 += r0;
     r0 = r3 << 8;
     r1 = *(u16 *)(r5 + 0x24);
-    asm volatile("bl __udivsi3" : "=r"(r0) : "r"(r0), "r"(r1) : "r2", "r3", "lr", "memory");
+    r0 = ((Func080EF358Udiv)__udivsi3)(r0, r1);
     r0 <<= 24;
     r0 >>= 24;
 done:

@@ -38,6 +38,6 @@ void func_08014FA8(void) {
     r1 <<= 1;
     r0 += r1;
     r0 = *(u32 *)r0;
-    asm volatile("bl _call_via_r0" :: "r"(r0) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((void (*)(void))r0)();
 }
 #endif

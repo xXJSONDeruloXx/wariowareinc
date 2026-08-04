@@ -4,6 +4,8 @@
 #include "src/lib_sprite.h"
 #include "include/scenes.h"
 
+typedef void (*Func08014810SetPalette)(struct SpriteHandler *, s32, s32);
+
 void func_08014810(u32 arg0) {
     register u32 r0 asm("r0") = arg0;
     register u32 r1 asm("r1");
@@ -19,14 +21,14 @@ void func_08014810(u32 arg0) {
     r2 = 0x2C;
     r1 = *(s16 *)(r1 + r2);
     r2 = 6;
-    asm volatile("bl sprite_set_base_palette" :: "r"(r0), "r"(r1), "r"(r2) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08014810SetPalette)sprite_set_base_palette)((struct SpriteHandler *)r0, r1, r2);
 
     r0 = *(u32 *)r5;
     r1 = *(u32 *)r6;
     r2 = 0x2E;
     r1 = *(s16 *)(r1 + r2);
     r2 = 6;
-    asm volatile("bl sprite_set_base_palette" :: "r"(r0), "r"(r1), "r"(r2) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08014810SetPalette)sprite_set_base_palette)((struct SpriteHandler *)r0, r1, r2);
 
     if (r4 == 0) goto done;
 
@@ -43,7 +45,7 @@ void func_08014810(u32 arg0) {
     r2 = 0x2E;
     r1 = *(s16 *)(r1 + r2);
     r2 = 0xC;
-    asm volatile("bl sprite_set_base_palette" :: "r"(r0), "r"(r1), "r"(r2) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08014810SetPalette)sprite_set_base_palette)((struct SpriteHandler *)r0, r1, r2);
     goto done;
 
 else_branch:
@@ -52,7 +54,7 @@ else_branch:
     r2 = 0x2C;
     r1 = *(s16 *)(r1 + r2);
     r2 = 0xC;
-    asm volatile("bl sprite_set_base_palette" :: "r"(r0), "r"(r1), "r"(r2) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08014810SetPalette)sprite_set_base_palette)((struct SpriteHandler *)r0, r1, r2);
 
 done:
     return;

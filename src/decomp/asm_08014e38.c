@@ -5,6 +5,8 @@
 
 extern void *gCurrentSceneData;
 
+typedef void (*Func08014E38SetPalette)(struct SpriteHandler *, s32, s32);
+
 void func_08014E38(void) {
     register u32 r4 asm("r4") = 0;
     register u32 r5 asm("r5");
@@ -37,7 +39,7 @@ loop:
     r2 = 2;
     r1 = *(s16 *)(r1 + r2);
     r2 = 6;
-    asm volatile("bl sprite_set_base_palette" :: "r"(r0), "r"(r1), "r"(r2) : "r0", "r1", "r2", "r3", "lr", "memory");
+    ((Func08014E38SetPalette)sprite_set_base_palette)((struct SpriteHandler *)r0, r1, r2);
 
     r4 += 1;
     r0 = *(u32 *)r5;
