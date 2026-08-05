@@ -48,6 +48,7 @@
 - pair-add / arithmetic helpers
 - small struct-init / zero-init functions
 - gGraphicsBuffer small store pairs / clears
+- **Adjacent gGraphicsBuffer halfword clears**: `gGraphicsBuffer.unk4C = 0; *(u16 *)((u8 *)&gGraphicsBuffer + 0x4E) = 0;` reproduces the `LDR; ADDS #0x4C; MOVS; STRH; ADDS #0x4E; STRH; BX LR` family. Keep the first field access and the raw byte-offset halfword store as separate statements; direct struct reshaping can change the base/add ordering.
 - `gGraphicsBuffer` 1-bit field writes like `gGraphicsBuffer.unk854_1 = arg0`
 - **GraphicsTable pointer-advance loop**: forward-loop through `GraphicsTable` entries looking for `src == NULL` terminator, then tail-call. Use register-pinned pointer (`register char *r2 asm("r2")`) with goto labels to preserve `ADDS R2,#0xC` instruction order before the load/compare. The pattern is:
   ```c

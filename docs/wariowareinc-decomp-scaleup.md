@@ -5,21 +5,28 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 174` — strict-ROM C conversion of a scene-variable flag setter
-- `build/report.json`: **1379 / 5960 matched functions** = **23.137585%**
-- `matched_code_percent`: **6.5174327%**
-- `tools/gen_objdiff.py`: **919 linked C TUs / 5768 non-C units**
-- `src/decomp/*.c`: **1096 decompiled function files** = **900 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 175` — paired strict-ROM C conversion of graphics-buffer clears
+- `build/report.json`: **1381 / 5960 matched functions** = **23.17114%**
+- `matched_code_percent`: **6.521459%**
+- `tools/gen_objdiff.py`: **921 linked C TUs / 5766 non-C units**
+- `src/decomp/*.c`: **1098 decompiled function files** = **902 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
+- 30% milestone: **1788 / 5960**, so **407** additional matched functions are needed.
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
 
 At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
-- current gap: **3389** more matched functions
+- current gap: **3387** more matched functions
+
+### Batch 175 — accepted (real-C paired graphics-buffer clears)
+- Converted standalone `func_080A2524` and `func_080EE608` to ordinary C. Both clear `gGraphicsBuffer` halfwords at offsets `0x4C` and `0x4E`; each has its own `src/decomp/` TU and its original assembly moved to `asm/converted/`.
+- The improved cycle tool isolated both candidates in one Docker invocation. Its linked-ELF normalization resolved the target's absolute `gba.inc` symbols before objdiff, avoiding the false raw-object near miss caused by agbcc's unresolved `gGraphicsBuffer` literal relocation. Both candidates scored **100.0%** in isolation.
+- `apply-batch` applied both changes transactionally and ran one clean Docker full build/report gate. `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1381 / 5960**, **6.521459%** matched code, and **921 C / 5766 asm-only** units.
+- The new sources contain no inline asm. The cycle tests pass (**7 tests**), and the accepted receipt is `.decomp-runs/20260805T191205Z-apply-batch-graphics-clears.json`.
 
 ### Batch 174 — accepted (real-C scene-variable flag setter)
 - Converted `func_080D74F4` to real C. It loads `gCurrentSceneVariable`, adds the separate `0x43A` offset literal, and stores byte value `2`.

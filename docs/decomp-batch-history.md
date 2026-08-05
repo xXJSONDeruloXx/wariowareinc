@@ -15,11 +15,13 @@ plus a standalone policy scan for new instruction-bearing inline asm. The
 two-entry exercise (`func_080D74F4` exact + `func_08002038` near miss) used one
 Docker isolation invocation; forced full application of the near miss failed
 the ROM gate and restored a byte-identical baseline. No decomp function was
-accepted in this pass.
+accepted in that initial tooling-only pass. The follow-up graphics-buffer batch
+validated the improved lifecycle end to end.
 
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 175 | pending | +2 report matched / +2 standalone_tu decomp files / +2 linked C TUs | Converted `func_080A2524` and `func_080EE608` to real C adjacent `gGraphicsBuffer` clears. One normalized linked-ELF isolation pass scored both at 100%; one transactional full Docker gate reported `wariowareinc.gba: OK` and preserved SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1381 / 5960**, **921 C / 5766 asm-only**. |
 | 174 | pending | +1 report matched / +1 standalone_tu decomp file / +1 linked C TU | Converted `func_080D74F4` to a real-C scene-variable flag setter. Clean Docker ROM: `wariowareinc.gba: OK`; SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1379 / 5960**, **919 C / 5768 asm-only**. |
 | 173 | pending | +1 report matched / +1 standalone_tu decomp file / +1 linked C TU | Converted `func_080E1A6C` to a real-C paired accumulator. Clean Docker ROM: `wariowareinc.gba: OK`; SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1378 / 5960**, **918 C / 5769 asm-only**. |
 | 172 | pending | +2 report matched / +2 standalone_tu decomp files / +2 linked C TUs | Converted `func_08003998` and `func_080039D0` to real C serialization/deserialization helpers. Clean Docker ROM: `wariowareinc.gba: OK`; SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1377 / 5960**, **917 C / 5770 asm-only**. |

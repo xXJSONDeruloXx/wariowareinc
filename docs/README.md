@@ -11,24 +11,26 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 174` — strict-ROM C conversion of a scene-variable flag setter
-- `build/report.json`: **1379 / 5960 matched functions** (**23.137585%**) · **6.5174327%** matched code
-- `tools/gen_objdiff.py`: **919 linked C TUs / 5768 non-C units**
-- `src/decomp/*.c`: **1096 decompiled function files** = **900 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 175` — paired strict-ROM C conversion of graphics-buffer clears
+- `build/report.json`: **1381 / 5960 matched functions** (**23.17114%**) · **6.521459%** matched code
+- `tools/gen_objdiff.py`: **921 linked C TUs / 5766 non-C units**
+- `src/decomp/*.c`: **1098 decompiled function files** = **902 standalone_tu** + **196 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **30 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
+- 30% milestone at the current function total: **1788 / 5960**; **407** more matches needed
 - 80% target at the current function total: **4768 / 5960**
-- Remaining gap to 80%: **3389 matched functions**
+- Remaining gap to 80%: **3387 matched functions**
 
 ## Automated matching loop
 
 The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
 
-- `isolate` evaluates a manifest of C permutations/siblings in one Docker compiler invocation and writes a structured `.decomp-runs/` receipt.
+- `isolate` evaluates a manifest of C permutations/siblings in one Docker compiler invocation, links normalized comparison ELFs using the target's absolute symbol map, and writes a structured `.decomp-runs/` receipt.
 - `apply` requires an isolated exact match, applies the mechanical conversion, runs the strict ROM/report gate, and restores the candidate transaction plus a clean baseline on failure.
+- `apply-batch` performs the same guarded transaction for a small exact manifest, with one isolation pass and one full-ROM gate for the batch.
 - `verify` runs the current-worktree Docker gate for hooks or a final check.
 
 Install the local commit/push protections with `tools/install-hooks.sh`. Near-miss

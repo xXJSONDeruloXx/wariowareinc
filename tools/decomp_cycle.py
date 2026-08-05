@@ -4,10 +4,12 @@
 The command is deliberately small and repository-local.  A JSON manifest names
 one or more C candidates and their target assembly/object.  ``isolate`` compiles
 the whole manifest in one devkitARM container, compares every object with
-objdiff, and writes a durable run receipt.  ``apply`` is the guarded
-transactional path: it requires an isolated match, performs the mechanical
-source/linker/assembly move, runs the clean ROM gate, and restores the exact
-pre-apply files (then rebuilds the baseline) if the ROM is not byte-identical.
+objdiff, and writes a durable run receipt.  ``apply`` and ``apply-batch`` are
+guarded transactional paths: they require isolated matches, perform the
+mechanical source/linker/assembly move, run the clean ROM gate, and restore the
+exact pre-apply files (then rebuild the baseline) if the ROM is not
+byte-identical.  ``apply-batch`` deliberately performs one full-ROM build for
+the entire isolated manifest.
 
 This tool never commits or pushes.  The repository hooks use the same verifier,
 and the accepted run receipt is intended to be committed with the source and
@@ -202,7 +204,7 @@ def load_manifest(root: Path, manifest_path: Path) -> list[dict[str, Any]]:
 
 
 def container_script(root: Path, entries: list[dict[str, Any]], run_dir: Path) -> str:
-    """Build one shell script that compiles every candidate and target."""
+    """Build one shell script that compiles and normalizes every pair."""
 
     def q(value: str) -> str:
         return shlex.quote(value)
@@ -255,6 +257,29 @@ def container_script(root: Path, entries: list[dict[str, Any]], run_dir: Path) -
                 f"  echo preprocess_error > {q(target_status)}",
                 "fi",
             ])
+
+        target_input = (f"/workspace/{entry['target_object_rel']}"
+                        if entry["target_object"] is not None else f"/run/target-{index}.o")
+        candidate_link = f"/run/candidate-{index}.elf"
+        target_link = f"/run/target-{index}.elf"
+        link_error = f"/run/link-{index}.stderr"
+        defsym = f"/run/target-{index}.defsym"
+        lines.extend([
+            f"rm -f {q(candidate_link)} {q(target_link)} {q(link_error)} {q(defsym)}",
+            f"if [ -f {q(candidate_obj)} ] && [ -f {q(target_input)} ]; then",
+            # gba.inc makes target symbols absolute, while agbcc leaves the
+            # same globals as relocations/common symbols. Link both sides at
+            # address zero with the target's absolute symbol map so isolation
+            # compares the bytes seen by the real ROM linker.
+            f"  if arm-none-eabi-nm -a --defined-only {q(target_input)} | awk 'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {{printf \"--defsym=%s=0x%s\\n\", $3, $1}}' > {q(defsym)}; then",
+            "    defsym_args=()",
+            f"    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < {q(defsym)}",
+            f"    if arm-none-eabi-ld -Ttext=0 -e {q(entry['function'])} \"${{defsym_args[@]}}\" --unresolved-symbols=ignore-all --noinhibit-exec {q(target_input)} -o {q(target_link)} >>{q(link_error)} 2>&1; then",
+            f"      arm-none-eabi-ld -Ttext=0 -e {q(entry['function'])} \"${{defsym_args[@]}}\" --unresolved-symbols=ignore-all --noinhibit-exec {q(candidate_obj)} -o {q(candidate_link)} >>{q(link_error)} 2>&1",
+            "    fi",
+            "  fi",
+            "fi",
+        ])
     lines.append("exit 0")
     return "\n".join(lines) + "\n"
 
@@ -419,8 +444,18 @@ def run_isolation(root: Path, entries: list[dict[str, Any]], *, record: bool = T
                 })
                 continue
 
+            candidate_link = run_dir / f"candidate-{index}.elf"
+            target_link = run_dir / f"target-{index}.elf"
+            if candidate_link.is_file() and target_link.is_file():
+                compare_target = target_link
+                compare_candidate = candidate_link
+                comparison = "linked_elf"
+            else:
+                compare_target = target_obj
+                compare_candidate = candidate_obj
+                comparison = "raw_object"
             try:
-                diff, diff_stdout, diff_stderr = objdiff(root, entry, target_obj, candidate_obj)
+                diff, diff_stdout, diff_stderr = objdiff(root, entry, compare_target, compare_candidate)
             except (OSError, subprocess.TimeoutExpired, CycleError) as exc:
                 results.append({
                     "function": entry["function"], "file": entry["file"], "candidate": entry["candidate_rel"],
@@ -446,7 +481,7 @@ def run_isolation(root: Path, entries: list[dict[str, Any]], *, record: bool = T
                 "target": entry["target_rel"], "target_object": entry["target_object_rel"],
                 "status": "exact" if exact else "near_miss", "score": score,
                 "match_percent": match_percent, "diff_count": parsed["diff_count"],
-                "symbol_found": parsed["symbol_found"], "diff": compact,
+                "symbol_found": parsed["symbol_found"], "comparison": comparison, "diff": compact,
             }
             if not exact and score is not None and record:
                 result["near_miss_record"] = record_near_miss(root, entry, score, compact, command)
@@ -569,6 +604,16 @@ def snapshot_files(root: Path, paths: list[Path]) -> dict[Path, bytes | None]:
     return snapshot
 
 
+def entry_paths(root: Path, entry: dict[str, Any]) -> list[Path]:
+    """Return every repository file touched by an apply transaction."""
+    paths = [entry["source"], entry["converted"], root / "wariowareinc.ld"]
+    if entry["target"] is not None:
+        paths.append(entry["target"])
+    if entry.get("host_source_path"):
+        paths.append(entry["host_source_path"])
+    return paths
+
+
 def restore_snapshot(snapshot: dict[Path, bytes | None]) -> None:
     for path, content in reversed(list(snapshot.items())):
         if content is None:
@@ -681,12 +726,7 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
     rollback: dict[str, Any] | None = None
     status = "failed_before_verify"
     try:
-        paths = [entry["source"], entry["converted"], root / "wariowareinc.ld"]
-        if entry["target"] is not None:
-            paths.append(entry["target"])
-        if entry.get("host_source_path"):
-            paths.append(entry["host_source_path"])
-        snapshot = snapshot_files(root, paths)
+        snapshot = snapshot_files(root, entry_paths(root, entry))
         apply_entry(root, entry)
         full = full_verify(root, report=True)
         if full["ok"]:
@@ -723,6 +763,82 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
         return 1
 
 
+def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, force: bool) -> int:
+    """Apply a manifest as one rollback-capable full-ROM transaction."""
+    entries = load_manifest(root, manifest)
+    if git_status(root) and os.environ.get("WARIOWARE_ALLOW_DIRTY") != "1":
+        raise CycleError("refusing apply-batch with a dirty worktree; set WARIOWARE_ALLOW_DIRTY=1 only when every changed path is intentional")
+    for entry in entries:
+        if has_nonempty_asm(entry["candidate"].read_text(errors="replace")):
+            raise CycleError(f"{entry['function']}: refusing apply: candidate contains naked/original/instruction-bearing asm")
+
+    isolation = run_isolation(root, entries, record=True)
+    failed = [result for result in isolation["results"] if result.get("status") != "exact"]
+    if failed and not force:
+        receipt = {
+            "schema": 1, "kind": "apply_batch",
+            "functions": [entry["function"] for entry in entries],
+            "branch": git_output(root, "branch", "--show-current"),
+            "commit": git_output(root, "rev-parse", "HEAD"), "status": "refused_isolation",
+            "isolation": isolation,
+            "note": "No source/linker/assembly files were changed because every isolated comparison was not exact.",
+        }
+        path = write_receipt(root, receipt, output)
+        print(json.dumps({"ok": False, "status": receipt["status"], "receipt": display_path(root, path),
+                          "failed": [{"function": result.get("function"), "status": result.get("status")}
+                                     for result in failed]}, indent=2))
+        return 2
+
+    paths: list[Path] = []
+    for entry in entries:
+        paths.extend(entry_paths(root, entry))
+    snapshot: dict[Path, bytes | None] = {}
+    full: dict[str, Any] | None = None
+    rollback: dict[str, Any] | None = None
+    status = "failed_before_verify"
+    try:
+        snapshot = snapshot_files(root, paths)
+        for entry in entries:
+            apply_entry(root, entry)
+        full = full_verify(root, report=True)
+        if full["ok"]:
+            metrics = gen_objdiff(root)
+            status = "accepted" if metrics["ok"] else "accepted_report_metric_error"
+            receipt = {
+                "schema": 1, "kind": "apply_batch",
+                "functions": [entry["function"] for entry in entries],
+                "branch": git_output(root, "branch", "--show-current"),
+                "commit": git_output(root, "rev-parse", "HEAD"), "status": status,
+                "isolation": isolation, "full_verify": full, "objdiff_metrics": metrics,
+                "changed_paths": [root_relative(root, path) for path in snapshot],
+                "note": "Matching source/linker/assembly changes intentionally remain in the worktree for review and commit. One full-ROM gate covered the batch.",
+            }
+            path = write_receipt(root, receipt, output)
+            print(json.dumps({"ok": status == "accepted", "status": status,
+                              "receipt": display_path(root, path),
+                              "functions": [entry["function"] for entry in entries]}, indent=2))
+            return 0 if status == "accepted" else 1
+        raise CycleError("clean Docker build did not produce a byte-identical ROM")
+    except Exception as exc:
+        if snapshot:
+            restore_snapshot(snapshot)
+            rollback = full_verify(root, report=True)
+        receipt = {
+            "schema": 1, "kind": "apply_batch",
+            "functions": [entry["function"] for entry in entries],
+            "branch": git_output(root, "branch", "--show-current"),
+            "commit": git_output(root, "rev-parse", "HEAD"), "status": "rolled_back",
+            "isolation": isolation, "full_verify": full, "rollback_verify": rollback,
+            "error": str(exc),
+            "changed_paths": [root_relative(root, path) for path in snapshot],
+            "note": "The candidate transaction was restored. The rollback verifier rebuilt the clean baseline.",
+        }
+        path = write_receipt(root, receipt, output)
+        print(json.dumps({"ok": False, "status": receipt["status"], "receipt": display_path(root, path),
+                          "error": str(exc)}, indent=2))
+        return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -739,6 +855,12 @@ def build_parser() -> argparse.ArgumentParser:
     apply.add_argument("--output", type=Path)
     apply.add_argument("--force", action="store_true",
                        help="research-only: apply even when isolation is not exact; the ROM gate still controls acceptance")
+
+    apply_batch = subparsers.add_parser("apply-batch", help="isolate, apply, verify, and rollback a candidate batch as one transaction")
+    apply_batch.add_argument("--manifest", type=Path, required=True)
+    apply_batch.add_argument("--output", type=Path)
+    apply_batch.add_argument("--force", action="store_true",
+                             help="research-only: apply even when one or more isolated comparisons are not exact; the ROM gate still controls acceptance")
 
     verify = subparsers.add_parser("verify", help="run the clean Docker ROM gate for the current worktree")
     verify.add_argument("--output", type=Path)
@@ -757,6 +879,8 @@ def main(argv: list[str] | None = None) -> int:
                                    require_exact=args.require_exact)
         if args.command == "apply":
             return apply_command(root, args.manifest.resolve(), args.function, args.output, force=args.force)
+        if args.command == "apply-batch":
+            return apply_batch_command(root, args.manifest.resolve(), args.output, force=args.force)
         if args.command == "verify":
             return verify_current(root, args.output, report=not args.no_report)
     except (CycleError, OSError, json.JSONDecodeError) as exc:
