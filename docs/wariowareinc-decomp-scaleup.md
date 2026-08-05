@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 187` — nineteen strict-ROM standalone C conversions plus the hardened candidate lifecycle
-- `build/report.json`: **1439 / 5960 matched functions** = **24.144295%**
-- `matched_code_percent`: **6.6739535%**
-- `tools/gen_objdiff.py`: **979 linked C TUs / 5708 non-C units**
-- `src/decomp/*.c`: **1161 decompiled function files** = **960 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 188` — nineteen strict-ROM standalone C conversions plus the hardened candidate lifecycle
+- `build/report.json`: **1458 / 5960 matched functions** = **24.463087%**
+- `matched_code_percent`: **6.733334%**
+- `tools/gen_objdiff.py`: **998 linked C TUs / 5689 non-C units**
+- `src/decomp/*.c`: **1180 decompiled function files** = **979 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5960**, so **51** additional matched functions are needed.
+- 25% milestone: **1490 / 5960**, so **32** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
-- That 30% milestone is **349** additional matched functions from the current baseline.
+- That 30% milestone is **330** additional matched functions from the current baseline.
+
+### Batch 188 — accepted (DMA, heap-copy, and sprite sibling fan-in)
+- Converted nineteen standalone functions to ordinary C: `func_08004AE0`, `func_08004BD4`, `func_08004EC8`, `func_0800557C`, `func_08005B20`, `func_08007000`, `func_0800C77C`, `func_0800CD94`, `func_0800CF3C`, `func_0800CF5C`, `func_0800CF7C`, `func_0800CF9C`, `func_0800CFBC`, `func_0800CFDC`, `func_08017080`, `func_080170DC`, `func_080170FC`, `func_0802A238`, and `func_08048DC8`.
+- Two small m2c fan-in screens found eight exact candidates in the first wrapper group and eleven exact candidates in the DMA/sprite group. Register-pinning the heap destination recovered both copy helpers; a local base pointer preserved the `gBeatscriptScene + 0x1E` load in `func_0800CD94`. The remaining `func_0801E6F8` mask variant is evidence-only because agbcc folded the target's `MOVS #2; RSBS` sequence into a single constant.
+- The accepted 19-entry exact receipt passed one transactional full Docker gate. The C candidates contain no instruction-bearing or volatile inline asm. Four `D_0300XXXX` and one `D_083FD264` definition were added to `undefined_syms.ld` to mirror symbols already present in `include/undefined_syms.inc`.
+- Fresh report: **1458 / 5960**, **6.733334%** matched code, **998 C / 5689 asm-only** units, and **1180** decomp files (`979 standalone_tu` + `201 included_stub`). `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 
 ### Batch 187 — accepted (wrapper and sprite sibling fan-in)
 - Converted nineteen standalone functions to ordinary C: `func_080042F4`, `func_080043B8`, `func_08004F14`, `func_080049A4`, `func_08007FC0`, `func_0800C9A4`, `func_0801975C`, `func_0801E44C`, `func_08020F40`, `func_08085624`, `func_0808AB78`, `func_0808AB98`, `func_0808B9FC`, `func_080B83B0`, `func_080C6188`, `func_080C61AC`, `func_080D1034`, `func_080D37E4`, and `func_080F2FFC`.
