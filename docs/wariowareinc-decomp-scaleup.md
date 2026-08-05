@@ -5,22 +5,27 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 177` — strict-ROM C conversions of two scene-state helpers
-- `build/report.json`: **1387 / 5960 matched functions** = **23.271812%**
-- `matched_code_percent`: **6.5387583%**
-- `tools/gen_objdiff.py`: **927 linked C TUs / 5760 non-C units**
-- `src/decomp/*.c`: **1104 decompiled function files** = **908 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 178` — strict-ROM C conversions of two register-shaped scene-state helpers
+- `build/report.json`: **1389 / 5960 matched functions** = **23.305368%**
+- `matched_code_percent`: **6.543187%**
+- `tools/gen_objdiff.py`: **929 linked C TUs / 5758 non-C units**
+- `src/decomp/*.c`: **1106 decompiled function files** = **910 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 30% milestone: **1788 / 5960**, so **401** additional matched functions are needed.
+- 30% milestone: **1788 / 5960**, so **399** additional matched functions are needed.
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
 
 At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
-- current gap: **3381** more matched functions
+- current gap: **3379** more matched functions
+
+### Batch 178 — accepted (real-C register-shaped scene-state helpers)
+- Converted `func_080C4A48` with a pinned scene-variable base in `R1`, a signed `R0` accumulator, and an explicit `R2` halfword temporary so the compiler emits the target `ADDS R0,R2` form.
+- Converted `func_080EC308` with a pinned global anchor in `R2`, pointer reloads through that anchor, and constants assigned after each address add. The source uses only an empty compiler barrier where needed; it contains no instruction-bearing asm.
+- Both candidates scored **100.0%** in normalized linked-ELF isolation and passed one transactional full Docker ROM/report gate. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1389 / 5960**, **6.543187%** matched code, and **929 C / 5758 asm-only** units. Receipt: `.decomp-runs/20260805T194000Z-apply-batch-scene-state-variants.json`.
 
 ### Batch 177 — accepted (real-C scene-state offset helpers)
 - Converted `func_0808BD98` to an ordinary C halfword store at `gCurrentSceneVariable + 0xC5C`.

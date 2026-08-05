@@ -234,3 +234,8 @@ Use this file to record where the current decomp tools helped, where they missed
 - A six-candidate isolation screen found two exact real-C candidates: `func_0808BD98` (large scene-variable halfword store) and `func_080AAA40` (indexed scene-variable halfword store). The other four remained isolated near misses and were not applied.
 - `func_080AAA40` confirms that the manifest candidate can preserve a split `index << 1` plus `0x83 << 2` computation when the base load and additions are written as separate C statements.
 - The exact pair passed one `apply-batch` transaction and moved the report from **1385** to **1387** matched functions. This is the intended loop behavior: collect several probes in one container, accept only exact results, and retain the rejected hypotheses for later shaping rather than mixing them into the ROM transaction.
+
+## Batch 178 — near-miss shaping loop (2026-08-05)
+- The preserved near-miss receipt localized four mismatches to codegen choices: wrong accumulator destination (`func_080C4A48`), repeated zero/literal handling (`func_080195E4`), register-role allocation (`func_080DF440`), and constant hoisting/reload collapse (`func_080EC308`).
+- Register-pinned readable C solved `func_080C4A48` and `func_080EC308` in the next isolation pass. `func_080DF440` still has a near miss and `func_080195E4` still has literal-pool/code-order drift; neither was applied.
+- The two exact variants passed one `apply-batch` transaction and advanced the report from **1387** to **1389** with the ROM SHA-1 unchanged. This validates the intended provenance loop: use the recorded localized diff to select the next C permutation, then re-score before any full build.
