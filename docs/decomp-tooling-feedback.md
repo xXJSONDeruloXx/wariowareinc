@@ -186,3 +186,6 @@ Use this file to record where the current decomp tools helped, where they missed
 - m2c-style semantic translation was straightforward, but the first C spelling hoisted the literal load before the target address add in `func_0805CB5C`, causing a ROM mismatch despite similar isolated code.
 - A statement-level empty barrier after `r0 += 0x54` restored the target order. The final four objects matched and the clean ROM gate passed.
 - Lesson: for tiny register-sensitive stores, inspect the linked bytes—not just semantic output or a disassembly that omits literal-pool ordering.
+## Batch 170 — nested scene-variable pointer siblings (2026-08-05)
+- The two helpers share the same `gCurrentSceneVariable -> +0xC` pointer chain but differ in whether the final byte is zeroed or set to one.
+- Register-pinned C pointers plus empty barriers reproduced both 20-byte objects exactly. This is a useful companion pattern for small state-field helpers; ordinary typed struct access is more likely to alter register allocation.
