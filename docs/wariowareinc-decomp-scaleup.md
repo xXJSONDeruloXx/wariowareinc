@@ -5,22 +5,28 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 178` — strict-ROM C conversions of two register-shaped scene-state helpers
-- `build/report.json`: **1389 / 5960 matched functions** = **23.305368%**
-- `matched_code_percent`: **6.543187%**
-- `tools/gen_objdiff.py`: **929 linked C TUs / 5758 non-C units**
-- `src/decomp/*.c`: **1106 decompiled function files** = **910 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 179` — four strict-ROM C conversions of wrapper/reload helpers
+- `build/report.json`: **1393 / 5960 matched functions** = **23.372482%**
+- `matched_code_percent`: **6.5528364%**
+- `tools/gen_objdiff.py`: **933 linked C TUs / 5754 non-C units**
+- `src/decomp/*.c`: **1110 decompiled function files** = **912 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 30% milestone: **1788 / 5960**, so **399** additional matched functions are needed.
+- 25% milestone: **1490 / 5960**, so **97** additional matched functions are needed.
+- Next 30% milestone: **1788 / 5960**.
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
 
 At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
-- current gap: **3379** more matched functions
+- current gap: **3375** more matched functions
+
+### Batch 179 — accepted (real-C wrapper and reload helpers)
+- Converted `func_0809C47C` as a non-void task-finalizer wrapper; the non-void declaration reproduces the target's `POP {R1}; BX R1` epilogue and the odd callback pointer remains ordinary C.
+- Converted `func_080195E4` with delayed zero initialization after the first address add, `func_080DF440` with pinned register roles and reloaded scene-variable pointer, and `func_080DCD54` as a call-then-graphics-clear wrapper.
+- All four candidates scored **100.0%** in normalized linked-ELF isolation and passed one transactional full Docker ROM/report gate. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1393 / 5960**, **6.5528364%** matched code, and **933 C / 5754 asm-only** units. Receipt: `.decomp-runs/20260805T195000Z-apply-batch-wrapper-reloads.json`.
 
 ### Batch 178 — accepted (real-C register-shaped scene-state helpers)
 - Converted `func_080C4A48` with a pinned scene-variable base in `R1`, a signed `R0` accumulator, and an explicit `R2` halfword temporary so the compiler emits the target `ADDS R0,R2` form.

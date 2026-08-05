@@ -239,3 +239,7 @@ Use this file to record where the current decomp tools helped, where they missed
 - The preserved near-miss receipt localized four mismatches to codegen choices: wrong accumulator destination (`func_080C4A48`), repeated zero/literal handling (`func_080195E4`), register-role allocation (`func_080DF440`), and constant hoisting/reload collapse (`func_080EC308`).
 - Register-pinned readable C solved `func_080C4A48` and `func_080EC308` in the next isolation pass. `func_080DF440` still has a near miss and `func_080195E4` still has literal-pool/code-order drift; neither was applied.
 - The two exact variants passed one `apply-batch` transaction and advanced the report from **1387** to **1389** with the ROM SHA-1 unchanged. This validates the intended provenance loop: use the recorded localized diff to select the next C permutation, then re-score before any full build.
+
+## Batch 179 — wrapper/reload shaping (2026-08-05)
+- The next isolation manifest combined four focused permutations: a non-void callback wrapper, delayed zero initialization, pinned scene-variable reloads, and a call-then-clear wrapper. All four reached **100.0%** in one normalized linked-ELF pass.
+- The full transaction accepted all four and advanced the report from **1389** to **1393** without ROM drift. The most useful feedback was the isolated epilogue mismatch on `func_0809C47C`: changing only the declaration from `void` to non-void corrected `POP {R0}` to the target `POP {R1}`.
