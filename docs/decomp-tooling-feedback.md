@@ -205,3 +205,7 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Conker tooling audit (2026-08-05)
 - Ported the useful part of Conker's workflow: append-only attempt provenance plus keep-best near-miss seeds. The WarioWare recorder captures Git/ROM hashes and structured diff evidence while leaving source and acceptance state untouched.
 - Deliberately did not port Conker's N64/IDO-specific harness, Transmuter, dashboard, or orchestrator. WarioWare already has a Docker/devkitARM gate and Mizuchi candidate tooling; those components would add unrelated compiler assumptions.
+
+## First WarioWare near-miss record (2026-08-05)
+- `func_08002038` was tested as ordinary C and failed the strict ROM gate with eight differing bytes in its 18-byte function window. The candidate was reverted, while `.nearmiss/func_08002038.json`, `.nearmiss/func_08002038.full.c`, and `tools/attempts.tsv` preserve the candidate, hashes, command, and localized diff.
+- The restored baseline passed the clean Docker gate and matched SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
