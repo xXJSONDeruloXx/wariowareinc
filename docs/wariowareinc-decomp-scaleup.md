@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 186` — three strict-ROM standalone C conversions plus the hardened candidate lifecycle
-- `build/report.json`: **1420 / 5960 matched functions** = **23.825504%**
-- `matched_code_percent`: **6.6157527%**
-- `tools/gen_objdiff.py`: **960 linked C TUs / 5727 non-C units**
-- `src/decomp/*.c`: **1142 decompiled function files** = **941 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 187` — nineteen strict-ROM standalone C conversions plus the hardened candidate lifecycle
+- `build/report.json`: **1439 / 5960 matched functions** = **24.144295%**
+- `matched_code_percent`: **6.6739535%**
+- `tools/gen_objdiff.py`: **979 linked C TUs / 5708 non-C units**
+- `src/decomp/*.c`: **1161 decompiled function files** = **960 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5960**, so **83** additional matched functions are needed.
+- 25% milestone: **1490 / 5960**, so **51** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
-- That 30% milestone is **368** additional matched functions from the current baseline.
+- That 30% milestone is **349** additional matched functions from the current baseline.
+
+### Batch 187 — accepted (wrapper and sprite sibling fan-in)
+- Converted nineteen standalone functions to ordinary C: `func_080042F4`, `func_080043B8`, `func_08004F14`, `func_080049A4`, `func_08007FC0`, `func_0800C9A4`, `func_0801975C`, `func_0801E44C`, `func_08020F40`, `func_08085624`, `func_0808AB78`, `func_0808AB98`, `func_0808B9FC`, `func_080B83B0`, `func_080C6188`, `func_080C61AC`, `func_080D1034`, `func_080D37E4`, and `func_080F2FFC`.
+- The m2c wrapper/sibling skeletons were screened in one initial 19-entry isolation receipt. ABI-focused variants recovered the six near misses and two compile errors: non-void no-return declarations reproduced `POP {R1}; BX R1`, ignored stack parameters preserved the target load offsets, staged multiplication preserved operand order, and register-bound C locals preserved literal-load order. The accepted candidates contain no instruction-bearing or volatile inline asm.
+- A standalone linker preflight caught `D_0300490E` missing from `undefined_syms.ld`; adding its canonical `0x0300490E` definition allowed the C TU to link. The final 19-entry exact receipt was applied without `--force` and passed the transactional full Docker gate.
+- Fresh report: **1439 / 5960**, **6.6739535%** matched code, **979 C / 5708 asm-only** units, and **1161** decomp files (`960 standalone_tu` + `201 included_stub`). `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 
 ### Batch 186 — accepted (near-miss shaping follow-up)
 - Recovered three standalone near misses as ordinary C: `func_08003228` with its explicit project prototype, `func_0805627C` with a widened `s32` input and explicit `(s16)` normalization, and `func_080A002C` with an `r1`-pinned `u16` argument so the global music-player load remains before argument normalization.

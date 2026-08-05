@@ -25,6 +25,10 @@
 - simple void-call wrappers
 - `MOVS R0, #const; BX LR` return-constant helpers
 - zero-arg wrappers: `func(arg0, arg1, 0, 0)` with non-void return type to get `POP {R1}; BX R1` epilogue instead of `POP {R0}; BX R0`
+- **Non-void no-return epilogue shaping**: when the target ends `POP {R1}; BX R1` but leaves the result register untouched, declare the C function with a scalar return type and omit the explicit `return`. This preserved the ABI epilogue for `func_080042F4`, `func_080049A4`, and `func_08007FC0` while remaining ordinary C.
+- **Ignored stack slots are part of the ABI shape**: if a function loads later stack arguments while skipping earlier slots, model the unused parameters in the C prototype. `func_080043B8` needed eight formal parameters so the two stored values compiled from `SP+0x14` and `SP+0x18`; omitting the unused slots shifted both loads.
+- **Stage arithmetic when register reuse matters**: a mathematically equivalent expression can reassociate multiplies and change Thumb register operands. In `func_080F2FFC`, a first `value = arg1 * arg0` followed by `value *= arg2` reproduced the target's `MUL R0,R1` then `MUL R0,R2` sequence.
+- **Pin loads when literal order is semantically visible to the matcher**: register-bound C locals can preserve a target's global-literal load order without an instruction asm block. `func_0801E44C` pins the data base to `R1` and sprite handler to `R0`; `func_08007FC0` pins the returned allocation and tail pointer to the target registers.
 - pointer-deref halfword store: `*(short *)((int *)a0[3]) = -1;` (generates LDR R1,[R0,#0xC]; MOVS R2,#1; RSBS R2,R2,#0; ADDS R0,R2,#0; STRH R0,[R1]; BX LR)
 - conditional-call wrappers: `if (func_08011698()) callee()` — void function with CMP+BEQ+BL pattern
 - const-arg sequential calls: `func_0800C7A4(8); func_0800C7A4(9)` — each call resets R0 before BL

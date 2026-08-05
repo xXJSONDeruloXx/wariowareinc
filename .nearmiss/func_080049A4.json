@@ -1,0 +1,794 @@
+{
+  "func": "func_080049A4",
+  "file": "asm/asm_080049a4.s",
+  "score": 0.90909,
+  "score_kind": "isolated_objdiff_gap",
+  "reason": "isolated_mismatch",
+  "c": "#include \"global.h\"\n\nextern void func_080047E8(u32, u32, u32, u32, u32);\n\nvoid func_080049A4(u32 arg0, u32 arg1, u32 arg2, u32 arg3) {\n    func_080047E8(arg0, arg1, 0, arg2, arg3);\n}\n",
+  "evidence": {
+    "timestamp": "2026-08-05T22:42:47+00:00",
+    "branch": "docs/macabeus-tooling-assessment",
+    "commit": "69bfe916256f11b94cccd41aa831ab8ee490916f",
+    "candidate": ".mizuchi-tmp/round-30-d/func_080049A4.c",
+    "candidate_sha1": "db3e21c767a699d5a60582981b87bd71f20ca180",
+    "candidate_sha256": "035bd3c3b5e044dc4afab96a8feda30731d969b117860edf32a4ec8ff191f724",
+    "rom_sha1": "3f556448d290fa5406d6ed367fee16cc02387ad3",
+    "baseline_rom_sha1": "3f556448d290fa5406d6ed367fee16cc02387ad3",
+    "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /var/folders/cq/tj_dgq0d4qsfs1xyx0jx2cp40000gn/T/warioware-cycle-0l53jaf1:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080042F4.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /workspace/build/asm/asm_080042f4.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080042f4.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080042f4.s.o | awk -v entry=func_080042F4 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080042F4 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080042f4.s.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080042F4 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-1.o /run/candidate-1.status /run/candidate-1.stderr /run/candidate-1.i /run/candidate-1.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080043B8.c -o /run/candidate-1.i >/run/candidate-1.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-1.i -o /run/candidate-1.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-1.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-1.s > /run/candidate-1.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-1.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-1.s.stripped && mv /run/candidate-1.s.stripped /run/candidate-1.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-1.o /run/candidate-1.s >>/run/candidate-1.stderr 2>&1; then\n      echo ok > /run/candidate-1.status\n    else\n      echo compile_error > /run/candidate-1.status\n    fi\n  else\n    echo compile_error > /run/candidate-1.status\n  fi\nelse\n  echo compile_error > /run/candidate-1.status\nfi\nrm -f /run/candidate-1.elf /run/target-1.elf /run/link-1.stderr /run/target-1.defsym /run/target-1.unit-defsym\nif [ -f /run/candidate-1.o ] && [ -f /workspace/build/asm/asm_080043b8.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080043b8.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-1.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080043b8.s.o | awk -v entry=func_080043B8 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-1.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-1.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-1.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080043B8 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080043b8.s.o -o /run/target-1.elf >>/run/link-1.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080043B8 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-1.o -o /run/candidate-1.elf >>/run/link-1.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-2.o /run/candidate-2.status /run/candidate-2.stderr /run/candidate-2.i /run/candidate-2.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080049A4.c -o /run/candidate-2.i >/run/candidate-2.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-2.i -o /run/candidate-2.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-2.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-2.s > /run/candidate-2.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-2.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-2.s.stripped && mv /run/candidate-2.s.stripped /run/candidate-2.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-2.o /run/candidate-2.s >>/run/candidate-2.stderr 2>&1; then\n      echo ok > /run/candidate-2.status\n    else\n      echo compile_error > /run/candidate-2.status\n    fi\n  else\n    echo compile_error > /run/candidate-2.status\n  fi\nelse\n  echo compile_error > /run/candidate-2.status\nfi\nrm -f /run/candidate-2.elf /run/target-2.elf /run/link-2.stderr /run/target-2.defsym /run/target-2.unit-defsym\nif [ -f /run/candidate-2.o ] && [ -f /workspace/build/asm/asm_080049a4.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080049a4.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-2.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080049a4.s.o | awk -v entry=func_080049A4 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-2.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-2.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-2.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080049A4 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080049a4.s.o -o /run/target-2.elf >>/run/link-2.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080049A4 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-2.o -o /run/candidate-2.elf >>/run/link-2.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-3.o /run/candidate-3.status /run/candidate-3.stderr /run/candidate-3.i /run/candidate-3.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_08004F14.c -o /run/candidate-3.i >/run/candidate-3.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-3.i -o /run/candidate-3.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-3.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-3.s > /run/candidate-3.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-3.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-3.s.stripped && mv /run/candidate-3.s.stripped /run/candidate-3.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-3.o /run/candidate-3.s >>/run/candidate-3.stderr 2>&1; then\n      echo ok > /run/candidate-3.status\n    else\n      echo compile_error > /run/candidate-3.status\n    fi\n  else\n    echo compile_error > /run/candidate-3.status\n  fi\nelse\n  echo compile_error > /run/candidate-3.status\nfi\nrm -f /run/candidate-3.elf /run/target-3.elf /run/link-3.stderr /run/target-3.defsym /run/target-3.unit-defsym\nif [ -f /run/candidate-3.o ] && [ -f /workspace/build/asm/asm_08004f14.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08004f14.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-3.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08004f14.s.o | awk -v entry=func_08004F14 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-3.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-3.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-3.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08004F14 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08004f14.s.o -o /run/target-3.elf >>/run/link-3.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08004F14 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-3.o -o /run/candidate-3.elf >>/run/link-3.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-4.o /run/candidate-4.status /run/candidate-4.stderr /run/candidate-4.i /run/candidate-4.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_08007FC0.c -o /run/candidate-4.i >/run/candidate-4.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-4.i -o /run/candidate-4.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-4.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-4.s > /run/candidate-4.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-4.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-4.s.stripped && mv /run/candidate-4.s.stripped /run/candidate-4.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-4.o /run/candidate-4.s >>/run/candidate-4.stderr 2>&1; then\n      echo ok > /run/candidate-4.status\n    else\n      echo compile_error > /run/candidate-4.status\n    fi\n  else\n    echo compile_error > /run/candidate-4.status\n  fi\nelse\n  echo compile_error > /run/candidate-4.status\nfi\nrm -f /run/candidate-4.elf /run/target-4.elf /run/link-4.stderr /run/target-4.defsym /run/target-4.unit-defsym\nif [ -f /run/candidate-4.o ] && [ -f /workspace/build/asm/asm_08007fc0.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08007fc0.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-4.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08007fc0.s.o | awk -v entry=func_08007FC0 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-4.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-4.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-4.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08007FC0 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08007fc0.s.o -o /run/target-4.elf >>/run/link-4.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08007FC0 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-4.o -o /run/candidate-4.elf >>/run/link-4.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-5.o /run/candidate-5.status /run/candidate-5.stderr /run/candidate-5.i /run/candidate-5.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0800C9A4.c -o /run/candidate-5.i >/run/candidate-5.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-5.i -o /run/candidate-5.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-5.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-5.s > /run/candidate-5.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-5.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-5.s.stripped && mv /run/candidate-5.s.stripped /run/candidate-5.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-5.o /run/candidate-5.s >>/run/candidate-5.stderr 2>&1; then\n      echo ok > /run/candidate-5.status\n    else\n      echo compile_error > /run/candidate-5.status\n    fi\n  else\n    echo compile_error > /run/candidate-5.status\n  fi\nelse\n  echo compile_error > /run/candidate-5.status\nfi\nrm -f /run/candidate-5.elf /run/target-5.elf /run/link-5.stderr /run/target-5.defsym /run/target-5.unit-defsym\nif [ -f /run/candidate-5.o ] && [ -f /workspace/build/asm/asm_0800c9a4.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0800c9a4.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-5.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0800c9a4.s.o | awk -v entry=func_0800C9A4 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-5.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-5.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-5.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0800C9A4 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0800c9a4.s.o -o /run/target-5.elf >>/run/link-5.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0800C9A4 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-5.o -o /run/candidate-5.elf >>/run/link-5.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-6.o /run/candidate-6.status /run/candidate-6.stderr /run/candidate-6.i /run/candidate-6.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0801975C.c -o /run/candidate-6.i >/run/candidate-6.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-6.i -o /run/candidate-6.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-6.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-6.s > /run/candidate-6.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-6.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-6.s.stripped && mv /run/candidate-6.s.stripped /run/candidate-6.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-6.o /run/candidate-6.s >>/run/candidate-6.stderr 2>&1; then\n      echo ok > /run/candidate-6.status\n    else\n      echo compile_error > /run/candidate-6.status\n    fi\n  else\n    echo compile_error > /run/candidate-6.status\n  fi\nelse\n  echo compile_error > /run/candidate-6.status\nfi\nrm -f /run/candidate-6.elf /run/target-6.elf /run/link-6.stderr /run/target-6.defsym /run/target-6.unit-defsym\nif [ -f /run/candidate-6.o ] && [ -f /workspace/build/asm/asm_0801975c.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0801975c.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-6.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0801975c.s.o | awk -v entry=func_0801975C '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-6.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-6.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-6.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0801975C \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0801975c.s.o -o /run/target-6.elf >>/run/link-6.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0801975C \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-6.o -o /run/candidate-6.elf >>/run/link-6.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-7.o /run/candidate-7.status /run/candidate-7.stderr /run/candidate-7.i /run/candidate-7.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0801E44C.c -o /run/candidate-7.i >/run/candidate-7.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-7.i -o /run/candidate-7.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-7.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-7.s > /run/candidate-7.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-7.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-7.s.stripped && mv /run/candidate-7.s.stripped /run/candidate-7.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-7.o /run/candidate-7.s >>/run/candidate-7.stderr 2>&1; then\n      echo ok > /run/candidate-7.status\n    else\n      echo compile_error > /run/candidate-7.status\n    fi\n  else\n    echo compile_error > /run/candidate-7.status\n  fi\nelse\n  echo compile_error > /run/candidate-7.status\nfi\nrm -f /run/candidate-7.elf /run/target-7.elf /run/link-7.stderr /run/target-7.defsym /run/target-7.unit-defsym\nif [ -f /run/candidate-7.o ] && [ -f /workspace/build/asm/asm_0801e44c.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0801e44c.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-7.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0801e44c.s.o | awk -v entry=func_0801E44C '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-7.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-7.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-7.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0801E44C \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0801e44c.s.o -o /run/target-7.elf >>/run/link-7.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0801E44C \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-7.o -o /run/candidate-7.elf >>/run/link-7.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-8.o /run/candidate-8.status /run/candidate-8.stderr /run/candidate-8.i /run/candidate-8.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_08020F40.c -o /run/candidate-8.i >/run/candidate-8.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-8.i -o /run/candidate-8.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-8.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-8.s > /run/candidate-8.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-8.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-8.s.stripped && mv /run/candidate-8.s.stripped /run/candidate-8.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-8.o /run/candidate-8.s >>/run/candidate-8.stderr 2>&1; then\n      echo ok > /run/candidate-8.status\n    else\n      echo compile_error > /run/candidate-8.status\n    fi\n  else\n    echo compile_error > /run/candidate-8.status\n  fi\nelse\n  echo compile_error > /run/candidate-8.status\nfi\nrm -f /run/candidate-8.elf /run/target-8.elf /run/link-8.stderr /run/target-8.defsym /run/target-8.unit-defsym\nif [ -f /run/candidate-8.o ] && [ -f /workspace/build/asm/asm_08020f40.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08020f40.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-8.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08020f40.s.o | awk -v entry=func_08020F40 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-8.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-8.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-8.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08020F40 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08020f40.s.o -o /run/target-8.elf >>/run/link-8.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08020F40 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-8.o -o /run/candidate-8.elf >>/run/link-8.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-9.o /run/candidate-9.status /run/candidate-9.stderr /run/candidate-9.i /run/candidate-9.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_08085624.c -o /run/candidate-9.i >/run/candidate-9.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-9.i -o /run/candidate-9.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-9.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-9.s > /run/candidate-9.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-9.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-9.s.stripped && mv /run/candidate-9.s.stripped /run/candidate-9.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-9.o /run/candidate-9.s >>/run/candidate-9.stderr 2>&1; then\n      echo ok > /run/candidate-9.status\n    else\n      echo compile_error > /run/candidate-9.status\n    fi\n  else\n    echo compile_error > /run/candidate-9.status\n  fi\nelse\n  echo compile_error > /run/candidate-9.status\nfi\nrm -f /run/candidate-9.elf /run/target-9.elf /run/link-9.stderr /run/target-9.defsym /run/target-9.unit-defsym\nif [ -f /run/candidate-9.o ] && [ -f /workspace/build/asm/asm_08085624.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08085624.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-9.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08085624.s.o | awk -v entry=func_08085624 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-9.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-9.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-9.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08085624 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08085624.s.o -o /run/target-9.elf >>/run/link-9.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08085624 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-9.o -o /run/candidate-9.elf >>/run/link-9.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-10.o /run/candidate-10.status /run/candidate-10.stderr /run/candidate-10.i /run/candidate-10.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0808AB78.c -o /run/candidate-10.i >/run/candidate-10.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-10.i -o /run/candidate-10.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-10.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-10.s > /run/candidate-10.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-10.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-10.s.stripped && mv /run/candidate-10.s.stripped /run/candidate-10.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-10.o /run/candidate-10.s >>/run/candidate-10.stderr 2>&1; then\n      echo ok > /run/candidate-10.status\n    else\n      echo compile_error > /run/candidate-10.status\n    fi\n  else\n    echo compile_error > /run/candidate-10.status\n  fi\nelse\n  echo compile_error > /run/candidate-10.status\nfi\nrm -f /run/candidate-10.elf /run/target-10.elf /run/link-10.stderr /run/target-10.defsym /run/target-10.unit-defsym\nif [ -f /run/candidate-10.o ] && [ -f /workspace/build/asm/asm_0808ab78.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808ab78.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-10.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808ab78.s.o | awk -v entry=func_0808AB78 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-10.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-10.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-10.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0808AB78 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0808ab78.s.o -o /run/target-10.elf >>/run/link-10.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0808AB78 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-10.o -o /run/candidate-10.elf >>/run/link-10.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-11.o /run/candidate-11.status /run/candidate-11.stderr /run/candidate-11.i /run/candidate-11.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0808AB98.c -o /run/candidate-11.i >/run/candidate-11.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-11.i -o /run/candidate-11.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-11.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-11.s > /run/candidate-11.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-11.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-11.s.stripped && mv /run/candidate-11.s.stripped /run/candidate-11.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-11.o /run/candidate-11.s >>/run/candidate-11.stderr 2>&1; then\n      echo ok > /run/candidate-11.status\n    else\n      echo compile_error > /run/candidate-11.status\n    fi\n  else\n    echo compile_error > /run/candidate-11.status\n  fi\nelse\n  echo compile_error > /run/candidate-11.status\nfi\nrm -f /run/candidate-11.elf /run/target-11.elf /run/link-11.stderr /run/target-11.defsym /run/target-11.unit-defsym\nif [ -f /run/candidate-11.o ] && [ -f /workspace/build/asm/asm_0808ab98.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808ab98.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-11.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808ab98.s.o | awk -v entry=func_0808AB98 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-11.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-11.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-11.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0808AB98 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0808ab98.s.o -o /run/target-11.elf >>/run/link-11.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0808AB98 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-11.o -o /run/candidate-11.elf >>/run/link-11.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-12.o /run/candidate-12.status /run/candidate-12.stderr /run/candidate-12.i /run/candidate-12.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0808B9FC.c -o /run/candidate-12.i >/run/candidate-12.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-12.i -o /run/candidate-12.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-12.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-12.s > /run/candidate-12.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-12.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-12.s.stripped && mv /run/candidate-12.s.stripped /run/candidate-12.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-12.o /run/candidate-12.s >>/run/candidate-12.stderr 2>&1; then\n      echo ok > /run/candidate-12.status\n    else\n      echo compile_error > /run/candidate-12.status\n    fi\n  else\n    echo compile_error > /run/candidate-12.status\n  fi\nelse\n  echo compile_error > /run/candidate-12.status\nfi\nrm -f /run/candidate-12.elf /run/target-12.elf /run/link-12.stderr /run/target-12.defsym /run/target-12.unit-defsym\nif [ -f /run/candidate-12.o ] && [ -f /workspace/build/asm/asm_0808b9fc.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808b9fc.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-12.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808b9fc.s.o | awk -v entry=func_0808B9FC '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-12.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-12.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-12.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0808B9FC \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0808b9fc.s.o -o /run/target-12.elf >>/run/link-12.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0808B9FC \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-12.o -o /run/candidate-12.elf >>/run/link-12.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-13.o /run/candidate-13.status /run/candidate-13.stderr /run/candidate-13.i /run/candidate-13.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080B83B0.c -o /run/candidate-13.i >/run/candidate-13.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-13.i -o /run/candidate-13.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-13.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-13.s > /run/candidate-13.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-13.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-13.s.stripped && mv /run/candidate-13.s.stripped /run/candidate-13.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-13.o /run/candidate-13.s >>/run/candidate-13.stderr 2>&1; then\n      echo ok > /run/candidate-13.status\n    else\n      echo compile_error > /run/candidate-13.status\n    fi\n  else\n    echo compile_error > /run/candidate-13.status\n  fi\nelse\n  echo compile_error > /run/candidate-13.status\nfi\nrm -f /run/candidate-13.elf /run/target-13.elf /run/link-13.stderr /run/target-13.defsym /run/target-13.unit-defsym\nif [ -f /run/candidate-13.o ] && [ -f /workspace/build/asm/asm_080b83b0.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080b83b0.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-13.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080b83b0.s.o | awk -v entry=func_080B83B0 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-13.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-13.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-13.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080B83B0 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080b83b0.s.o -o /run/target-13.elf >>/run/link-13.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080B83B0 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-13.o -o /run/candidate-13.elf >>/run/link-13.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-14.o /run/candidate-14.status /run/candidate-14.stderr /run/candidate-14.i /run/candidate-14.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080C6188.c -o /run/candidate-14.i >/run/candidate-14.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-14.i -o /run/candidate-14.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-14.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-14.s > /run/candidate-14.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-14.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-14.s.stripped && mv /run/candidate-14.s.stripped /run/candidate-14.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-14.o /run/candidate-14.s >>/run/candidate-14.stderr 2>&1; then\n      echo ok > /run/candidate-14.status\n    else\n      echo compile_error > /run/candidate-14.status\n    fi\n  else\n    echo compile_error > /run/candidate-14.status\n  fi\nelse\n  echo compile_error > /run/candidate-14.status\nfi\nrm -f /run/candidate-14.elf /run/target-14.elf /run/link-14.stderr /run/target-14.defsym /run/target-14.unit-defsym\nif [ -f /run/candidate-14.o ] && [ -f /workspace/build/asm/asm_080c6188.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080c6188.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-14.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080c6188.s.o | awk -v entry=func_080C6188 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-14.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-14.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-14.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080C6188 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080c6188.s.o -o /run/target-14.elf >>/run/link-14.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080C6188 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-14.o -o /run/candidate-14.elf >>/run/link-14.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-15.o /run/candidate-15.status /run/candidate-15.stderr /run/candidate-15.i /run/candidate-15.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080C61AC.c -o /run/candidate-15.i >/run/candidate-15.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-15.i -o /run/candidate-15.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-15.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-15.s > /run/candidate-15.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-15.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-15.s.stripped && mv /run/candidate-15.s.stripped /run/candidate-15.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-15.o /run/candidate-15.s >>/run/candidate-15.stderr 2>&1; then\n      echo ok > /run/candidate-15.status\n    else\n      echo compile_error > /run/candidate-15.status\n    fi\n  else\n    echo compile_error > /run/candidate-15.status\n  fi\nelse\n  echo compile_error > /run/candidate-15.status\nfi\nrm -f /run/candidate-15.elf /run/target-15.elf /run/link-15.stderr /run/target-15.defsym /run/target-15.unit-defsym\nif [ -f /run/candidate-15.o ] && [ -f /workspace/build/asm/asm_080c61ac.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080c61ac.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-15.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080c61ac.s.o | awk -v entry=func_080C61AC '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-15.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-15.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-15.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080C61AC \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080c61ac.s.o -o /run/target-15.elf >>/run/link-15.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080C61AC \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-15.o -o /run/candidate-15.elf >>/run/link-15.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-16.o /run/candidate-16.status /run/candidate-16.stderr /run/candidate-16.i /run/candidate-16.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080D1034.c -o /run/candidate-16.i >/run/candidate-16.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-16.i -o /run/candidate-16.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-16.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-16.s > /run/candidate-16.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-16.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-16.s.stripped && mv /run/candidate-16.s.stripped /run/candidate-16.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-16.o /run/candidate-16.s >>/run/candidate-16.stderr 2>&1; then\n      echo ok > /run/candidate-16.status\n    else\n      echo compile_error > /run/candidate-16.status\n    fi\n  else\n    echo compile_error > /run/candidate-16.status\n  fi\nelse\n  echo compile_error > /run/candidate-16.status\nfi\nrm -f /run/candidate-16.elf /run/target-16.elf /run/link-16.stderr /run/target-16.defsym /run/target-16.unit-defsym\nif [ -f /run/candidate-16.o ] && [ -f /workspace/build/asm/asm_080d1034.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080d1034.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-16.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080d1034.s.o | awk -v entry=func_080D1034 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-16.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-16.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-16.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080D1034 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080d1034.s.o -o /run/target-16.elf >>/run/link-16.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080D1034 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-16.o -o /run/candidate-16.elf >>/run/link-16.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-17.o /run/candidate-17.status /run/candidate-17.stderr /run/candidate-17.i /run/candidate-17.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080D37E4.c -o /run/candidate-17.i >/run/candidate-17.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-17.i -o /run/candidate-17.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-17.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-17.s > /run/candidate-17.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-17.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-17.s.stripped && mv /run/candidate-17.s.stripped /run/candidate-17.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-17.o /run/candidate-17.s >>/run/candidate-17.stderr 2>&1; then\n      echo ok > /run/candidate-17.status\n    else\n      echo compile_error > /run/candidate-17.status\n    fi\n  else\n    echo compile_error > /run/candidate-17.status\n  fi\nelse\n  echo compile_error > /run/candidate-17.status\nfi\nrm -f /run/candidate-17.elf /run/target-17.elf /run/link-17.stderr /run/target-17.defsym /run/target-17.unit-defsym\nif [ -f /run/candidate-17.o ] && [ -f /workspace/build/asm/asm_080d37e4.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080d37e4.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-17.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080d37e4.s.o | awk -v entry=func_080D37E4 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-17.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-17.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-17.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080D37E4 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080d37e4.s.o -o /run/target-17.elf >>/run/link-17.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080D37E4 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-17.o -o /run/candidate-17.elf >>/run/link-17.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-18.o /run/candidate-18.status /run/candidate-18.stderr /run/candidate-18.i /run/candidate-18.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080F2FFC.c -o /run/candidate-18.i >/run/candidate-18.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-18.i -o /run/candidate-18.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-18.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-18.s > /run/candidate-18.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-18.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-18.s.stripped && mv /run/candidate-18.s.stripped /run/candidate-18.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-18.o /run/candidate-18.s >>/run/candidate-18.stderr 2>&1; then\n      echo ok > /run/candidate-18.status\n    else\n      echo compile_error > /run/candidate-18.status\n    fi\n  else\n    echo compile_error > /run/candidate-18.status\n  fi\nelse\n  echo compile_error > /run/candidate-18.status\nfi\nrm -f /run/candidate-18.elf /run/target-18.elf /run/link-18.stderr /run/target-18.defsym /run/target-18.unit-defsym\nif [ -f /run/candidate-18.o ] && [ -f /workspace/build/asm/asm_080f2ffc.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080f2ffc.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-18.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080f2ffc.s.o | awk -v entry=func_080F2FFC '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-18.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-18.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-18.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080F2FFC \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080f2ffc.s.o -o /run/target-18.elf >>/run/link-18.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080F2FFC \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-18.o -o /run/candidate-18.elf >>/run/link-18.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+    "diff": {
+      "left": {
+        "sections": [
+          {
+            "name": ".text",
+            "kind": "SECTION_CODE",
+            "size": "24",
+            "match_percent": 99.09091
+          },
+          {
+            "name": ".data",
+            "kind": "SECTION_DATA",
+            "match_percent": 100.0
+          },
+          {
+            "name": ".bss",
+            "kind": "SECTION_BSS",
+            "match_percent": 100.0
+          }
+        ],
+        "symbols": [
+          {
+            "name": "func_080049A4",
+            "size": "24",
+            "flags": {
+              "global": true,
+              "size_inferred": true
+            },
+            "kind": "SYMBOL_FUNCTION",
+            "target_symbol": 3,
+            "match_percent": 99.09091,
+            "instructions": [
+              {
+                "instruction": {
+                  "size": 2,
+                  "formatted": "push {r4, lr}",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "push",
+                        "opcode": 59
+                      }
+                    },
+                    {
+                      "basic": "{"
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "lr"
+                      }
+                    },
+                    {
+                      "basic": "}"
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "2",
+                  "size": 2,
+                  "formatted": "sub sp, #0x4",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "sub",
+                        "opcode": 126
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "sp"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "4"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "4",
+                  "size": 2,
+                  "formatted": "mov r4, r2",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r2"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "6",
+                  "size": 2,
+                  "formatted": "str r3, [sp, #0x0]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "str",
+                        "opcode": 116
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r3"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "sp"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "0"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "8",
+                  "size": 2,
+                  "formatted": "mov r2, #0x0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r2"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "0"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "10",
+                  "size": 2,
+                  "formatted": "mov r3, r4",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r3"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "12",
+                  "size": 4,
+                  "formatted": "bl func_080047E8-0x4",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "bl",
+                        "opcode": 7
+                      }
+                    },
+                    {
+                      "arg": {
+                        "reloc": true
+                      }
+                    }
+                  ],
+                  "relocation": {
+                    "type": 10,
+                    "type_name": "R_ARM_THM_PC22",
+                    "target_symbol": 10,
+                    "addend": "-4"
+                  }
+                }
+              },
+              {
+                "instruction": {
+                  "address": "16",
+                  "size": 2,
+                  "formatted": "add sp, #0x4",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "add",
+                        "opcode": 1
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "sp"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "4"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "18",
+                  "size": 2,
+                  "formatted": "pop {r4}",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "pop",
+                        "opcode": 58
+                      }
+                    },
+                    {
+                      "basic": "{"
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "basic": "}"
+                    }
+                  ]
+                }
+              },
+              {
+                "diff_kind": "DIFF_ARG_MISMATCH",
+                "instruction": {
+                  "address": "20",
+                  "size": 2,
+                  "formatted": "pop {r1}",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "pop",
+                        "opcode": 58
+                      }
+                    },
+                    {
+                      "basic": "{"
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r1"
+                      }
+                    },
+                    {
+                      "basic": "}"
+                    }
+                  ]
+                },
+                "arg_diff": [
+                  {
+                    "diff_index": 0
+                  }
+                ]
+              },
+              {
+                "diff_kind": "DIFF_ARG_MISMATCH",
+                "instruction": {
+                  "address": "22",
+                  "size": 2,
+                  "formatted": "bx r1",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "bx",
+                        "opcode": 9
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r1"
+                      }
+                    }
+                  ]
+                },
+                "arg_diff": [
+                  {
+                    "diff_index": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "right": {
+        "sections": [
+          {
+            "name": ".text",
+            "kind": "SECTION_CODE",
+            "size": "24"
+          },
+          {
+            "name": ".data",
+            "kind": "SECTION_DATA"
+          },
+          {
+            "name": ".bss",
+            "kind": "SECTION_BSS"
+          }
+        ],
+        "symbols": [
+          {
+            "name": "func_080049A4",
+            "size": "24",
+            "flags": {
+              "global": true,
+              "size_inferred": true
+            },
+            "kind": "SYMBOL_FUNCTION",
+            "target_symbol": 2,
+            "match_percent": 99.09091,
+            "instructions": [
+              {
+                "instruction": {
+                  "size": 2,
+                  "formatted": "push {r4, lr}",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "push",
+                        "opcode": 59
+                      }
+                    },
+                    {
+                      "basic": "{"
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "lr"
+                      }
+                    },
+                    {
+                      "basic": "}"
+                    }
+                  ],
+                  "line_number": 1717
+                }
+              },
+              {
+                "instruction": {
+                  "address": "2",
+                  "size": 2,
+                  "formatted": "sub sp, #0x4",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "sub",
+                        "opcode": 126
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "sp"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "4"
+                      }
+                    }
+                  ],
+                  "line_number": 1717
+                }
+              },
+              {
+                "instruction": {
+                  "address": "4",
+                  "size": 2,
+                  "formatted": "mov r4, r2",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r2"
+                      }
+                    }
+                  ],
+                  "line_number": 1717
+                }
+              },
+              {
+                "instruction": {
+                  "address": "6",
+                  "size": 2,
+                  "formatted": "str r3, [sp, #0x0]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "str",
+                        "opcode": 116
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r3"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "sp"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "0"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1718
+                }
+              },
+              {
+                "instruction": {
+                  "address": "8",
+                  "size": 2,
+                  "formatted": "mov r2, #0x0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r2"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "0"
+                      }
+                    }
+                  ],
+                  "line_number": 1718
+                }
+              },
+              {
+                "instruction": {
+                  "address": "10",
+                  "size": 2,
+                  "formatted": "mov r3, r4",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r3"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    }
+                  ],
+                  "line_number": 1718
+                }
+              },
+              {
+                "instruction": {
+                  "address": "12",
+                  "size": 4,
+                  "formatted": "bl func_080047E8-0x4",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "bl",
+                        "opcode": 7
+                      }
+                    },
+                    {
+                      "arg": {
+                        "reloc": true
+                      }
+                    }
+                  ],
+                  "relocation": {
+                    "type": 10,
+                    "type_name": "R_ARM_THM_PC22",
+                    "target_symbol": 13,
+                    "addend": "-4"
+                  },
+                  "line_number": 1718
+                }
+              },
+              {
+                "instruction": {
+                  "address": "16",
+                  "size": 2,
+                  "formatted": "add sp, #0x4",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "add",
+                        "opcode": 1
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "sp"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "4"
+                      }
+                    }
+                  ],
+                  "line_number": 1719
+                }
+              },
+              {
+                "instruction": {
+                  "address": "18",
+                  "size": 2,
+                  "formatted": "pop {r4}",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "pop",
+                        "opcode": 58
+                      }
+                    },
+                    {
+                      "basic": "{"
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "basic": "}"
+                    }
+                  ],
+                  "line_number": 1719
+                }
+              },
+              {
+                "diff_kind": "DIFF_ARG_MISMATCH",
+                "instruction": {
+                  "address": "20",
+                  "size": 2,
+                  "formatted": "pop {r0}",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "pop",
+                        "opcode": 58
+                      }
+                    },
+                    {
+                      "basic": "{"
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "basic": "}"
+                    }
+                  ],
+                  "line_number": 1719
+                },
+                "arg_diff": [
+                  {
+                    "diff_index": 0
+                  }
+                ]
+              },
+              {
+                "diff_kind": "DIFF_ARG_MISMATCH",
+                "instruction": {
+                  "address": "22",
+                  "size": 2,
+                  "formatted": "bx r0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "bx",
+                        "opcode": 9
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    }
+                  ],
+                  "line_number": 1719
+                },
+                "arg_diff": [
+                  {
+                    "diff_index": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "history": [
+    {
+      "timestamp": "2026-08-05T22:42:47+00:00",
+      "score": 0.90909,
+      "score_kind": "isolated_objdiff_gap",
+      "reason": "isolated_mismatch",
+      "branch": "docs/macabeus-tooling-assessment",
+      "commit": "69bfe916256f11b94cccd41aa831ab8ee490916f",
+      "candidate": ".mizuchi-tmp/round-30-d/func_080049A4.c",
+      "candidate_sha1": "db3e21c767a699d5a60582981b87bd71f20ca180",
+      "candidate_sha256": "035bd3c3b5e044dc4afab96a8feda30731d969b117860edf32a4ec8ff191f724",
+      "rom_sha1": "3f556448d290fa5406d6ed367fee16cc02387ad3",
+      "baseline_rom_sha1": "3f556448d290fa5406d6ed367fee16cc02387ad3",
+      "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /var/folders/cq/tj_dgq0d4qsfs1xyx0jx2cp40000gn/T/warioware-cycle-0l53jaf1:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080042F4.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /workspace/build/asm/asm_080042f4.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080042f4.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080042f4.s.o | awk -v entry=func_080042F4 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080042F4 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080042f4.s.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080042F4 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-1.o /run/candidate-1.status /run/candidate-1.stderr /run/candidate-1.i /run/candidate-1.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080043B8.c -o /run/candidate-1.i >/run/candidate-1.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-1.i -o /run/candidate-1.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-1.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-1.s > /run/candidate-1.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-1.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-1.s.stripped && mv /run/candidate-1.s.stripped /run/candidate-1.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-1.o /run/candidate-1.s >>/run/candidate-1.stderr 2>&1; then\n      echo ok > /run/candidate-1.status\n    else\n      echo compile_error > /run/candidate-1.status\n    fi\n  else\n    echo compile_error > /run/candidate-1.status\n  fi\nelse\n  echo compile_error > /run/candidate-1.status\nfi\nrm -f /run/candidate-1.elf /run/target-1.elf /run/link-1.stderr /run/target-1.defsym /run/target-1.unit-defsym\nif [ -f /run/candidate-1.o ] && [ -f /workspace/build/asm/asm_080043b8.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080043b8.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-1.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080043b8.s.o | awk -v entry=func_080043B8 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-1.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-1.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-1.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080043B8 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080043b8.s.o -o /run/target-1.elf >>/run/link-1.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080043B8 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-1.o -o /run/candidate-1.elf >>/run/link-1.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-2.o /run/candidate-2.status /run/candidate-2.stderr /run/candidate-2.i /run/candidate-2.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080049A4.c -o /run/candidate-2.i >/run/candidate-2.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-2.i -o /run/candidate-2.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-2.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-2.s > /run/candidate-2.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-2.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-2.s.stripped && mv /run/candidate-2.s.stripped /run/candidate-2.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-2.o /run/candidate-2.s >>/run/candidate-2.stderr 2>&1; then\n      echo ok > /run/candidate-2.status\n    else\n      echo compile_error > /run/candidate-2.status\n    fi\n  else\n    echo compile_error > /run/candidate-2.status\n  fi\nelse\n  echo compile_error > /run/candidate-2.status\nfi\nrm -f /run/candidate-2.elf /run/target-2.elf /run/link-2.stderr /run/target-2.defsym /run/target-2.unit-defsym\nif [ -f /run/candidate-2.o ] && [ -f /workspace/build/asm/asm_080049a4.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080049a4.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-2.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080049a4.s.o | awk -v entry=func_080049A4 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-2.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-2.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-2.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080049A4 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080049a4.s.o -o /run/target-2.elf >>/run/link-2.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080049A4 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-2.o -o /run/candidate-2.elf >>/run/link-2.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-3.o /run/candidate-3.status /run/candidate-3.stderr /run/candidate-3.i /run/candidate-3.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_08004F14.c -o /run/candidate-3.i >/run/candidate-3.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-3.i -o /run/candidate-3.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-3.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-3.s > /run/candidate-3.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-3.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-3.s.stripped && mv /run/candidate-3.s.stripped /run/candidate-3.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-3.o /run/candidate-3.s >>/run/candidate-3.stderr 2>&1; then\n      echo ok > /run/candidate-3.status\n    else\n      echo compile_error > /run/candidate-3.status\n    fi\n  else\n    echo compile_error > /run/candidate-3.status\n  fi\nelse\n  echo compile_error > /run/candidate-3.status\nfi\nrm -f /run/candidate-3.elf /run/target-3.elf /run/link-3.stderr /run/target-3.defsym /run/target-3.unit-defsym\nif [ -f /run/candidate-3.o ] && [ -f /workspace/build/asm/asm_08004f14.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08004f14.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-3.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08004f14.s.o | awk -v entry=func_08004F14 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-3.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-3.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-3.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08004F14 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08004f14.s.o -o /run/target-3.elf >>/run/link-3.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08004F14 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-3.o -o /run/candidate-3.elf >>/run/link-3.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-4.o /run/candidate-4.status /run/candidate-4.stderr /run/candidate-4.i /run/candidate-4.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_08007FC0.c -o /run/candidate-4.i >/run/candidate-4.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-4.i -o /run/candidate-4.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-4.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-4.s > /run/candidate-4.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-4.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-4.s.stripped && mv /run/candidate-4.s.stripped /run/candidate-4.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-4.o /run/candidate-4.s >>/run/candidate-4.stderr 2>&1; then\n      echo ok > /run/candidate-4.status\n    else\n      echo compile_error > /run/candidate-4.status\n    fi\n  else\n    echo compile_error > /run/candidate-4.status\n  fi\nelse\n  echo compile_error > /run/candidate-4.status\nfi\nrm -f /run/candidate-4.elf /run/target-4.elf /run/link-4.stderr /run/target-4.defsym /run/target-4.unit-defsym\nif [ -f /run/candidate-4.o ] && [ -f /workspace/build/asm/asm_08007fc0.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08007fc0.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-4.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08007fc0.s.o | awk -v entry=func_08007FC0 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-4.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-4.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-4.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08007FC0 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08007fc0.s.o -o /run/target-4.elf >>/run/link-4.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08007FC0 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-4.o -o /run/candidate-4.elf >>/run/link-4.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-5.o /run/candidate-5.status /run/candidate-5.stderr /run/candidate-5.i /run/candidate-5.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0800C9A4.c -o /run/candidate-5.i >/run/candidate-5.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-5.i -o /run/candidate-5.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-5.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-5.s > /run/candidate-5.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-5.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-5.s.stripped && mv /run/candidate-5.s.stripped /run/candidate-5.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-5.o /run/candidate-5.s >>/run/candidate-5.stderr 2>&1; then\n      echo ok > /run/candidate-5.status\n    else\n      echo compile_error > /run/candidate-5.status\n    fi\n  else\n    echo compile_error > /run/candidate-5.status\n  fi\nelse\n  echo compile_error > /run/candidate-5.status\nfi\nrm -f /run/candidate-5.elf /run/target-5.elf /run/link-5.stderr /run/target-5.defsym /run/target-5.unit-defsym\nif [ -f /run/candidate-5.o ] && [ -f /workspace/build/asm/asm_0800c9a4.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0800c9a4.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-5.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0800c9a4.s.o | awk -v entry=func_0800C9A4 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-5.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-5.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-5.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0800C9A4 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0800c9a4.s.o -o /run/target-5.elf >>/run/link-5.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0800C9A4 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-5.o -o /run/candidate-5.elf >>/run/link-5.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-6.o /run/candidate-6.status /run/candidate-6.stderr /run/candidate-6.i /run/candidate-6.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0801975C.c -o /run/candidate-6.i >/run/candidate-6.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-6.i -o /run/candidate-6.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-6.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-6.s > /run/candidate-6.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-6.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-6.s.stripped && mv /run/candidate-6.s.stripped /run/candidate-6.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-6.o /run/candidate-6.s >>/run/candidate-6.stderr 2>&1; then\n      echo ok > /run/candidate-6.status\n    else\n      echo compile_error > /run/candidate-6.status\n    fi\n  else\n    echo compile_error > /run/candidate-6.status\n  fi\nelse\n  echo compile_error > /run/candidate-6.status\nfi\nrm -f /run/candidate-6.elf /run/target-6.elf /run/link-6.stderr /run/target-6.defsym /run/target-6.unit-defsym\nif [ -f /run/candidate-6.o ] && [ -f /workspace/build/asm/asm_0801975c.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0801975c.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-6.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0801975c.s.o | awk -v entry=func_0801975C '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-6.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-6.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-6.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0801975C \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0801975c.s.o -o /run/target-6.elf >>/run/link-6.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0801975C \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-6.o -o /run/candidate-6.elf >>/run/link-6.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-7.o /run/candidate-7.status /run/candidate-7.stderr /run/candidate-7.i /run/candidate-7.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0801E44C.c -o /run/candidate-7.i >/run/candidate-7.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-7.i -o /run/candidate-7.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-7.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-7.s > /run/candidate-7.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-7.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-7.s.stripped && mv /run/candidate-7.s.stripped /run/candidate-7.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-7.o /run/candidate-7.s >>/run/candidate-7.stderr 2>&1; then\n      echo ok > /run/candidate-7.status\n    else\n      echo compile_error > /run/candidate-7.status\n    fi\n  else\n    echo compile_error > /run/candidate-7.status\n  fi\nelse\n  echo compile_error > /run/candidate-7.status\nfi\nrm -f /run/candidate-7.elf /run/target-7.elf /run/link-7.stderr /run/target-7.defsym /run/target-7.unit-defsym\nif [ -f /run/candidate-7.o ] && [ -f /workspace/build/asm/asm_0801e44c.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0801e44c.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-7.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0801e44c.s.o | awk -v entry=func_0801E44C '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-7.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-7.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-7.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0801E44C \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0801e44c.s.o -o /run/target-7.elf >>/run/link-7.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0801E44C \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-7.o -o /run/candidate-7.elf >>/run/link-7.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-8.o /run/candidate-8.status /run/candidate-8.stderr /run/candidate-8.i /run/candidate-8.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_08020F40.c -o /run/candidate-8.i >/run/candidate-8.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-8.i -o /run/candidate-8.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-8.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-8.s > /run/candidate-8.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-8.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-8.s.stripped && mv /run/candidate-8.s.stripped /run/candidate-8.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-8.o /run/candidate-8.s >>/run/candidate-8.stderr 2>&1; then\n      echo ok > /run/candidate-8.status\n    else\n      echo compile_error > /run/candidate-8.status\n    fi\n  else\n    echo compile_error > /run/candidate-8.status\n  fi\nelse\n  echo compile_error > /run/candidate-8.status\nfi\nrm -f /run/candidate-8.elf /run/target-8.elf /run/link-8.stderr /run/target-8.defsym /run/target-8.unit-defsym\nif [ -f /run/candidate-8.o ] && [ -f /workspace/build/asm/asm_08020f40.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08020f40.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-8.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08020f40.s.o | awk -v entry=func_08020F40 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-8.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-8.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-8.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08020F40 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08020f40.s.o -o /run/target-8.elf >>/run/link-8.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08020F40 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-8.o -o /run/candidate-8.elf >>/run/link-8.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-9.o /run/candidate-9.status /run/candidate-9.stderr /run/candidate-9.i /run/candidate-9.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_08085624.c -o /run/candidate-9.i >/run/candidate-9.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-9.i -o /run/candidate-9.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-9.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-9.s > /run/candidate-9.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-9.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-9.s.stripped && mv /run/candidate-9.s.stripped /run/candidate-9.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-9.o /run/candidate-9.s >>/run/candidate-9.stderr 2>&1; then\n      echo ok > /run/candidate-9.status\n    else\n      echo compile_error > /run/candidate-9.status\n    fi\n  else\n    echo compile_error > /run/candidate-9.status\n  fi\nelse\n  echo compile_error > /run/candidate-9.status\nfi\nrm -f /run/candidate-9.elf /run/target-9.elf /run/link-9.stderr /run/target-9.defsym /run/target-9.unit-defsym\nif [ -f /run/candidate-9.o ] && [ -f /workspace/build/asm/asm_08085624.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08085624.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-9.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08085624.s.o | awk -v entry=func_08085624 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-9.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-9.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-9.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08085624 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08085624.s.o -o /run/target-9.elf >>/run/link-9.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08085624 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-9.o -o /run/candidate-9.elf >>/run/link-9.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-10.o /run/candidate-10.status /run/candidate-10.stderr /run/candidate-10.i /run/candidate-10.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0808AB78.c -o /run/candidate-10.i >/run/candidate-10.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-10.i -o /run/candidate-10.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-10.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-10.s > /run/candidate-10.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-10.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-10.s.stripped && mv /run/candidate-10.s.stripped /run/candidate-10.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-10.o /run/candidate-10.s >>/run/candidate-10.stderr 2>&1; then\n      echo ok > /run/candidate-10.status\n    else\n      echo compile_error > /run/candidate-10.status\n    fi\n  else\n    echo compile_error > /run/candidate-10.status\n  fi\nelse\n  echo compile_error > /run/candidate-10.status\nfi\nrm -f /run/candidate-10.elf /run/target-10.elf /run/link-10.stderr /run/target-10.defsym /run/target-10.unit-defsym\nif [ -f /run/candidate-10.o ] && [ -f /workspace/build/asm/asm_0808ab78.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808ab78.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-10.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808ab78.s.o | awk -v entry=func_0808AB78 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-10.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-10.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-10.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0808AB78 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0808ab78.s.o -o /run/target-10.elf >>/run/link-10.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0808AB78 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-10.o -o /run/candidate-10.elf >>/run/link-10.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-11.o /run/candidate-11.status /run/candidate-11.stderr /run/candidate-11.i /run/candidate-11.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0808AB98.c -o /run/candidate-11.i >/run/candidate-11.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-11.i -o /run/candidate-11.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-11.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-11.s > /run/candidate-11.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-11.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-11.s.stripped && mv /run/candidate-11.s.stripped /run/candidate-11.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-11.o /run/candidate-11.s >>/run/candidate-11.stderr 2>&1; then\n      echo ok > /run/candidate-11.status\n    else\n      echo compile_error > /run/candidate-11.status\n    fi\n  else\n    echo compile_error > /run/candidate-11.status\n  fi\nelse\n  echo compile_error > /run/candidate-11.status\nfi\nrm -f /run/candidate-11.elf /run/target-11.elf /run/link-11.stderr /run/target-11.defsym /run/target-11.unit-defsym\nif [ -f /run/candidate-11.o ] && [ -f /workspace/build/asm/asm_0808ab98.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808ab98.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-11.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808ab98.s.o | awk -v entry=func_0808AB98 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-11.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-11.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-11.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0808AB98 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0808ab98.s.o -o /run/target-11.elf >>/run/link-11.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0808AB98 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-11.o -o /run/candidate-11.elf >>/run/link-11.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-12.o /run/candidate-12.status /run/candidate-12.stderr /run/candidate-12.i /run/candidate-12.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_0808B9FC.c -o /run/candidate-12.i >/run/candidate-12.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-12.i -o /run/candidate-12.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-12.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-12.s > /run/candidate-12.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-12.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-12.s.stripped && mv /run/candidate-12.s.stripped /run/candidate-12.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-12.o /run/candidate-12.s >>/run/candidate-12.stderr 2>&1; then\n      echo ok > /run/candidate-12.status\n    else\n      echo compile_error > /run/candidate-12.status\n    fi\n  else\n    echo compile_error > /run/candidate-12.status\n  fi\nelse\n  echo compile_error > /run/candidate-12.status\nfi\nrm -f /run/candidate-12.elf /run/target-12.elf /run/link-12.stderr /run/target-12.defsym /run/target-12.unit-defsym\nif [ -f /run/candidate-12.o ] && [ -f /workspace/build/asm/asm_0808b9fc.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808b9fc.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-12.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0808b9fc.s.o | awk -v entry=func_0808B9FC '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-12.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-12.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-12.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0808B9FC \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0808b9fc.s.o -o /run/target-12.elf >>/run/link-12.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0808B9FC \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-12.o -o /run/candidate-12.elf >>/run/link-12.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-13.o /run/candidate-13.status /run/candidate-13.stderr /run/candidate-13.i /run/candidate-13.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080B83B0.c -o /run/candidate-13.i >/run/candidate-13.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-13.i -o /run/candidate-13.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-13.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-13.s > /run/candidate-13.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-13.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-13.s.stripped && mv /run/candidate-13.s.stripped /run/candidate-13.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-13.o /run/candidate-13.s >>/run/candidate-13.stderr 2>&1; then\n      echo ok > /run/candidate-13.status\n    else\n      echo compile_error > /run/candidate-13.status\n    fi\n  else\n    echo compile_error > /run/candidate-13.status\n  fi\nelse\n  echo compile_error > /run/candidate-13.status\nfi\nrm -f /run/candidate-13.elf /run/target-13.elf /run/link-13.stderr /run/target-13.defsym /run/target-13.unit-defsym\nif [ -f /run/candidate-13.o ] && [ -f /workspace/build/asm/asm_080b83b0.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080b83b0.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-13.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080b83b0.s.o | awk -v entry=func_080B83B0 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-13.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-13.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-13.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080B83B0 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080b83b0.s.o -o /run/target-13.elf >>/run/link-13.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080B83B0 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-13.o -o /run/candidate-13.elf >>/run/link-13.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-14.o /run/candidate-14.status /run/candidate-14.stderr /run/candidate-14.i /run/candidate-14.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080C6188.c -o /run/candidate-14.i >/run/candidate-14.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-14.i -o /run/candidate-14.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-14.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-14.s > /run/candidate-14.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-14.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-14.s.stripped && mv /run/candidate-14.s.stripped /run/candidate-14.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-14.o /run/candidate-14.s >>/run/candidate-14.stderr 2>&1; then\n      echo ok > /run/candidate-14.status\n    else\n      echo compile_error > /run/candidate-14.status\n    fi\n  else\n    echo compile_error > /run/candidate-14.status\n  fi\nelse\n  echo compile_error > /run/candidate-14.status\nfi\nrm -f /run/candidate-14.elf /run/target-14.elf /run/link-14.stderr /run/target-14.defsym /run/target-14.unit-defsym\nif [ -f /run/candidate-14.o ] && [ -f /workspace/build/asm/asm_080c6188.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080c6188.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-14.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080c6188.s.o | awk -v entry=func_080C6188 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-14.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-14.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-14.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080C6188 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080c6188.s.o -o /run/target-14.elf >>/run/link-14.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080C6188 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-14.o -o /run/candidate-14.elf >>/run/link-14.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-15.o /run/candidate-15.status /run/candidate-15.stderr /run/candidate-15.i /run/candidate-15.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080C61AC.c -o /run/candidate-15.i >/run/candidate-15.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-15.i -o /run/candidate-15.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-15.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-15.s > /run/candidate-15.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-15.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-15.s.stripped && mv /run/candidate-15.s.stripped /run/candidate-15.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-15.o /run/candidate-15.s >>/run/candidate-15.stderr 2>&1; then\n      echo ok > /run/candidate-15.status\n    else\n      echo compile_error > /run/candidate-15.status\n    fi\n  else\n    echo compile_error > /run/candidate-15.status\n  fi\nelse\n  echo compile_error > /run/candidate-15.status\nfi\nrm -f /run/candidate-15.elf /run/target-15.elf /run/link-15.stderr /run/target-15.defsym /run/target-15.unit-defsym\nif [ -f /run/candidate-15.o ] && [ -f /workspace/build/asm/asm_080c61ac.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080c61ac.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-15.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080c61ac.s.o | awk -v entry=func_080C61AC '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-15.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-15.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-15.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080C61AC \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080c61ac.s.o -o /run/target-15.elf >>/run/link-15.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080C61AC \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-15.o -o /run/candidate-15.elf >>/run/link-15.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-16.o /run/candidate-16.status /run/candidate-16.stderr /run/candidate-16.i /run/candidate-16.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080D1034.c -o /run/candidate-16.i >/run/candidate-16.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-16.i -o /run/candidate-16.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-16.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-16.s > /run/candidate-16.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-16.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-16.s.stripped && mv /run/candidate-16.s.stripped /run/candidate-16.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-16.o /run/candidate-16.s >>/run/candidate-16.stderr 2>&1; then\n      echo ok > /run/candidate-16.status\n    else\n      echo compile_error > /run/candidate-16.status\n    fi\n  else\n    echo compile_error > /run/candidate-16.status\n  fi\nelse\n  echo compile_error > /run/candidate-16.status\nfi\nrm -f /run/candidate-16.elf /run/target-16.elf /run/link-16.stderr /run/target-16.defsym /run/target-16.unit-defsym\nif [ -f /run/candidate-16.o ] && [ -f /workspace/build/asm/asm_080d1034.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080d1034.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-16.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080d1034.s.o | awk -v entry=func_080D1034 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-16.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-16.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-16.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080D1034 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080d1034.s.o -o /run/target-16.elf >>/run/link-16.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080D1034 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-16.o -o /run/candidate-16.elf >>/run/link-16.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-17.o /run/candidate-17.status /run/candidate-17.stderr /run/candidate-17.i /run/candidate-17.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080D37E4.c -o /run/candidate-17.i >/run/candidate-17.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-17.i -o /run/candidate-17.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-17.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-17.s > /run/candidate-17.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-17.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-17.s.stripped && mv /run/candidate-17.s.stripped /run/candidate-17.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-17.o /run/candidate-17.s >>/run/candidate-17.stderr 2>&1; then\n      echo ok > /run/candidate-17.status\n    else\n      echo compile_error > /run/candidate-17.status\n    fi\n  else\n    echo compile_error > /run/candidate-17.status\n  fi\nelse\n  echo compile_error > /run/candidate-17.status\nfi\nrm -f /run/candidate-17.elf /run/target-17.elf /run/link-17.stderr /run/target-17.defsym /run/target-17.unit-defsym\nif [ -f /run/candidate-17.o ] && [ -f /workspace/build/asm/asm_080d37e4.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080d37e4.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-17.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080d37e4.s.o | awk -v entry=func_080D37E4 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-17.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-17.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-17.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080D37E4 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080d37e4.s.o -o /run/target-17.elf >>/run/link-17.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080D37E4 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-17.o -o /run/candidate-17.elf >>/run/link-17.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-18.o /run/candidate-18.status /run/candidate-18.stderr /run/candidate-18.i /run/candidate-18.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-30-d/func_080F2FFC.c -o /run/candidate-18.i >/run/candidate-18.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-18.i -o /run/candidate-18.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-18.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-18.s > /run/candidate-18.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-18.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-18.s.stripped && mv /run/candidate-18.s.stripped /run/candidate-18.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-18.o /run/candidate-18.s >>/run/candidate-18.stderr 2>&1; then\n      echo ok > /run/candidate-18.status\n    else\n      echo compile_error > /run/candidate-18.status\n    fi\n  else\n    echo compile_error > /run/candidate-18.status\n  fi\nelse\n  echo compile_error > /run/candidate-18.status\nfi\nrm -f /run/candidate-18.elf /run/target-18.elf /run/link-18.stderr /run/target-18.defsym /run/target-18.unit-defsym\nif [ -f /run/candidate-18.o ] && [ -f /workspace/build/asm/asm_080f2ffc.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080f2ffc.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-18.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080f2ffc.s.o | awk -v entry=func_080F2FFC '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-18.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-18.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-18.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080F2FFC \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080f2ffc.s.o -o /run/target-18.elf >>/run/link-18.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080F2FFC \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-18.o -o /run/candidate-18.elf >>/run/link-18.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+      "diff": {
+        "truncated": true,
+        "json_prefix": "{\"left\":{\"sections\":[{\"name\":\".text\",\"kind\":\"SECTION_CODE\",\"size\":\"24\",\"match_percent\":99.09091},{\"name\":\".data\",\"kind\":\"SECTION_DATA\",\"match_percent\":100.0},{\"name\":\".bss\",\"kind\":\"SECTION_BSS\",\"match_percent\":100.0}],\"symbols\":[{\"name\":\"func_080049A4\",\"size\":\"24\",\"flags\":{\"global\":true,\"size_inferred\":true},\"kind\":\"SYMBOL_FUNCTION\",\"target_symbol\":3,\"match_percent\":99.09091,\"instructions\":[{\"instruction\":{\"size\":2,\"formatted\":\"push {r4, lr}\",\"parts\":[{\"opcode\":{\"mnemonic\":\"push\",\"opcode\":59}},{\"basic\":\"{\"},{\"arg\":{\"opaque\":\"r4\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"lr\"}},{\"basic\":\"}\"}]}},{\"instruction\":{\"address\":\"2\",\"size\":2,\"formatted\":\"sub sp, #0x4\",\"parts\":[{\"opcode\":{\"mnemonic\":\"sub\",\"opcode\":126}},{\"arg\":{\"opaque\":\"sp\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"unsigned\":\"4\"}}]}},{\"instruction\":{\"address\":\"4\",\"size\":2,\"formatted\":\"mov r4, r2\",\"parts\":[{\"opcode\":{\"mnemonic\":\"mov\",\"opcode\":43}},{\"arg\":{\"opaque\":\"r4\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"r2\"}}]}},{\"instruction\":{\"address\":\"6\",\"size\":2,\"formatted\":\"str r3, [sp, #0x0]\",\"parts\":[{\"opcode\":{\"mnemonic\":\"str\",\"opcode\":116}},{\"arg\":{\"opaque\":\"r3\"}},{\"separator\":true},{\"basic\":\"[\"},{\"arg\":{\"opaque\":\"sp\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"signed\":\"0\"}},{\"basic\":\"]\"}]}},{\"instruction\":{\"address\":\"8\",\"size\":2,\"formatted\":\"mov r2, #0x0\",\"parts\":[{\"opcode\":{\"mnemonic\":\"mov\",\"opcode\":43}},{\"arg\":{\"opaque\":\"r2\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"unsigned\":\"0\"}}]}},{\"instruction\":{\"address\":\"10\",\"size\":2,\"formatted\":\"mov r3, r4\",\"parts\":[{\"opcode\":{\"mnemonic\":\"mov\",\"opcode\":43}},{\"arg\":{\"opaque\":\"r3\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"r4\"}}]}},{\"instruction\":{\"address\":\"12\",\"size\":4,\"formatted\":\"bl func_080047E8-0x4\",\"parts\":[{\"opcode\":{\"mnemonic\":\"bl\",\"opcode\":7}},{\"arg\":{\"reloc\":true}}],\"relocation\":{\"type\":10,\"type_name\":\"R_ARM_THM_PC22\",\"target_symbol\":10,\"addend\":\"-4\"}}},{\"instruction\":{\"address\":\"16\",\"size\":2,\"formatted\":\"add sp, #0x4\",\"parts\":[{\"opcode\":{\"mnemonic\":\"add\",\"opcode\":1}},{\"arg\":{\"opaque\":\"sp\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"unsigned\":\"4\"}}]}},{\"instruction\":{\"address\":\"18\",\"size\":2,\"formatted\":\"pop {r4}\",\"parts\":[{\"opcode\":{\"mnemonic\":\"pop\",\"opcode\":58}},{\"basic\":\"{\"},{\"arg\":{\"opaque\":\"r4\"}},{\"basic\":\"}\"}]}},{\"diff_kind\":\"DIFF_ARG_MISMATCH\",\"instruction\":{\"address\":\"20\",\"size\":2,\"formatted\":\"pop {r1}\",\"parts\":[{\"opcode\":{\"mnemonic\":\"pop\",\"opcode\":58}},{\"basic\":\"{\"},{\"arg\":{\"opaque\":\"r1\"}},{\"basic\":\"}\"}]},\"arg_diff\":[{\"diff_index\":0}]},{\"diff_kind\":\"DIFF_ARG_MISMATCH\",\"instruction\":{\"address\":\"22\",\"size\":2,\"formatted\":\"bx r1\",\"parts\":[{\"opcode\":{\"mnemonic\":\"bx\",\"opcode\":9}},{\"arg\":{\"opaque\":\"r1\"}}]},\"arg_diff\":[{\"diff_index\":0}]}]}]},\"right\":{\"sections\":[{\"name\":\".text\",\"kind\":\"SECTION_CODE\",\"size\":\"24\"},{\"name\":\".data\",\"kind\":\"SECTION_DATA\"},{\"name\":\".bss\",\"kind\":\"SECTION_BSS\"}],\"symbols\":[{\"name\":\"func_080049A4\",\"size\":\"24\",\"flags\":{\"global\":true,\"size_inferred\":true},\"kind\":\"SYMBOL_FUNCTION\",\"target_symbol\":2,\"match_percent\":99.09091,\"instructions\":[{\"instruction\":{\"size\":2,\"formatted\":\"push {r4, lr}\",\"parts\":[{\"opcode\":{\"mnemonic\":\"push\",\"opcode\":59}},{\"basic\":\"{\"},{\"arg\":{\"opaque\":\"r4\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"lr\"}},{\"basic\":\"}\"}],\"line_number\":1717}},{\"instruction\":{\"address\":\"2\",\"size\":2,\"formatted\":\"sub sp, #0x4\",\"parts\":[{\"opcode\":{\"mnemonic\":\"sub\",\"opcode\":126}},{\"arg\":{\"opaque\":\"sp\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"unsigned\":\"4\"}}],\"line_number\":1717}},{\"instruction\":{\"address\":\"4\",\"size\":2,\"formatted\":\"mov r4, r2\",\"parts\":[{\"opcode\":{\"mnemonic\":\"mov\",\"opcode\":43}},{\"arg\":{\"opaque\":\"r4\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"r2\"}}],\"line_number\":1717}},{\"instruction\":{\"address\":\"6\",\"size\":2,\"formatted\":\"str r3, [sp, #0x0]\",\"parts\":[{\"opcode\":{\"mnemonic\":\"str\",\"opcode\":116}},{\"arg\":{\"opaque\":\"r3\"}},{\"separator\":true},{\"basic\":\"[\"},{\"arg\":{\"opaque\":\"sp\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"signed\":\"0\"}},{\"basic\":\"]\"}],\"line_number\":1718}},{\"instruction\":{\"address\":\"8\",\"size\":2,\"formatted\":\"mov r2, #0x0\",\"parts\":[{\"opcode\":{\"mnemonic\":\"mov\",\"opcode\":43}},{\"arg\":{\"opaque\":"
+      }
+    }
+  ],
+  "history_limit": 8
+}
