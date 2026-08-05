@@ -107,6 +107,49 @@ captures the candidate hash, Git branch/commit, UTC timestamp, ROM and
 baserom hashes, build command, and structured diff evidence. This is a
 provenance ledger and seed store, not an acceptance mechanism: only the clean
 Docker build emitting `wariowareinc.gba: OK` accepts a function.
+
+### Automated candidate cycle
+
+Use `tools/decomp_cycle.py` when a function has multiple C spellings or when a
+small sibling batch should share one compiler startup. A manifest is a JSON
+object with a `candidates` array; each entry names `function`, `candidate`, and
+either `target` assembly or an existing `target_object`:
+
+```bash
+python3 tools/decomp_cycle.py isolate --manifest tools/decomp-cycle-demo.json
+```
+
+`isolate` compiles every entry in one Docker container, runs objdiff on the
+host, writes `.decomp-runs/*-isolation.json`, and records non-exact candidates.
+An isolated mismatch is useful evidence, never acceptance. The recorder tags
+score units (`rom_bytes` versus `isolated_objdiff_gap`) so unlike measurements
+are not compared by the keep-best logic.
+
+After a selected entry reports `exact`, use the transactional path with a
+manifest entry that also supplies `source`, `converted`, `linker_old`, and
+`linker_new` (the defaults cover a normal standalone TU):
+
+```bash
+python3 tools/decomp_cycle.py apply --manifest candidate.json --function FUNC
+```
+
+`apply` refuses non-exact isolation, performs the source/linker/ASM move, runs
+the clean Docker ROM gate plus `make report`, and leaves matching changes in
+the worktree. Any full-build failure restores the exact pre-apply files and
+rebuilds the baseline; the receipt records both the failed attempt and the
+rollback verification. `--force` exists only for tool testing and research; it
+does not weaken the ROM gate and is not part of normal decomp work.
+
+For a current-worktree check without a candidate transaction:
+
+```bash
+python3 tools/decomp_cycle.py verify
+```
+
+Install the repository hooks once with `tools/install-hooks.sh`. `pre-commit`
+checks changed C policy and runs the Docker SHA gate for staged ROM-affecting
+paths; `pre-push` checks the pushed range and runs the same gate before allowing
+a push. Documentation/tooling-only commits do not pay the full build cost.
 2. `recommended` includes `standalone_tu` and `included_stub` candidates that the tools can apply mechanically.
 3. In the current post-standalone phase, assume **one function per chunk is no longer always optimal**. Prefer a tiny linked batch when a caller/callee pair is obvious, when callee-first conversion reduces risk, or when a dirty-worktree false mismatch would otherwise burn repeated chunks.
 4. Call `preflight_candidate` before iteration; proceed when `safeForAutonomous=true` for each function in the proposed batch.
@@ -119,7 +162,7 @@ Docker build emitting `wariowareinc.gba: OK` accepts a function.
 6. If only `unknown_skip`/manual candidates remain, use `conversionMode=all` diagnostically and pick a small promising target only when you can explain the integration path.
 7. Explain why that family is worth testing and what the dependency order is.
 8. Convert the smallest safe subset first if the family is risky. For linked included stubs, apply the callee first, then the immediate caller.
-9. After a 100% isolated match, prefer `apply_conversion` for mechanical edits and clean Docker verification. For a batch, calling `apply_conversion` once per function is acceptable; keep the subgroup small enough to revert immediately.
+9. After a 100% isolated match, prefer the manifest-driven `decomp_cycle.py apply` path so the attempt and rollback receipt is automatic. `apply_conversion` remains a valid Pi frontend fallback, but its result must still be represented in a run receipt before commit. For a batch, keep the subgroup small enough to revert immediately.
 10. Build in Docker.
 11. If mismatch:
    - binary-search immediately

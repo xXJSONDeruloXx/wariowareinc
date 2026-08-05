@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$repo_root"
+
+python3 tools/check_decomp_policy.py --staged --check
+
+# A commit must be tested against exactly the staged ROM-affecting work.  An
+# unstaged source/linker edit would make a working-tree Docker build prove the
+# wrong tree, so reject that ambiguity before invoking Docker.
+unstaged_rom="$(git diff --name-only --diff-filter=ACMRTUXB)"
+if [ -n "$unstaged_rom" ]; then
+  while IFS= read -r path; do
+    case "$path" in
+      src/*|asm/*|include/*|data/*|audio/*|graphics/*|Makefile|wariowareinc.ld|wariowareinc_modern.ld|undefined_syms.ld|tools/agbcc-swi.patch)
+        echo "pre-commit blocked: unstaged ROM-affecting path: $path" >&2
+        exit 1
+        ;;
+    esac
+  done <<< "$unstaged_rom"
+fi
+
+if python3 tools/check_decomp_policy.py --staged --needs-verification; then
+  receipt="$(mktemp "${TMPDIR:-/tmp}/warioware-pre-commit.XXXXXX.json")"
+  trap 'rm -f "$receipt"' EXIT
+  python3 tools/decomp_cycle.py verify --no-report --output "$receipt"
+fi

@@ -23,6 +23,18 @@ If an agent resumes cold, read these first:
 - 80% target at the current function total: **4768 / 5960**
 - Remaining gap to 80%: **3389 matched functions**
 
+## Automated matching loop
+
+The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
+
+- `isolate` evaluates a manifest of C permutations/siblings in one Docker compiler invocation and writes a structured `.decomp-runs/` receipt.
+- `apply` requires an isolated exact match, applies the mechanical conversion, runs the strict ROM/report gate, and restores the candidate transaction plus a clean baseline on failure.
+- `verify` runs the current-worktree Docker gate for hooks or a final check.
+
+Install the local commit/push protections with `tools/install-hooks.sh`. Near-miss
+records remain in `.nearmiss/` and `tools/attempts.tsv`; they are evidence, not
+permission to retain a nonmatching source change.
+
 ## How autonomous continuation should work
 - Prefer the repo-local fresh-context commands over pifinity/Ralph:
   - `/decomp-next` for one fresh-context chunk

@@ -3,6 +3,20 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Workflow engineering pass — 2026-08-05
+
+Paused the 30% expansion target to re-engineer the candidate lifecycle around
+the Conker evidence model. Added `tools/decomp_cycle.py` for one-container
+isolated batches, structured `.decomp-runs/` receipts, score-kind-aware
+near-miss recording, transactional full-ROM application, and automatic clean
+baseline restoration after a failed candidate. Added repository pre-commit and
+pre-push hooks that run the same Docker SHA gate only for ROM-affecting changes,
+plus a standalone policy scan for new instruction-bearing inline asm. The
+two-entry exercise (`func_080D74F4` exact + `func_08002038` near miss) used one
+Docker isolation invocation; forced full application of the near miss failed
+the ROM gate and restored a byte-identical baseline. No decomp function was
+accepted in this pass.
+
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
