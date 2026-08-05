@@ -26,6 +26,9 @@ class RecordNearMissTests(unittest.TestCase):
             second = json.loads(subprocess.check_output(cmd, text=True))
             self.assertFalse(second["kept_best"])
             self.assertIn("void func(void) {}", (work / ".nearmiss/func_test.full.c").read_text())
+            history = json.loads((work / ".nearmiss/func_test.json").read_text())["history"]
+            self.assertEqual(len(history), 2)
+            self.assertEqual(history[-1]["score"], 8.0)
             self.assertEqual(len((work / "tools/attempts.tsv").read_text().splitlines()), 3)
 
 

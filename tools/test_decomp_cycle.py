@@ -77,6 +77,8 @@ class DecompCycleTests(unittest.TestCase):
             self.assertIn(".section .note.GNU-stack", script)
             self.assertIn("/run/target-0.elf", script)
             self.assertIn("/run/candidate-0.elf", script)
+            self.assertIn("target-0.unit-defsym", script)
+            self.assertIn("unit_defsym_args", script)
 
     def test_isolation_script_matches_makefile_alignment_tail(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

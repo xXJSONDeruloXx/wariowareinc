@@ -115,13 +115,21 @@ def collect_lines(
     omitted_data = False
 
     for raw_line in source.read_text().splitlines():
-        directive = DIRECTIVE_FUNCTION_RE.match(raw_line)
+        # Included stubs are C string literals.  Their standalone labels and
+        # function directives therefore carry the same ``\\n\\`` suffix as
+        # instruction comments (for example ``_0800BFB6: \\n\\``).  Strip
+        # that transport spelling before matching labels; otherwise m2c sees
+        # a branch to an undefined target and rejects an otherwise valid
+        # function skeleton.
+        logical_line = strip_c_string_suffix(raw_line)
+
+        directive = DIRECTIVE_FUNCTION_RE.match(logical_line)
         if directive and not directive.group(1).startswith("."):
             if discovered_function is None:
                 discovered_function = directive.group(1)
             continue
 
-        label = LABEL_RE.match(raw_line)
+        label = LABEL_RE.match(logical_line)
         if label:
             lines.append(f"{label.group(1)}:")
             continue

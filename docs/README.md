@@ -29,13 +29,15 @@ If an agent resumes cold, read these first:
 The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
 
 - `isolate` evaluates a manifest of C permutations/siblings in one Docker compiler invocation, links normalized comparison ELFs using the target's absolute symbol map, and writes a structured `.decomp-runs/` receipt.
+- `tools/decomp_permute.py screen` fans a directory of m2c/asmlift/manual C spellings into one isolation pass; `accept` can select only a recorded exact winner for the normal transactional apply.
 - `apply` requires an isolated exact match, applies the mechanical conversion, runs the strict ROM/report gate, and restores the candidate transaction plus a clean baseline on failure.
 - `apply-batch` performs the same guarded transaction for a small exact manifest, with one isolation pass and one full-ROM gate for the batch.
 - `verify` runs the current-worktree Docker gate for hooks or a final check.
 
 Install the local commit/push protections with `tools/install-hooks.sh`. Near-miss
-records remain in `.nearmiss/` and `tools/attempts.tsv`; they are evidence, not
-permission to retain a nonmatching source change.
+records remain in `.nearmiss/` and `tools/attempts.tsv`; each best seed now keeps
+a bounded attempt history and the cycle receipts carry candidate/target hashes.
+They are evidence, not permission to retain a nonmatching source change.
 
 ## How autonomous continuation should work
 - Prefer the repo-local fresh-context commands over pifinity/Ralph:

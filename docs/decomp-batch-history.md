@@ -18,6 +18,13 @@ the ROM gate and restored a byte-identical baseline. No decomp function was
 accepted in that initial tooling-only pass. The follow-up graphics-buffer batch
 validated the improved lifecycle end to end.
 
+The follow-up hardening pass added host-TU symbol normalization for included
+stubs, embedded-C-string label parsing for the m2c/asmlift adapter, SHA-256
+input identities in receipts, bounded near-miss history, and
+`tools/decomp_permute.py` for one-container variant fan-in. A two-variant
+`func_0800BF7C` screen selected one exact spelling and preserved the other as a
+near-miss; no source was accepted until the transactional full-ROM step.
+
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|

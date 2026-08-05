@@ -125,6 +125,36 @@ An isolated mismatch is useful evidence, never acceptance. The recorder tags
 score units (`rom_bytes` versus `isolated_objdiff_gap`) so unlike measurements
 are not compared by the keep-best logic.
 
+For multiple spellings of one function, put each complete C candidate in a
+directory and use the permutation fan-in. The template manifest supplies the
+target and host-TU metadata once:
+
+```bash
+python3 tools/decomp_permute.py screen \
+  --manifest .mizuchi-tmp/manifests/FUNC.json \
+  --candidate-dir .mizuchi-tmp/permutations \
+  --require-exact
+```
+
+This produces one durable `permutation_screen` receipt containing every
+candidate hash and exact/near-miss result. It never changes `src/`, `asm/`, or
+the linker. After reviewing the exact list, select one winner explicitly:
+
+```bash
+python3 tools/decomp_permute.py accept \
+  --receipt .decomp-runs/…-permutation-FUNC.json \
+  --variant .mizuchi-tmp/permutations/FUNC-best.c
+```
+
+`accept` delegates to `decomp_cycle.py apply`, so the winner is isolated again,
+mechanically applied, and admitted only by the clean Docker ROM/report gate.
+The Pi `apply_conversion` frontend is routed through the same cycle; its
+`verify:false` mode is intentionally refused for real applies (dry-run still
+works).
+Generated evidence (`.decomp-runs/`, `.nearmiss/`, `.mizuchi-tmp/`, and the
+attempt ledger) may remain dirty between these two commands; unrelated source,
+linker, or tool edits still block the transaction.
+
 After a selected entry reports `exact`, use the transactional path with a
 manifest entry that also supplies `source`, `converted`, `linker_old`, and
 `linker_new` (the defaults cover a normal standalone TU):

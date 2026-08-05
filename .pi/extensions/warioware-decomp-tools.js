@@ -1226,6 +1226,62 @@ function registerApplyConversion(pi) {
         };
       }
 
+      // Keep the Pi frontend on the same exact-only transactional path as the
+      // runtime-neutral CLI.  The older inline implementation below predates
+      // decomp_cycle.py and could mutate a source file before an isolated
+      // comparison, or skip the ROM gate with verify:false.  Dry runs remain
+      // useful, but a real apply must always run both gates.
+      if (!verify) {
+        return {
+          content: [{ type: "text", text: "Refusing apply_conversion with verify:false: strict isolated matching and the clean ROM gate are mandatory." }],
+          details: { error: "verification_required", workflow, preflight: pf },
+        };
+      }
+
+      const cycleDir = path.join(repoRoot, ".mizuchi-tmp", "pi-apply");
+      fs.mkdirSync(cycleDir, { recursive: true });
+      const cycleCandidate = path.join(cycleDir, `asm_${addr}.c`);
+      const cycleManifest = path.join(cycleDir, `asm_${addr}.json`);
+      const cycleCandidateRel = path.relative(repoRoot, cycleCandidate).replace(/\\/g, "/");
+      const cycleManifestRel = path.relative(repoRoot, cycleManifest).replace(/\\/g, "/");
+      const hostObjectRel = workflow === "included_stub" && pf.includingSource
+        ? path.join("build", pf.includingSource.replace(/\\/g, "/").replace(/\.c$/, ".c.o"))
+        : targetObjRel;
+      const cycleEntry = {
+        function: functionName,
+        candidate: cycleCandidateRel,
+        target: asmRel,
+        target_object: hostObjectRel,
+        file: asmRel,
+        mode: workflow,
+        host_source: pf.includingSource,
+        include_line: includeLine,
+        decomp_include_line: decompIncludeLine,
+      };
+      fs.writeFileSync(cycleCandidate, cCode.endsWith("\n") ? cCode : cCode + "\n", "utf8");
+      fs.writeFileSync(cycleManifest, JSON.stringify({ candidates: [cycleEntry] }, null, 2) + "\n", "utf8");
+      const cycleReceiptRel = `.decomp-runs/${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14)}-pi-apply-${functionName}.json`;
+      try {
+        const cycleOutput = execFileSync(
+          "python3",
+          ["tools/decomp_cycle.py", "apply", "--manifest", cycleManifestRel,
+            "--function", functionName, "--output", cycleReceiptRel],
+          { cwd: repoRoot, encoding: "utf8", stdio: "pipe" },
+        );
+        return {
+          content: [{ type: "text", text: `✅ Applied ${workflow} conversion for ${functionName} through the strict cycle.\nReceipt: ${cycleReceiptRel}\n\n${cycleOutput}` }],
+          details: { ok: true, workflow, receipt: cycleReceiptRel, preflight: pf, strictCycle: true },
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `❌ Strict cycle refused ${functionName}; no source conversion was accepted.\n\n${err.stderr?.toString?.() || err.stdout?.toString?.() || err.message}` }],
+          details: { error: err.message, stderr: err.stderr?.toString?.() ?? "", restored: true, workflow, preflight: pf, strictCycle: true },
+        };
+      } finally {
+        fs.rmSync(cycleCandidate, { force: true });
+        fs.rmSync(cycleManifest, { force: true });
+      }
+
       const backups = [];
       const backup = (rel) => {
         const abs = path.join(repoRoot, rel);

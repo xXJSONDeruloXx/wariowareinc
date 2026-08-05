@@ -52,6 +52,8 @@ ROM_AFFECTING_FILES = {
     "undefined_syms.ld",
     "tools/agbcc-swi.patch",
 }
+EVIDENCE_PREFIXES = (".decomp-runs/", ".nearmiss/", ".mizuchi-tmp/")
+EVIDENCE_FILES = {"tools/attempts.tsv"}
 
 
 class CycleError(RuntimeError):
@@ -92,6 +94,20 @@ def file_sha256(path: Path) -> str | None:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def entry_identity(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
+    """Return content identities for the inputs that a receipt actually used."""
+    identity: dict[str, Any] = {
+        "candidate": entry.get("candidate_rel"),
+        "candidate_sha256": file_sha256(entry["candidate"]),
+        "target": entry.get("target_rel"),
+        "target_sha256": file_sha256(entry["target"]) if entry.get("target") else None,
+        "target_object": entry.get("target_object_rel"),
+        "target_object_sha256": file_sha256(entry["target_object"])
+        if entry.get("target_object") else None,
+    }
+    return identity
 
 
 def root_relative(root: Path, value: Path) -> str:
@@ -269,18 +285,29 @@ def container_script(root: Path, entries: list[dict[str, Any]], run_dir: Path) -
         target_link = f"/run/target-{index}.elf"
         link_error = f"/run/link-{index}.stderr"
         defsym = f"/run/target-{index}.defsym"
+        unit_defsym = f"/run/target-{index}.unit-defsym"
         lines.extend([
-            f"rm -f {q(candidate_link)} {q(target_link)} {q(link_error)} {q(defsym)}",
+            f"rm -f {q(candidate_link)} {q(target_link)} {q(link_error)} {q(defsym)} {q(unit_defsym)}",
             f"if [ -f {q(candidate_obj)} ] && [ -f {q(target_input)} ]; then",
             # gba.inc makes target symbols absolute, while agbcc leaves the
             # same globals as relocations/common symbols. Link both sides at
             # address zero with the target's absolute symbol map so isolation
             # compares the bytes seen by the real ROM linker.
             f"  if arm-none-eabi-nm -a --defined-only {q(target_input)} | awk 'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {{printf \"--defsym=%s=0x%s\\n\", $3, $1}}' > {q(defsym)}; then",
+            # Included stubs are compiled inside a larger host TU.  The
+            # candidate object is intentionally standalone, so calls to
+            # sibling functions otherwise remain unresolved and objdiff sees
+            # artificial BL-to-zero differences.  Reuse the host object's
+            # section-relative symbol offsets for the candidate link.  Keep
+            # the entry function out of this map: it must remain at offset 0
+            # in the candidate ELF while the target keeps its host-TU offset.
+            f"    arm-none-eabi-nm -a --defined-only {q(target_input)} | awk -v entry={q(entry['function'])} 'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {{printf \"--defsym=%s=0x%s\\n\", $3, $1}}' > {q(unit_defsym)}",
             "    defsym_args=()",
             f"    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < {q(defsym)}",
+            "    unit_defsym_args=()",
+            f"    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < {q(unit_defsym)}",
             f"    if arm-none-eabi-ld -Ttext=0 -e {q(entry['function'])} \"${{defsym_args[@]}}\" --unresolved-symbols=ignore-all --noinhibit-exec {q(target_input)} -o {q(target_link)} >>{q(link_error)} 2>&1; then",
-            f"      arm-none-eabi-ld -Ttext=0 -e {q(entry['function'])} \"${{defsym_args[@]}}\" --unresolved-symbols=ignore-all --noinhibit-exec {q(candidate_obj)} -o {q(candidate_link)} >>{q(link_error)} 2>&1",
+            f"      arm-none-eabi-ld -Ttext=0 -e {q(entry['function'])} \"${{defsym_args[@]}}\" \"${{unit_defsym_args[@]}}\" --unresolved-symbols=ignore-all --noinhibit-exec {q(candidate_obj)} -o {q(candidate_link)} >>{q(link_error)} 2>&1",
             "    fi",
             "  fi",
             "fi",
@@ -508,6 +535,9 @@ def run_isolation(root: Path, entries: list[dict[str, Any]], *, record: bool = T
                 result["near_miss_record"] = record_near_miss(root, entry, score, compact, command)
             results.append(result)
 
+        for result, entry in zip(results, entries):
+            result.update(entry_identity(root, entry))
+
         return {
             "schema": 1,
             "kind": "isolation",
@@ -610,6 +640,28 @@ def git_status(root: Path) -> str:
     return git_output(root, "status", "--porcelain")
 
 
+def blocking_dirty_paths(root: Path) -> list[str]:
+    """Ignore only generated evidence when guarding an apply transaction.
+
+    Isolation deliberately leaves receipts, near-miss seeds, and the append-only
+    attempt ledger behind.  Those are not source inputs and should not prevent
+    the next exact candidate from entering the transactional ROM gate.  Any
+    other tracked or untracked path remains a hard dirty-worktree stop.
+    """
+    blocked: list[str] = []
+    for line in git_status(root).splitlines():
+        if len(line) < 4:
+            continue
+        path = line[3:]
+        if " -> " in path:
+            path = path.split(" -> ", 1)[1]
+        path = path.strip().replace("\\", "/")
+        if path in EVIDENCE_FILES or any(path.startswith(prefix) for prefix in EVIDENCE_PREFIXES):
+            continue
+        blocked.append(path)
+    return blocked
+
+
 def changed_rom_files(root: Path) -> list[str]:
     output = git_output(root, "diff", "--name-only")
     output += ("\n" if output else "") + git_output(root, "diff", "--cached", "--name-only")
@@ -708,6 +760,9 @@ def verify_current(root: Path, output: Path | None, *, report: bool) -> int:
 def isolate_command(root: Path, manifest: Path, output: Path | None, *, record: bool, require_exact: bool) -> int:
     entries = load_manifest(root, manifest)
     record_data = run_isolation(root, entries, record=record)
+    record_data["manifest"] = root_relative(root, manifest)
+    record_data["manifest_sha256"] = file_sha256(manifest)
+    record_data["candidate_identities"] = [entry_identity(root, entry) for entry in entries]
     path = write_receipt(root, record_data, output)
     print(json.dumps({"ok": record_data["ok"], "receipt": display_path(root, path),
                       "results": [{"function": r.get("function"), "status": r.get("status"),
@@ -723,8 +778,10 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
     if len(selected) != 1:
         raise CycleError(f"manifest must contain exactly one candidate named {function!r} for apply")
     entry = selected[0]
-    if git_status(root) and os.environ.get("WARIOWARE_ALLOW_DIRTY") != "1":
-        raise CycleError("refusing apply with a dirty worktree; set WARIOWARE_ALLOW_DIRTY=1 only when every changed path is intentional")
+    dirty = blocking_dirty_paths(root)
+    if dirty and os.environ.get("WARIOWARE_ALLOW_DIRTY") != "1":
+        raise CycleError("refusing apply with unrelated dirty paths: " + ", ".join(dirty) +
+                         "; generated evidence paths are allowed, source/tool edits are not")
     if has_nonempty_asm(entry["candidate"].read_text(errors="replace")):
         raise CycleError("refusing apply: candidate contains naked/original/instruction-bearing asm")
 
@@ -735,6 +792,9 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
             "schema": 1, "kind": "apply", "function": function,
             "branch": git_output(root, "branch", "--show-current"),
             "commit": git_output(root, "rev-parse", "HEAD"), "status": "refused_isolation",
+            "manifest": root_relative(root, manifest),
+            "manifest_sha256": file_sha256(manifest),
+            "candidate_identities": [entry_identity(root, entry)],
             "isolation": isolation,
             "note": "No source/linker/assembly files were changed because isolated comparison was not exact.",
         }
@@ -757,6 +817,9 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
                 "schema": 1, "kind": "apply", "function": function,
                 "branch": git_output(root, "branch", "--show-current"),
                 "commit": git_output(root, "rev-parse", "HEAD"), "status": status,
+                "manifest": root_relative(root, manifest),
+                "manifest_sha256": file_sha256(manifest),
+                "candidate_identities": [entry_identity(root, entry)],
                 "isolation": isolation, "full_verify": full, "objdiff_metrics": metrics,
                 "changed_paths": [root_relative(root, path) for path in snapshot],
                 "note": "Matching source/linker/assembly changes intentionally remain in the worktree for review and commit.",
@@ -773,6 +836,9 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
             "schema": 1, "kind": "apply", "function": function,
             "branch": git_output(root, "branch", "--show-current"),
             "commit": git_output(root, "rev-parse", "HEAD"), "status": "rolled_back",
+            "manifest": root_relative(root, manifest),
+            "manifest_sha256": file_sha256(manifest),
+            "candidate_identities": [entry_identity(root, entry)],
             "isolation": isolation, "full_verify": full, "rollback_verify": rollback,
             "error": str(exc),
             "changed_paths": [root_relative(root, path) for path in snapshot],
@@ -787,8 +853,10 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
 def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, force: bool) -> int:
     """Apply a manifest as one rollback-capable full-ROM transaction."""
     entries = load_manifest(root, manifest)
-    if git_status(root) and os.environ.get("WARIOWARE_ALLOW_DIRTY") != "1":
-        raise CycleError("refusing apply-batch with a dirty worktree; set WARIOWARE_ALLOW_DIRTY=1 only when every changed path is intentional")
+    dirty = blocking_dirty_paths(root)
+    if dirty and os.environ.get("WARIOWARE_ALLOW_DIRTY") != "1":
+        raise CycleError("refusing apply-batch with unrelated dirty paths: " + ", ".join(dirty) +
+                         "; generated evidence paths are allowed, source/tool edits are not")
     for entry in entries:
         if has_nonempty_asm(entry["candidate"].read_text(errors="replace")):
             raise CycleError(f"{entry['function']}: refusing apply: candidate contains naked/original/instruction-bearing asm")
@@ -801,6 +869,9 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
             "functions": [entry["function"] for entry in entries],
             "branch": git_output(root, "branch", "--show-current"),
             "commit": git_output(root, "rev-parse", "HEAD"), "status": "refused_isolation",
+            "manifest": root_relative(root, manifest),
+            "manifest_sha256": file_sha256(manifest),
+            "candidate_identities": [entry_identity(root, entry) for entry in entries],
             "isolation": isolation,
             "note": "No source/linker/assembly files were changed because every isolated comparison was not exact.",
         }
@@ -830,6 +901,9 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
                 "functions": [entry["function"] for entry in entries],
                 "branch": git_output(root, "branch", "--show-current"),
                 "commit": git_output(root, "rev-parse", "HEAD"), "status": status,
+                "manifest": root_relative(root, manifest),
+                "manifest_sha256": file_sha256(manifest),
+                "candidate_identities": [entry_identity(root, entry) for entry in entries],
                 "isolation": isolation, "full_verify": full, "objdiff_metrics": metrics,
                 "changed_paths": [root_relative(root, path) for path in snapshot],
                 "note": "Matching source/linker/assembly changes intentionally remain in the worktree for review and commit. One full-ROM gate covered the batch.",
@@ -849,6 +923,9 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
             "functions": [entry["function"] for entry in entries],
             "branch": git_output(root, "branch", "--show-current"),
             "commit": git_output(root, "rev-parse", "HEAD"), "status": "rolled_back",
+            "manifest": root_relative(root, manifest),
+            "manifest_sha256": file_sha256(manifest),
+            "candidate_identities": [entry_identity(root, entry) for entry in entries],
             "isolation": isolation, "full_verify": full, "rollback_verify": rollback,
             "error": str(exc),
             "changed_paths": [root_relative(root, path) for path in snapshot],
