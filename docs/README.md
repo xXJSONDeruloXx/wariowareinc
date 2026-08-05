@@ -11,17 +11,17 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 172` — strict-ROM C conversion of serialization helpers
-- `build/report.json`: **1377 / 5960 matched functions** (**23.104027%**) · **6.5132184%** matched code
-- `tools/gen_objdiff.py`: **917 linked C TUs / 5770 non-C units**
-- `src/decomp/*.c`: **1094 decompiled function files** = **898 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 173` — strict-ROM C conversion of an accumulator helper
+- `build/report.json`: **1378 / 5960 matched functions** (**23.120806%**) · **6.5150304%** matched code
+- `tools/gen_objdiff.py`: **918 linked C TUs / 5769 non-C units**
+- `src/decomp/*.c`: **1095 decompiled function files** = **899 standalone_tu** + **196 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **30 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining non-empty inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 80% target at the current function total: **4768 / 5960**
-- Remaining gap to 80%: **3391 matched functions**
+- Remaining gap to 80%: **3390 matched functions**
 
 ## How autonomous continuation should work
 - Prefer the repo-local fresh-context commands over pifinity/Ralph:

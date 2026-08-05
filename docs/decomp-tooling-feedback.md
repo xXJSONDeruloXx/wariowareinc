@@ -195,3 +195,6 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Batch 172 — explicit byte serialization (2026-08-05)
 - Ordinary C pointer increments and explicit shifts were sufficient to reproduce both the unrolled writer and reader; no register pins or barriers were needed.
 - The report confirms both new units at 100%, and the strict ROM gate passed. This is a useful easy family because the compiler's byte-width operations naturally select the target `STRB`/`LDRB` forms.
+## Batch 173 — paired accumulator (2026-08-05)
+- A direct C spelling of two offset-based `u32` accumulations reproduced the target's load/add/store sequence without pins or barriers.
+- This is a low-risk family worth prioritizing when the source and destination offsets are regular and the compiler can retain the same base register.

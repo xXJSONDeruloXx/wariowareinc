@@ -4901,7 +4901,7 @@ SECTIONS {
         build/asm/asm_080e15a0.s.o(.text*);
         build/src/decomp/asm_080e1874.c.o(.text*);
         build/asm/asm_080e1888.s.o(.text*);
-        build/asm/asm_080e1a6c.s.o(.text*);
+        build/src/decomp/asm_080e1a6c.c.o(.text*);
         build/src/decomp/asm_080e1a80.c.o(.text*);
         build/asm/asm_080e1a94.s.o(.text*);
         build/asm/asm_080e1b1c.s.o(.text*);
