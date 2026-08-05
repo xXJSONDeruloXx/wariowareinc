@@ -224,3 +224,8 @@ Use this file to record where the current decomp tools helped, where they missed
 - `apply-batch` now applies every exact manifest entry under one rollback snapshot and runs one clean Docker ROM/report gate for the whole batch. The accepted `func_080A2524` + `func_080EE608` batch used one isolation container and one full build, passed the ROM SHA-1 gate, and advanced the report to **1381 / 5960**.
 - `m2c` was useful for the semantic field-level hypothesis. `asmlift` correctly declined these Splat-disassembled GBA sources because its ARM frontend expects compiler-emitted GNU assembly; this is a tool-selection signal, not a candidate failure.
 - The cycle unit suite now covers the linker normalization script and transaction path helpers (**7 tests**). Keep full ROM verification as the acceptance gate even when linked isolation is exact, because caller/callee and linker-order effects remain outside a single-function probe.
+
+## Batch 176 — sibling batch throughput (2026-08-05)
+- Candidate mining found four unmatched standalone functions sharing the Batch 175 graphics-buffer clear sequence. Three ended in `func_0800CDB0(1)` and one in `func_0800418C()`; existing C siblings supplied the exact prototypes and source spelling.
+- One `isolate` invocation scored all four candidates at **100.0%** with `comparison: linked_elf`, and one `apply-batch` full-ROM transaction accepted all four. This confirms the new loop can safely amortize the Docker startup/build cost across a small linked family.
+- The report advanced from **1381** to **1385** matched functions with the baseline ROM SHA-1 unchanged. Keep batches sibling-rich but semantically narrow; the four functions had identical clear ordering and only a known final call difference.

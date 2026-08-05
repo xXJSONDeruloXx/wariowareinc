@@ -3276,7 +3276,7 @@ SECTIONS {
         build/asm/asm_0808ea3c.s.o(.text*);
         build/asm/asm_0808ea60.s.o(.text*);
         build/src/decomp/asm_0808ebf4.c.o(.text*);
-        build/asm/asm_0808ebf8.s.o(.text*);
+        build/src/decomp/asm_0808ebf8.c.o(.text*);
         build/asm/asm_0808ec18.s.o(.text*);
         build/asm/asm_0808ec5c.s.o(.text*);
         build/asm/asm_0808eca4.s.o(.text*);
@@ -3459,7 +3459,7 @@ SECTIONS {
         build/asm/asm_0809cb8c.s.o(.text*);
         build/asm/asm_0809cd4c.s.o(.text*);
         build/src/decomp/asm_0809ce60.c.o(.text*);
-        build/asm/asm_0809ce64.s.o(.text*);
+        build/src/decomp/asm_0809ce64.c.o(.text*);
         build/asm/asm_0809ce84.s.o(.text*);
         build/asm/asm_0809ceac.s.o(.text*);
         build/src/decomp/asm_0809ced4.c.o(.text*);
@@ -4843,7 +4843,7 @@ SECTIONS {
         build/asm/asm_080df2ec.s.o(.text*);
         build/asm/asm_080df3bc.s.o(.text*);
         build/src/decomp/asm_080df41c.c.o(.text*);
-        build/asm/asm_080df420.s.o(.text*);
+        build/src/decomp/asm_080df420.c.o(.text*);
         build/asm/asm_080df440.s.o(.text*);
         build/asm/asm_080df458.s.o(.text*);
         build/src/decomp/asm_080df478.c.o(.text*);
@@ -5030,7 +5030,7 @@ SECTIONS {
         build/asm/asm_080e99e0.s.o(.text*);
         build/asm/asm_080e9a6c.s.o(.text*);
         build/src/decomp/asm_080e9b5c.c.o(.text*);
-        build/asm/asm_080e9b60.s.o(.text*);
+        build/src/decomp/asm_080e9b60.c.o(.text*);
         build/asm/asm_080e9b7c.s.o(.text*);
         build/asm/asm_080ea104.s.o(.text*);
         build/asm/asm_080ea134.s.o(.text*);

@@ -5,22 +5,27 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 175` — paired strict-ROM C conversion of graphics-buffer clears
-- `build/report.json`: **1381 / 5960 matched functions** = **23.17114%**
-- `matched_code_percent`: **6.521459%**
-- `tools/gen_objdiff.py`: **921 linked C TUs / 5766 non-C units**
-- `src/decomp/*.c`: **1098 decompiled function files** = **902 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 176` — four strict-ROM C conversions of graphics-buffer clear/call siblings
+- `build/report.json`: **1385 / 5960 matched functions** = **23.238255%**
+- `matched_code_percent`: **6.5339403%**
+- `tools/gen_objdiff.py`: **925 linked C TUs / 5762 non-C units**
+- `src/decomp/*.c`: **1102 decompiled function files** = **906 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 30% milestone: **1788 / 5960**, so **407** additional matched functions are needed.
+- 30% milestone: **1788 / 5960**, so **403** additional matched functions are needed.
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
 
 At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
-- current gap: **3387** more matched functions
+- current gap: **3383** more matched functions
+
+### Batch 176 — accepted (real-C graphics-buffer clear/call siblings)
+- Converted standalone `func_0808EBF8`, `func_0809CE64`, and `func_080DF420` to the proven clear body followed by `func_0800CDB0(1)`. Converted `func_080E9B60` to the same clear body followed by `func_0800418C()`.
+- All four candidates scored **100.0%** in one normalized linked-ELF isolation pass. `apply-batch` moved the four original assembly files, updated the linker, and passed one clean Docker full-ROM/report gate without any source inline asm.
+- ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1385 / 5960**, **6.5339403%** matched code, and **925 C / 5762 asm-only** units. Receipt: `.decomp-runs/20260805T192329Z-apply-batch-graphics-clear-calls.json`.
 
 ### Batch 175 — accepted (real-C paired graphics-buffer clears)
 - Converted standalone `func_080A2524` and `func_080EE608` to ordinary C. Both clear `gGraphicsBuffer` halfwords at offsets `0x4C` and `0x4E`; each has its own `src/decomp/` TU and its original assembly moved to `asm/converted/`.
