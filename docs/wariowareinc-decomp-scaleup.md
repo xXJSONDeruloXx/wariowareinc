@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 188` — nineteen strict-ROM standalone C conversions plus the hardened candidate lifecycle
-- `build/report.json`: **1458 / 5960 matched functions** = **24.463087%**
-- `matched_code_percent`: **6.733334%**
-- `tools/gen_objdiff.py`: **998 linked C TUs / 5689 non-C units**
-- `src/decomp/*.c`: **1180 decompiled function files** = **979 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 189` — six strict-ROM standalone C scene/audio wrappers plus the hardened candidate lifecycle
+- `build/report.json`: **1464 / 5960 matched functions** = **24.563759%**
+- `matched_code_percent`: **6.752255%**
+- `tools/gen_objdiff.py`: **1004 linked C TUs / 5683 non-C units**
+- `src/decomp/*.c`: **1186 decompiled function files** = **985 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5960**, so **32** additional matched functions are needed.
+- 25% milestone: **1490 / 5960**, so **26** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
-- That 30% milestone is **330** additional matched functions from the current baseline.
+- That 30% milestone is **324** additional matched functions from the current baseline.
+
+### Batch 189 — accepted (scene-table and audio wrapper fan-in)
+- Converted six standalone functions to ordinary C: `func_0800C7FC`, `func_0801004C`, `func_080102A4`, `func_08010328`, `func_0801E918`, and `func_08024494`.
+- One seven-entry m2c isolation screen found six exact candidates and one recorded near miss. The exact scene-table siblings use `scenes.h`, raw `gCurrentSceneData + 8` access, and byte-array data symbols; the audio wrappers preserve the non-void return ABI and normalized key/speed arguments. The `func_0800CDB0` mask candidate remains evidence-only because agbcc folds the target `MOVS #3; RSBS` sequence.
+- The transactional exact-only apply required canonical `D_083A98B8`, `D_083A98D8`, and `D_083FC594` linker assignments; it passed one clean Docker ROM/report gate. The six C candidates contain no instruction-bearing or volatile inline asm.
+- Fresh report: **1464 / 5960**, **6.752255%** matched code, **1004 C / 5683 asm-only** units, and **1186** decomp files (`985 standalone_tu` + `201 included_stub`). `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 
 ### Batch 188 — accepted (DMA, heap-copy, and sprite sibling fan-in)
 - Converted nineteen standalone functions to ordinary C: `func_08004AE0`, `func_08004BD4`, `func_08004EC8`, `func_0800557C`, `func_08005B20`, `func_08007000`, `func_0800C77C`, `func_0800CD94`, `func_0800CF3C`, `func_0800CF5C`, `func_0800CF7C`, `func_0800CF9C`, `func_0800CFBC`, `func_0800CFDC`, `func_08017080`, `func_080170DC`, `func_080170FC`, `func_0802A238`, and `func_08048DC8`.
@@ -62,11 +68,12 @@ Prefer this file + the other docs in `/docs`
 - Report metrics remain **1401 / 5960** and linked C units remain **941 / 6687**, because included stubs are already part of their host C TU. Source coverage is now **1119 files** (`922 standalone_tu` + `197 included_stub`).
 
 ## Goal
-Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.
+Reach at least **30% matched-function progress** while preserving byte-identical ROM output at every accepted milestone. The 80% figure remains the longer-term project target after this milestone.
 
 At the current `total_functions` count (`5960`), that means:
-- target: **4768 / 5960** matched functions
-- current gap: **3367** more matched functions
+- immediate target: **1788 / 5960** matched functions
+- current gap to 30%: **324** more matched functions
+- longer-term target: **4768 / 5960** matched functions
 
 ### Batch 180 — accepted (real-C arithmetic and packing leaves)
 - Converted `func_080F1F9C`, `func_080F28F8`, `func_080F2C50`, `func_08035ACC`, `func_08003014`, `func_0803F224`, `func_0803F26C`, and `func_0806754C` to ordinary C. The ten-candidate pure-leaf screen reached eight exact candidates after the isolation tool was corrected to append the Makefile's zero-filled aligned `.text` tail; the two held-back candidates are split by target local-label symbols.

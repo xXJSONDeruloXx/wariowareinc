@@ -6,6 +6,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 32 — scene-table and audio wrapper fan-in (2026-08-05)
+- m2c supplied seven compact standalone skeletons. One Docker isolation invocation classified **6 exact / 1 near miss**; the exact subset was selected by candidate hash and reused for one transactional full-ROM gate.
+- The three scene-table siblings matched as ordinary C when the candidates used `scenes.h`, raw `*(u32 *)((u8 *)gCurrentSceneData + 8)`, and `u8 D_083A98xx[]` table addresses. The audio siblings matched with an explicit non-void return for `func_0800C7FC`, a declared `u16` key read in `func_0801E918`, and a typed data-symbol pointer for `func_08024494`.
+- The remaining `func_0800CDB0` hypothesis is retained in `.nearmiss/`: using a local absolute base preserved the target `+2` field offset, but agbcc still folded the target's `MOVS #3; RSBS` mask into `MOVS #0xFD`. No inline asm was added.
+- Full-context integration caught three linker-map omissions before mutation (`D_083A98B8`, `D_083A98D8`, `D_083FC594`); adding canonical assignments mirrored from `include/undefined_syms.inc` allowed the six-entry transaction to pass. Report progress is **1458 → 1464** matched functions, **998 → 1004 C TUs**, and ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+
 ## Round 0805 — standalone wrapper fan-in (2026-08-05)
 - m2c supplied usable C skeletons for eight short standalone candidates. One isolation Docker invocation found exact spellings for `func_0800D23C` and `func_08019A8C`; asmlift was useful as a diagnostic on the simpler data helpers but declined several project-global wrapper candidates. The six rejected candidates remain in `.nearmiss/`, `.decomp-runs/`, and `tools/attempts.tsv`; no non-exact C or assembly move entered the ROM transaction.
 - The first apply attempt caught two lifecycle defects before source acceptance: `git status --porcelain` was parsed after a destructive whitespace trim, and `apply-batch` treated unrelated near misses in a larger receipt as batch failures. The fixes preserve the status column, select receipt results by candidate SHA-256, and add regression coverage; the tooling suite now passes 18 tests.

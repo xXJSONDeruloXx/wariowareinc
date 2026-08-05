@@ -284,7 +284,7 @@ SECTIONS {
         build/src/decomp/asm_0800c77c.c.o(.text*);
         build/asm/asm_0800c7a4.s.o(.text*);
         build/asm/asm_0800c7cc.s.o(.text*);
-        build/asm/asm_0800c7fc.s.o(.text*);
+        build/src/decomp/asm_0800c7fc.c.o(.text*);
         build/asm/asm_0800c81c.s.o(.text*);
         build/asm/asm_0800c874.s.o(.text*);
         build/asm/asm_0800c8b4.s.o(.text*);
@@ -387,16 +387,16 @@ SECTIONS {
         build/asm/asm_0800ffa8.s.o(.text*);
         build/asm/asm_0800ffe0.s.o(.text*);
         build/asm/asm_0801002c.s.o(.text*);
-        build/asm/asm_0801004c.s.o(.text*);
+        build/src/decomp/asm_0801004c.c.o(.text*);
         build/asm/asm_0801006c.s.o(.text*);
         build/asm/asm_0801010c.s.o(.text*);
         build/asm/asm_080101a0.s.o(.text*);
         build/asm/asm_08010200.s.o(.text*);
-        build/asm/asm_080102a4.s.o(.text*);
+        build/src/decomp/asm_080102a4.c.o(.text*);
         build/src/decomp/asm_080102c4.c.o(.text*);
         build/asm/asm_080102e0.s.o(.text*);
         build/asm/asm_08010308.s.o(.text*);
-        build/asm/asm_08010328.s.o(.text*);
+        build/src/decomp/asm_08010328.c.o(.text*);
         build/asm/asm_08010348.s.o(.text*);
         build/asm/asm_080103cc.s.o(.text*);
         build/asm/asm_08010430.s.o(.text*);
@@ -803,7 +803,7 @@ SECTIONS {
         build/asm/asm_0801e83c.s.o(.text*);
         build/asm/asm_0801e8c8.s.o(.text*);
         build/src/decomp/asm_0801e914.c.o(.text*);
-        build/asm/asm_0801e918.s.o(.text*);
+        build/src/decomp/asm_0801e918.c.o(.text*);
         build/src/decomp/asm_0801e938.c.o(.text*);
         build/asm/asm_0801e944.s.o(.text*);
         build/asm/asm_0801e97c.s.o(.text*);
@@ -1104,7 +1104,7 @@ SECTIONS {
         build/asm/asm_080243b4.s.o(.text*);
         build/asm/asm_08024450.s.o(.text*);
         build/src/decomp/asm_08024480.c.o(.text*);
-        build/asm/asm_08024494.s.o(.text*);
+        build/src/decomp/asm_08024494.c.o(.text*);
         build/asm/asm_080244b0.s.o(.text*);
         build/asm/asm_080244ec.s.o(.text*);
         build/asm/asm_08024598.s.o(.text*);
