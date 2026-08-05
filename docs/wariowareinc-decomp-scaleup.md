@@ -5,16 +5,21 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 181` — one strict-ROM included-stub C conversion plus the hardened candidate lifecycle
-- `build/report.json`: **1401 / 5960 matched functions** = **23.506712%**
-- `matched_code_percent`: **6.5699472%**
-- `tools/gen_objdiff.py`: **941 linked C TUs / 5746 non-C units**
-- `src/decomp/*.c`: **1119 decompiled function files** = **922 standalone_tu** + **197 included_stub**
+- Verified working tree: `batch 182` — two strict-ROM standalone C wrapper conversions plus the hardened candidate lifecycle
+- `build/report.json`: **1403 / 5960 matched functions** = **23.540268%**
+- `matched_code_percent`: **6.5747647%**
+- `tools/gen_objdiff.py`: **943 linked C TUs / 5744 non-C units**
+- `src/decomp/*.c`: **1121 decompiled function files** = **924 standalone_tu** + **197 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5960**, so **89** additional matched functions are needed.
+- 25% milestone: **1490 / 5960**, so **87** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
+
+### Batch 182 — accepted (strict standalone wrapper fan-in)
+- Converted `func_0800D23C` and `func_08019A8C` to ordinary C. The first eight-candidate isolation pass found these two exact wrapper spellings and retained six pointer/global/bit-operation near misses as evidence only.
+- The lifecycle reused the exact candidates from one isolation receipt and ran one transactional full Docker ROM/report gate. It reported `wariowareinc.gba: OK`; both ROMs remain SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1403 / 5960**, **6.5747647%** matched code, with **943 C / 5744 asm-only** units. Receipts: `.decomp-runs/20260805T-round-0805-isolation-v3.json` and `.decomp-runs/20260805T-round-0805-apply-v2.json`.
 
 ### Batch 181 — accepted (included-stub lifecycle exercise)
 - Converted `func_0800BF7C` in `bitmap_font.c` from the original ASM include to ordinary C. The source contains only C declarations/control flow plus the required `__INCLUDE_LEVEL__` wrapper; it has no instruction-bearing inline asm.

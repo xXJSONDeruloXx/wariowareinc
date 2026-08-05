@@ -45,6 +45,7 @@
 - wrappers that preserve `arg0` in `R4` across multiple BLs
 - const-arg BL wrappers once literal-pool behavior is known-good
 - two-pointer wrappers passing `p + off1`, `p + off2`
+- **Callback/VRAM wrapper spellings**: `func_0800D23C` matches with a typed `void *` callback argument `(void *)((u32)func_0800CFFC + 1)` and a `u32` constant; `func_08019A8C` matches with a typed `void *` `VRAMBase + 0x8000` argument followed by `func_0800BF0C(0)`. Keep the callback and absolute-address constants as ordinary C expressions and verify the literal-pool shape in isolation.
 
 ### Data-structure / arithmetic families
 - raw-pointer struct-entry setters
@@ -102,6 +103,7 @@ Example trap: `func_08002514` calls `func_080024D0`. Both were originally asm. `
 - **Reloaded scene-variable byte pair**: pin the address of `gCurrentSceneVariable` to `r2`, reload the pointed-to scene object for each store, and assign each byte constant after its address add. This preserves the target's `LDR [R2]` reload and avoids hoisting `MOVS` before `ADDS`.
 - **Delayed zero / call-then-clear shaping**: initialize a pinned zero only after the target address add when the target places `MOVS #0` there; keep a preceding helper call as its own C statement before the graphics-buffer store. Batch 179 matched both the literal-pool zero placement (`func_080195E4`) and the call-then-clear wrapper (`func_080DCD54`).
 - **Non-void wrapper epilogue**: when a semantically void wrapper ends in `POP {R1}; BX R1`, declare the C function with a non-void return type and omit a synthetic return value. `func_0809C47C` uses this to preserve the interwork-safe epilogue without inline instruction asm.
+- **Conditional-return placement trap**: the natural `if (arg0) return arg0->field; return 0;` spelling for `func_080020FC` remains a near miss because agbcc places the zero return before the branch target. Keep the rejected candidate recorded and try a different control-flow shape rather than accepting a semantically equivalent but nonmatching body.
 - For hardware register writes: use `*(volatile u16 *)0x4XXXXXXX = val;` to match literal-pool address generation and store
 - For IWRAM absolute-address byte store with non-zero offset: use a local struct typedef with fields laid out to put the target byte at the correct offset, then cast the address: `(*(StructType *)0x0300XXXX).field = val;`. Using `((u8 *)0x0300XXXX)[offset]` causes agbcc to fold the offset into the literal pool address, producing a different object. Also use `s32` parameter type instead of `u8` to avoid the compiler inserting `LSLS R0, #24; LSR R0, #24` u8 masking.
 - **ROM absolute-address halfword load with non-zero offset**: when the target literal is an absolute ROM address and the instruction uses a separate `[base, #N]` offset, use a local pointer such as `u16 *ptr = (u16 *)0x086F277C;` followed by an empty `asm volatile("" : "+r"(ptr))` barrier before `ptr[N]`. Direct indexing lets agbcc fold `N` into the literal address. Example: `func_0803FED0` preserves `.word 0x086F277C` plus `LDRH [R0, #2]`.
