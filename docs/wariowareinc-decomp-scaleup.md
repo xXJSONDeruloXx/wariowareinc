@@ -5,17 +5,22 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 184` — four strict-ROM included-stub C conversions plus the hardened candidate lifecycle
-- `build/report.json`: **1407 / 5960 matched functions** = **23.607382%**
-- `matched_code_percent`: **6.584173%**
-- `tools/gen_objdiff.py`: **947 linked C TUs / 5740 non-C units**
-- `src/decomp/*.c`: **1129 decompiled function files** = **928 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 185` — ten strict-ROM standalone C conversions plus the hardened candidate lifecycle
+- `build/report.json`: **1417 / 5960 matched functions** = **23.775167%**
+- `matched_code_percent`: **6.609311%**
+- `tools/gen_objdiff.py`: **957 linked C TUs / 5730 non-C units**
+- `src/decomp/*.c`: **1139 decompiled function files** = **938 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - 25% milestone: **1490 / 5960**, so **83** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
-- That 30% milestone is **381** additional matched functions from the current baseline.
+- That 30% milestone is **371** additional matched functions from the current baseline.
+
+### Batch 185 — accepted (standalone wrapper sibling fan-in)
+- Converted ten standalone linker entries to ordinary C: `func_080043A0`, `func_08017668`, `func_0801A7D8`, `func_0801A7F4`, `func_0801A994`, `func_0801B61C`, `func_080223E0`, `func_0808967C`, `func_080A8A3C`, and `func_080ED734`. The original assembly sources moved to `asm/converted/`, and each linker entry now points to its own C TU.
+- One m2c fan-in screen compiled **14** candidates in one Docker isolation invocation: ten exact winners, three recorded near misses (`func_0805627C`, `func_080A002C`, `func_080F5FF4`), and one compile-error candidate (`func_08003228`). The exact subset reused that receipt without `--force`.
+- The transactional full Docker gate passed `wariowareinc.gba: OK`; both ROMs remain SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1417 / 5960**, **6.609311%** matched code, **957 C / 5730 asm-only** units. Source coverage is **1139 files** (`938 standalone_tu` + `201 included_stub`).
 
 ### Batch 184 — accepted (included-stub task-wrapper batch)
 - Converted the main-menu task wrappers `func_080122FC`, `func_0801312C`, `func_080148EC`, and `func_08014C9C` to ordinary C with register-shaped calls, callback pointers, and host-TU include guards. Their original assembly sources now live under `asm/converted/`.

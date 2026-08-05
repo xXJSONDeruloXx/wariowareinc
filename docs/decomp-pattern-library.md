@@ -29,6 +29,7 @@
 - conditional-call wrappers: `if (func_08011698()) callee()` — void function with CMP+BEQ+BL pattern
 - const-arg sequential calls: `func_0800C7A4(8); func_0800C7A4(9)` — each call resets R0 before BL
 - two sequential void calls: `callee1(); callee2();` with PUSH {LR}/POP {R0};BX R0
+- short standalone wrapper siblings: direct C field stores/calls, explicit `u32` loop counters for `BLS`-shaped bounded loops, and byte-pointer offsets can reproduce whole 18–30-byte Thumb wrappers without register pins. Batch 185 matched ten such functions in one fan-in transaction; `func_080043A0` is the recorded raw-object fallback when target symbol metadata prevents linked isolation.
 - gGraphicsBuffer.DISPCNT bit-OR-set: `gGraphicsBuffer.DISPCNT |= (0x80 << 1) << arg0` — generates LDR+MOVS+LSLS+LSLS+LDRH+ORRS+STRH
 
 ### gCurrentSceneVariable / gCSV families
