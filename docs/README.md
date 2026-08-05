@@ -11,17 +11,17 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 185` — ten strict-ROM standalone C conversions plus the hardened candidate lifecycle
-- `build/report.json`: **1417 / 5960 matched functions** (**23.775167%**) · **6.609311%** matched code
-- `tools/gen_objdiff.py`: **957 linked C TUs / 5730 non-C units**
-- `src/decomp/*.c`: **1139 decompiled function files** = **938 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 186` — three strict-ROM standalone C conversions plus the hardened candidate lifecycle
+- `build/report.json`: **1420 / 5960 matched functions** (**23.825504%**) · **6.6157527%** matched code
+- `tools/gen_objdiff.py`: **960 linked C TUs / 5727 non-C units**
+- `src/decomp/*.c`: **1142 decompiled function files** = **941 standalone_tu** + **201 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **30 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1490 / 5960**; **83** more matches needed
-- 30% milestone at the current function total: **1788 / 5960**; **371** more matches needed
+- 30% milestone at the current function total: **1788 / 5960**; **368** more matches needed
 - 80% target at the current function total: **4768 / 5960**
 - Remaining gap to 80%: **3361 matched functions**
 

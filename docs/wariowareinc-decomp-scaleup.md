@@ -5,17 +5,22 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 185` — ten strict-ROM standalone C conversions plus the hardened candidate lifecycle
-- `build/report.json`: **1417 / 5960 matched functions** = **23.775167%**
-- `matched_code_percent`: **6.609311%**
-- `tools/gen_objdiff.py`: **957 linked C TUs / 5730 non-C units**
-- `src/decomp/*.c`: **1139 decompiled function files** = **938 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 186` — three strict-ROM standalone C conversions plus the hardened candidate lifecycle
+- `build/report.json`: **1420 / 5960 matched functions** = **23.825504%**
+- `matched_code_percent`: **6.6157527%**
+- `tools/gen_objdiff.py`: **960 linked C TUs / 5727 non-C units**
+- `src/decomp/*.c`: **1142 decompiled function files** = **941 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - 25% milestone: **1490 / 5960**, so **83** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
-- That 30% milestone is **371** additional matched functions from the current baseline.
+- That 30% milestone is **368** additional matched functions from the current baseline.
+
+### Batch 186 — accepted (near-miss shaping follow-up)
+- Recovered three standalone near misses as ordinary C: `func_08003228` with its explicit project prototype, `func_0805627C` with a widened `s32` input and explicit `(s16)` normalization, and `func_080A002C` with an `r1`-pinned `u16` argument so the global music-player load remains before argument normalization.
+- The focused follow-up screen tested seven spellings in one Docker invocation. All three selected entries were exact; `func_080F5FF4` remains evidence-only after an old-style single-pointer call improved but did not close its stack-layout gap. The exact subset was applied without `--force` and passed the transactional full-ROM gate.
+- Fresh report: **1420 / 5960**, **6.6157527%** matched code, **960 C / 5727 asm-only** units. `wariowareinc.gba: OK`; both ROMs remain SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 
 ### Batch 185 — accepted (standalone wrapper sibling fan-in)
 - Converted ten standalone linker entries to ordinary C: `func_080043A0`, `func_08017668`, `func_0801A7D8`, `func_0801A7F4`, `func_0801A994`, `func_0801B61C`, `func_080223E0`, `func_0808967C`, `func_080A8A3C`, and `func_080ED734`. The original assembly sources moved to `asm/converted/`, and each linker entry now points to its own C TU.

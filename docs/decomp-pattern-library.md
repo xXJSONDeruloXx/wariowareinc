@@ -220,6 +220,7 @@ Without the s32 casts, the compiler treats the MUL result as unsigned and genera
 - **LSLS-before-LDR**: For `base + (arg0 << N)`, declare `shifted = arg0 << N` as a local BEFORE loading the base pointer to get `LSLS; LDR` ordering. Loading base first produces `LDR; LSLS`.
 - **BICS pattern**: `result = 1; result &= ~val` generates `MOVS R0,#1; BICS R0,R1`. Writing `1 & ~val` or `~val & 1` generates `MVN; AND` instead.
 - **Pointer-to-global vs global-value**: `base = &gCurrentSceneData` generates `LDR R4, .literal` (loads address into R4), while `base = gCurrentSceneData` generates `LDR R0, .literal; LDR R4, [R0]` (loads value into R4). Use `&gCurrentSceneData` when the original keeps the global's address in a register and dereferences it multiple times.
+- **Argument normalization after a global load**: when the target copies an incoming `u16` into `R1`, loads a global object into `R0`, and only then emits `LSLS`/`LSRS` on `R1`, pin the C argument temporary to `r1` before declaring/loading the global object. Batch 186 used this for `func_080A002C`; the source remains ordinary C with only a register-pinned declaration.
 
 ### Repo integration traps
 - grouping multiple functions in one C file breaks matches; for batches, still create one `src/decomp/asm_xxxxxxxx.c` per function
