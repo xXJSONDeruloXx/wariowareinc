@@ -5,15 +5,15 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 179` — four strict-ROM C conversions of wrapper/reload helpers
-- `build/report.json`: **1393 / 5960 matched functions** = **23.372482%**
-- `matched_code_percent`: **6.5528364%**
-- `tools/gen_objdiff.py`: **933 linked C TUs / 5754 non-C units**
-- `src/decomp/*.c`: **1110 decompiled function files** = **912 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 180` — eight strict-ROM C conversions of arithmetic/packing leaves
+- `build/report.json`: **1401 / 5960 matched functions** = **23.506712%**
+- `matched_code_percent`: **6.5699472%**
+- `tools/gen_objdiff.py`: **941 linked C TUs / 5746 non-C units**
+- `src/decomp/*.c`: **1118 decompiled function files** = **920 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5960**, so **97** additional matched functions are needed.
+- 25% milestone: **1490 / 5960**, so **89** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
 
 ## Goal
@@ -21,7 +21,12 @@ Reach at least **80% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
-- current gap: **3375** more matched functions
+- current gap: **3367** more matched functions
+
+### Batch 180 — accepted (real-C arithmetic and packing leaves)
+- Converted `func_080F1F9C`, `func_080F28F8`, `func_080F2C50`, `func_08035ACC`, `func_08003014`, `func_0803F224`, `func_0803F26C`, and `func_0806754C` to ordinary C. The ten-candidate pure-leaf screen reached eight exact candidates after the isolation tool was corrected to append the Makefile's zero-filled aligned `.text` tail; the two held-back candidates are split by target local-label symbols.
+- Seven candidates matched through normalized linked-ELF isolation. `func_08003014` used the explicitly recorded raw-object fallback because its legacy target symbol has `.thumb_func` metadata after `glabel`; the clean full-ROM gate remained authoritative.
+- One transactional batch gate passed with `wariowareinc.gba: OK`; both ROMs remain SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1401 / 5960**, **6.5699472%** matched code, and **941 C / 5746 asm-only** units. Receipt: `.decomp-runs/20260805T2008-pure-leaves-exact.json`.
 
 ### Batch 179 — accepted (real-C wrapper and reload helpers)
 - Converted `func_0809C47C` as a non-void task-finalizer wrapper; the non-void declaration reproduces the target's `POP {R1}; BX R1` epilogue and the odd callback pointer remains ordinary C.
