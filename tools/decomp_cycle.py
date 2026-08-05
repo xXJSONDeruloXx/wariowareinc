@@ -225,7 +225,12 @@ def container_script(root: Path, entries: list[dict[str, Any]], run_dir: Path) -
             f"rm -f {q(candidate_obj)} {q(status)} {q(error)} {q(pp)} {q(asm)}",
             f"if arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef {q(candidate)} -o {q(pp)} >{q(error)} 2>&1; then",
             f"  if tools/agbcc/bin/agbcc {q(pp)} -o {q(asm)} -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>{q(error)} 2>&1; then",
-            f"    sed '/\\.size/d' {q(asm)} > {q(asm)}.stripped && mv {q(asm)}.stripped {q(asm)}",
+            # Keep the isolated object byte-compatible with Makefile's C
+            # pipeline.  In particular, the assembler's normal code-section
+            # alignment fill is a Thumb NOP; the real build appends a
+            # zero-filled aligned .text tail, so omitting it produces false
+            # near-misses for functions whose body ends at offset 2 mod 4.
+            f"    sed '/\\.size/d' {q(asm)} > {q(asm)}.stripped && printf '.text\\n\\t.align\\t2, 0\\n' >> {q(asm)}.stripped && printf '.section .note.GNU-stack,\"\",%%progbits\\n' >> {q(asm)}.stripped && mv {q(asm)}.stripped {q(asm)}",
             f"    if arm-none-eabi-as -march=armv4t -o {q(candidate_obj)} {q(asm)} >>{q(error)} 2>&1; then",
             f"      echo ok > {q(status)}",
             "    else",
@@ -454,23 +459,37 @@ def run_isolation(root: Path, entries: list[dict[str, Any]], *, record: bool = T
                 compare_target = target_obj
                 compare_candidate = candidate_obj
                 comparison = "raw_object"
+            fallback_reason = ""
             try:
                 diff, diff_stdout, diff_stderr = objdiff(root, entry, compare_target, compare_candidate)
             except (OSError, subprocess.TimeoutExpired, CycleError) as exc:
-                results.append({
-                    "function": entry["function"], "file": entry["file"], "candidate": entry["candidate_rel"],
-                    "target": entry["target_rel"], "target_object": entry["target_object_rel"],
-                    "status": "diff_error", "score": None, "error": str(exc),
-                })
-                continue
+                diff = None
+                diff_stdout = ""
+                diff_stderr = str(exc)
             if diff is None:
-                results.append({
-                    "function": entry["function"], "file": entry["file"], "candidate": entry["candidate_rel"],
-                    "target": entry["target_rel"], "target_object": entry["target_object_rel"],
-                    "status": "diff_error", "score": None, "stdout": diff_stdout[-4000:],
-                    "stderr": diff_stderr[-4000:],
-                })
-                continue
+                # A few legacy asm units have malformed symbol metadata (for
+                # example .thumb_func appears after glabel).  The linker
+                # cannot load those targets, but a raw-object comparison is
+                # still a valid byte-level isolation check; the later ROM
+                # gate remains authoritative for relocations and placement.
+                if comparison == "linked_elf":
+                    fallback_reason = diff_stderr[-4000:] or diff_stdout[-4000:]
+                    try:
+                        diff, diff_stdout, diff_stderr = objdiff(root, entry, target_obj, candidate_obj)
+                    except (OSError, subprocess.TimeoutExpired, CycleError) as exc:
+                        diff = None
+                        diff_stdout = ""
+                        diff_stderr = str(exc)
+                    if diff is not None:
+                        comparison = "raw_object_fallback"
+                if diff is None:
+                    results.append({
+                        "function": entry["function"], "file": entry["file"], "candidate": entry["candidate_rel"],
+                        "target": entry["target_rel"], "target_object": entry["target_object_rel"],
+                        "status": "diff_error", "score": None, "stdout": diff_stdout[-4000:],
+                        "stderr": diff_stderr[-4000:],
+                    })
+                    continue
             parsed = parse_diff(diff, entry["function"])
             match_percent = parsed["match_percent"]
             exact = bool(parsed["symbol_found"] and match_percent is not None and match_percent >= 100.0)
@@ -483,6 +502,8 @@ def run_isolation(root: Path, entries: list[dict[str, Any]], *, record: bool = T
                 "match_percent": match_percent, "diff_count": parsed["diff_count"],
                 "symbol_found": parsed["symbol_found"], "comparison": comparison, "diff": compact,
             }
+            if fallback_reason:
+                result["fallback_reason"] = fallback_reason
             if not exact and score is not None and record:
                 result["near_miss_record"] = record_near_miss(root, entry, score, compact, command)
             results.append(result)
