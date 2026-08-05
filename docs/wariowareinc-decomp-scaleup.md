@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 167` — strict-ROM C conversion of four `gCurrentSceneData` shift-accumulator siblings
-- `build/report.json`: **1366 / 5960 matched functions** = **22.919462%**
-- `matched_code_percent`: **6.488335%**
-- `tools/gen_objdiff.py`: **906 linked C TUs / 5781 non-C units**
-- `src/decomp/*.c`: **1083 decompiled function files** = **887 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 168` — strict-ROM C conversion of two large-offset beatscript stores
+- `build/report.json`: **1368 / 5960 matched functions** = **22.953020%**
+- `matched_code_percent`: **6.4923353%**
+- `tools/gen_objdiff.py`: **908 linked C TUs / 5779 non-C units**
+- `src/decomp/*.c`: **1085 decompiled function files** = **889 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -19,7 +19,13 @@ Reach at least **80% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
-- current gap: **3402** more matched functions
+- current gap: **3400** more matched functions
+
+### Batch 168 — accepted (real-C large-offset beatscript stores)
+- Converted `func_0800CAA4` and `func_0800CAB8` to real C stores at `gBeatscriptScene + 0x1C32` and `gBeatscriptScene + 0x1C30` respectively.
+- Direct pointer arithmetic folded the large offset into the global relocation and missed the target’s separate `LDR global; LDR offset; ADDS` sequence. Register-pinned base/offset variables with an empty compiler barrier preserved that sequence without instruction-bearing inline asm.
+- Moved both original assembly sources into `asm/converted/` and switched their linker entries to C. Both linked C units report **100.0%**.
+- Verification: clean Docker ROM **`wariowareinc.gba: OK`**; both ROMs hash to `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1368 / 5960**, **6.4923353%** matched code, **908 C / 5779 asm-only** units.
 
 ### Batch 167 — accepted (real-C shift-accumulator sibling family)
 - Converted `func_080B36B0`, `func_080C9BFC`, `func_080DA1A4`, and `func_080E1A80` to standalone C. Each reads `*(u16 *)(gCurrentSceneData + 0x16) >> 3` and adds it to a distinct `u32` field at offsets `0x3C`, `0x14`, `8`, and `0x28` respectively.

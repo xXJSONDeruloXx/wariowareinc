@@ -176,3 +176,9 @@ Use this file to record where the current decomp tools helped, where they missed
 - The existing real-C pattern from `func_080C9520` transferred directly: cast both bases to `u8 *`, load the scene-data halfword at `0x16`, shift by three, and add it to the `u32` destination field. No register pins or barriers were needed.
 - The first linker attempt exposed an important integration rule: replacing a linker-script entry is not enough while the old assembly file remains in `SFILES`; the original source must also move to `asm/converted/` so its object is no longer included in the global object list.
 - All four linked C units matched 100%, and the clean Docker ROM gate passed with the baseline SHA-1 unchanged. This batch adds **4 matched functions**, moving the report to **1366 / 5960** and **22.919462%**.
+
+## Batch 168 — large global-offset beatscript stores (2026-08-05)
+- `func_0800CAA4` and `func_0800CAB8` were semantically simple halfword stores, but direct C pointer arithmetic caused agbcc to fold the large offset into the `gBeatscriptScene` relocation, producing only `LDR; STRH; BX` instead of the target’s separate global/offset loads and `ADDS`.
+- Register-pinned C (`r1` base, `r2` offset) plus an empty compiler barrier restored the exact target instruction order and literal-pool layout. This remains source-level real C; the barrier contains no instruction text.
+- The first full-build attempt also reinforced the integration rule that converted assembly must move to `asm/converted/`; leaving it in `SFILES` creates duplicate symbols even when its linker-script entry is replaced.
+- Both linked units matched 100%, the strict ROM gate passed, and the report advanced to **1368 / 5960** and **22.953020%**.
