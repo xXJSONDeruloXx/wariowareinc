@@ -170,3 +170,9 @@ Use this file to record where the current decomp tools helped, where they missed
 - The isolated and integrated object both disassemble to exactly `SVC #6; BX LR` (`df06 4770`). The clean Docker ROM gate passed, with both ROMs at SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Reproducibility lesson: the compiler change is tracked in `tools/agbcc-swi.patch`, and `.github/workflows/report.yaml` applies it after cloning agbcc. This keeps the project C source honest without relying on a machine-local compiler binary or source-level asm escape.
 - Tool assessment: m2c/asmlift correctly exposed the signed-division semantics, but the decisive step was extending the target compiler; adapters cannot repair a missing ISA lowering by themselves.
+
+## Batch 167 — shifted scene-data accumulator siblings (2026-08-05)
+- Candidate selection worked best by mining the report for tiny unmatched standalone objects and then grouping identical instruction families. `func_080B36B0`, `func_080C9BFC`, `func_080DA1A4`, and `func_080E1A80` share the same seven-instruction body with only the destination offset changing.
+- The existing real-C pattern from `func_080C9520` transferred directly: cast both bases to `u8 *`, load the scene-data halfword at `0x16`, shift by three, and add it to the `u32` destination field. No register pins or barriers were needed.
+- The first linker attempt exposed an important integration rule: replacing a linker-script entry is not enough while the old assembly file remains in `SFILES`; the original source must also move to `asm/converted/` so its object is no longer included in the global object list.
+- All four linked C units matched 100%, and the clean Docker ROM gate passed with the baseline SHA-1 unchanged. This batch adds **4 matched functions**, moving the report to **1366 / 5960** and **22.919462%**.

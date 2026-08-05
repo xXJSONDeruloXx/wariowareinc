@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 166` — strict-ROM C conversion of the BIOS SVC wrapper through a reproducible agbcc backend builtin
-- `build/report.json`: **1362 / 5960 matched functions** = **22.852348%**
-- `matched_code_percent`: **6.4803877%**
-- `tools/gen_objdiff.py`: **902 linked C TUs / 5785 non-C units**
-- `src/decomp/*.c`: **1079 decompiled function files** = **883 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 167` — strict-ROM C conversion of four `gCurrentSceneData` shift-accumulator siblings
+- `build/report.json`: **1366 / 5960 matched functions** = **22.919462%**
+- `matched_code_percent`: **6.488335%**
+- `tools/gen_objdiff.py`: **906 linked C TUs / 5781 non-C units**
+- `src/decomp/*.c`: **1083 decompiled function files** = **887 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -19,7 +19,13 @@ Reach at least **80% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
-- current gap: **3407** more matched functions
+- current gap: **3402** more matched functions
+
+### Batch 167 — accepted (real-C shift-accumulator sibling family)
+- Converted `func_080B36B0`, `func_080C9BFC`, `func_080DA1A4`, and `func_080E1A80` to standalone C. Each reads `*(u16 *)(gCurrentSceneData + 0x16) >> 3` and adds it to a distinct `u32` field at offsets `0x3C`, `0x14`, `8`, and `0x28` respectively.
+- Moved the four original assembly sources into `asm/converted/` and switched each linker entry to its C TU. The shared expression shape reproduced all target instruction streams and literal-pool relocations exactly.
+- Verification: all four linked C units report **100.0%**, the clean Docker build reports **`wariowareinc.gba: OK`**, and both ROMs hash to `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1366 / 5960** matched functions, **6.488335%** matched code, and **906 C / 5781 asm-only** objdiff units. This is +4 matched functions and +4 linked C units over Batch 166.
 
 ### Batch 166 — accepted (real-C BIOS SVC lowering)
 - `func_080EE61C` is restored as `src/decomp/asm_080ee61c.c`; the standalone assembly source and linker entry were removed. The C body calls `__builtin_swi_div()`, whose fixed BIOS ABI consumes the incoming `r0/r1` values and returns the quotient in `r0`.

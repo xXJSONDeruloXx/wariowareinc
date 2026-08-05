@@ -16,6 +16,6 @@ glabel func_080DA1A4
 
 .balign 4, 0
 _080DA1B4:
-/* 080DA1B4 */ @ literal emitted by .ltorg for '=...' 
+/* 080DA1B4 */ @ literal emitted by .ltorg for '=...'
 .ltorg
 .end
