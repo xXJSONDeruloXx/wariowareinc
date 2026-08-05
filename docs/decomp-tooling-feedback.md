@@ -189,3 +189,6 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Batch 170 — nested scene-variable pointer siblings (2026-08-05)
 - The two helpers share the same `gCurrentSceneVariable -> +0xC` pointer chain but differ in whether the final byte is zeroed or set to one.
 - Register-pinned C pointers plus empty barriers reproduced both 20-byte objects exactly. This is a useful companion pattern for small state-field helpers; ordinary typed struct access is more likely to alter register allocation.
+## Batch 171 — indexed large-offset store (2026-08-05)
+- The earlier large-global-offset store pattern transferred to an indexed word store: pin the base in `r2`, shift the index before introducing the offset literal, then preserve `ADDS R2,R3` followed by `ADDS R0,R2`.
+- The real-C object matched exactly and the clean ROM gate passed. This confirms the pattern extends beyond fixed halfword stores when the compiler-visible operand order is controlled.

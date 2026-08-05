@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 170` — strict-ROM C conversion of two scene-variable field helpers
-- `build/report.json`: **1374 / 5960 matched functions** = **23.053690%**
-- `matched_code_percent`: **6.5051794%**
-- `tools/gen_objdiff.py`: **914 linked C TUs / 5773 non-C units**
-- `src/decomp/*.c`: **1091 decompiled function files** = **895 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 171` — strict-ROM C conversion of a beatscript table store
+- `build/report.json`: **1375 / 5960 matched functions** = **23.070469%**
+- `matched_code_percent`: **6.507582%**
+- `tools/gen_objdiff.py`: **915 linked C TUs / 5772 non-C units**
+- `src/decomp/*.c`: **1092 decompiled function files** = **896 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -19,7 +19,11 @@ Reach at least **80% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
-- current gap: **3394** more matched functions
+- current gap: **3393** more matched functions
+
+### Batch 171 — accepted (real-C beatscript table store)
+- Converted `func_0800D224` to a real C indexed store into `gBeatscriptScene + 0x1C5C`, preserving the target's separate base/offset loads and operand order with register pins and empty barriers.
+- Verification: clean Docker ROM **`wariowareinc.gba: OK`**; both ROMs hash to `3f556448d290fa5406d6ed367fee16cc02387ad3`; fresh report **1375 / 5960**, **915 C / 5772 asm-only**.
 
 ### Batch 170 — accepted (real-C scene-variable field helpers)
 - Converted `func_0801D4A0` and `func_0801D4B4` to real C. Both load the current scene variable's nested pointer at offset `0xC`, shift the input by eight, and update its halfword/byte fields.

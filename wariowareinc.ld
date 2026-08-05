@@ -324,7 +324,7 @@ SECTIONS {
         build/asm/asm_0800cfbc.s.o(.text*);
         build/asm/asm_0800cfdc.s.o(.text*);
         build/asm/asm_0800cffc.s.o(.text*);
-        build/asm/asm_0800d224.s.o(.text*);
+        build/src/decomp/asm_0800d224.c.o(.text*);
         build/asm/asm_0800d23c.s.o(.text*);
         build/asm/asm_0800d254.s.o(.text*);
         build/asm/asm_0800d320.s.o(.text*);

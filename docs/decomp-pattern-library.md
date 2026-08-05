@@ -306,6 +306,10 @@ These reasons justify leaving an existing legacy naked file untouched or marking
 - **Compiler-generated STMIA**: keep a sequential fill pointer as a `u32 *` and write with `*r2++ = r1`; agbcc can select `STMIA R2!,{R1}` for the loop. This removed the former `stm` shim from `func_08015A4C`.
 
 
+### Indexed large-offset beatscript stores
+
+For stores indexed from `gBeatscriptScene` at a large fixed offset, use a register-pinned base, shift the index before assigning the offset literal, and add in the target's operand order. Empty barriers may separate those stages; do not use instruction-bearing inline asm.
+
 ### Nested scene-variable pointer helpers
 
 For tiny helpers that load `gCurrentSceneVariable`, then load a nested pointer at `+0xC`, register-pinned `u8 *` bases preserve the original `LDR` chain and low-register stores. An empty compiler barrier after the loads can keep the shift and field update in the target order; the barrier must contain no instruction text.
