@@ -133,20 +133,19 @@ def accept(root: Path, receipt_path: Path, variant: str | None, output: Path | N
     if result.get("status") != "exact":
         raise decomp_cycle.CycleError("refusing to apply a non-exact permutation")
 
-    temp_dir = root / ".mizuchi-tmp"
-    temp_dir.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile("w", suffix=".json", prefix="apply-permutation-", dir=temp_dir, delete=False) as stream:
-        json.dump({"candidates": [template]}, stream, indent=2)
-        manifest = Path(stream.name)
-    try:
-        command = [sys.executable, "tools/decomp_cycle.py", "apply", "--manifest", str(manifest),
-                   "--function", str(template["function"])]
-        if output:
-            command.extend(["--output", str(output)])
-        completed = subprocess.run(command, cwd=root, text=True, check=False)
-        return completed.returncode
-    finally:
-        manifest.unlink(missing_ok=True)
+    # Keep the exact apply manifest beside the screen/apply receipts.  A
+    # deleted temporary manifest made the receipt's hash unverifiable after
+    # the run, which defeats the provenance value of the lifecycle record.
+    run_dir = root / ".decomp-runs"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    manifest = run_dir / f"{receipt_path.stem}-apply-manifest.json"
+    manifest.write_text(json.dumps({"candidates": [template]}, indent=2) + "\n")
+    command = [sys.executable, "tools/decomp_cycle.py", "apply", "--manifest", str(manifest),
+               "--function", str(template["function"])]
+    if output:
+        command.extend(["--output", str(output)])
+    completed = subprocess.run(command, cwd=root, text=True, check=False)
+    return completed.returncode
 
 
 def main(argv: list[str] | None = None) -> int:

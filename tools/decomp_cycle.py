@@ -54,6 +54,7 @@ ROM_AFFECTING_FILES = {
 }
 EVIDENCE_PREFIXES = (".decomp-runs/", ".nearmiss/", ".mizuchi-tmp/")
 EVIDENCE_FILES = {"tools/attempts.tsv"}
+INCLUDE_LEVEL_GUARD_RE = re.compile(r"^\s*#if\s+__INCLUDE_LEVEL__\s*>\s*0\s*$", re.MULTILINE)
 
 
 class CycleError(RuntimeError):
@@ -99,6 +100,7 @@ def file_sha256(path: Path) -> str | None:
 def entry_identity(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
     """Return content identities for the inputs that a receipt actually used."""
     identity: dict[str, Any] = {
+        "mode": entry.get("mode"),
         "candidate": entry.get("candidate_rel"),
         "candidate_sha256": file_sha256(entry["candidate"]),
         "target": entry.get("target_rel"),
@@ -107,6 +109,12 @@ def entry_identity(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
         "target_object_sha256": file_sha256(entry["target_object"])
         if entry.get("target_object") else None,
     }
+    if entry.get("mode") == "included_stub":
+        identity.update({
+            "host_source": entry.get("host_source"),
+            "include_line": entry.get("include_line"),
+            "decomp_include_line": entry.get("decomp_include_line"),
+        })
     return identity
 
 
@@ -696,6 +704,26 @@ def restore_snapshot(snapshot: dict[Path, bytes | None]) -> None:
             path.write_bytes(content)
 
 
+def source_for_apply(entry: dict[str, Any], candidate_text: str) -> tuple[str, str]:
+    """Prepare a candidate for its real build representation.
+
+    Isolation compiles candidates as standalone objects, so an included stub
+    must be unguarded there.  The normal Makefile also compiles every
+    ``src/decomp/*.c`` file as an object, while the host TU textually includes
+    the same file.  The repository convention is therefore to suppress the
+    standalone object with ``__INCLUDE_LEVEL__`` and emit the function only
+    when the host includes it.  Apply adds that wrapper at the transaction
+    boundary; agents and permutation candidates stay focused on the function
+    body that was actually screened.
+    """
+    text = candidate_text if candidate_text.endswith("\n") else candidate_text + "\n"
+    if entry.get("mode") != "included_stub":
+        return text, "none"
+    if INCLUDE_LEVEL_GUARD_RE.search(text):
+        return text, "preserved_existing_include_level_guard"
+    return f"#if __INCLUDE_LEVEL__ > 0\n{text}#endif\n", "added_include_level_guard"
+
+
 def apply_entry(root: Path, entry: dict[str, Any]) -> list[Path]:
     source = entry["source"]
     target = entry["target"]
@@ -707,9 +735,9 @@ def apply_entry(root: Path, entry: dict[str, Any]) -> list[Path]:
     if entry.get("host_source_path"):
         paths.append(entry["host_source_path"])
     snapshot = snapshot_files(root, paths)
-    candidate_text = entry["candidate"].read_text()
+    candidate_text, _ = source_for_apply(entry, entry["candidate"].read_text())
     source.parent.mkdir(parents=True, exist_ok=True)
-    source.write_text(candidate_text if candidate_text.endswith("\n") else candidate_text + "\n")
+    source.write_text(candidate_text)
 
     if entry["mode"] == "standalone_tu":
         if not linker.is_file():
@@ -784,6 +812,7 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
                          "; generated evidence paths are allowed, source/tool edits are not")
     if has_nonempty_asm(entry["candidate"].read_text(errors="replace")):
         raise CycleError("refusing apply: candidate contains naked/original/instruction-bearing asm")
+    _, source_transform = source_for_apply(entry, entry["candidate"].read_text())
 
     isolation = run_isolation(root, [entry], record=True)
     isolated_result = isolation["results"][0] if isolation["results"] else {}
@@ -795,6 +824,7 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
             "manifest": root_relative(root, manifest),
             "manifest_sha256": file_sha256(manifest),
             "candidate_identities": [entry_identity(root, entry)],
+            "source_transform": source_transform,
             "isolation": isolation,
             "note": "No source/linker/assembly files were changed because isolated comparison was not exact.",
         }
@@ -820,6 +850,7 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
                 "manifest": root_relative(root, manifest),
                 "manifest_sha256": file_sha256(manifest),
                 "candidate_identities": [entry_identity(root, entry)],
+                "source_transform": source_transform,
                 "isolation": isolation, "full_verify": full, "objdiff_metrics": metrics,
                 "changed_paths": [root_relative(root, path) for path in snapshot],
                 "note": "Matching source/linker/assembly changes intentionally remain in the worktree for review and commit.",
@@ -839,6 +870,7 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
             "manifest": root_relative(root, manifest),
             "manifest_sha256": file_sha256(manifest),
             "candidate_identities": [entry_identity(root, entry)],
+            "source_transform": source_transform,
             "isolation": isolation, "full_verify": full, "rollback_verify": rollback,
             "error": str(exc),
             "changed_paths": [root_relative(root, path) for path in snapshot],
@@ -860,6 +892,10 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
     for entry in entries:
         if has_nonempty_asm(entry["candidate"].read_text(errors="replace")):
             raise CycleError(f"{entry['function']}: refusing apply: candidate contains naked/original/instruction-bearing asm")
+    source_transforms = {
+        entry["function"]: source_for_apply(entry, entry["candidate"].read_text())[1]
+        for entry in entries
+    }
 
     isolation = run_isolation(root, entries, record=True)
     failed = [result for result in isolation["results"] if result.get("status") != "exact"]
@@ -872,6 +908,7 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
             "manifest": root_relative(root, manifest),
             "manifest_sha256": file_sha256(manifest),
             "candidate_identities": [entry_identity(root, entry) for entry in entries],
+            "source_transforms": source_transforms,
             "isolation": isolation,
             "note": "No source/linker/assembly files were changed because every isolated comparison was not exact.",
         }
@@ -904,6 +941,7 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
                 "manifest": root_relative(root, manifest),
                 "manifest_sha256": file_sha256(manifest),
                 "candidate_identities": [entry_identity(root, entry) for entry in entries],
+                "source_transforms": source_transforms,
                 "isolation": isolation, "full_verify": full, "objdiff_metrics": metrics,
                 "changed_paths": [root_relative(root, path) for path in snapshot],
                 "note": "Matching source/linker/assembly changes intentionally remain in the worktree for review and commit. One full-ROM gate covered the batch.",
@@ -926,6 +964,7 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
             "manifest": root_relative(root, manifest),
             "manifest_sha256": file_sha256(manifest),
             "candidate_identities": [entry_identity(root, entry) for entry in entries],
+            "source_transforms": source_transforms,
             "isolation": isolation, "full_verify": full, "rollback_verify": rollback,
             "error": str(exc),
             "changed_paths": [root_relative(root, path) for path in snapshot],

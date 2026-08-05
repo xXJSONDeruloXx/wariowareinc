@@ -127,6 +127,53 @@ class DecompCycleTests(unittest.TestCase):
                 "wariowareinc.ld",
             })
 
+    def test_included_stub_apply_adds_include_level_guard_and_rewires_host(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidate = root / "candidate.c"
+            candidate.write_text('#include "global.h"\nvoid func_0800BF7C(void) {}\n')
+            target = root / "asm/bitmap_font/asm_0800bf7c.s"
+            target.parent.mkdir(parents=True)
+            target.write_text(".text\nfunc_0800BF7C:\n\tbx lr\n")
+            host = root / "src/bitmap_font.c"
+            host.parent.mkdir(parents=True)
+            host.write_text(
+                '#include "asm/bitmap_font/asm_0800bf7c.s"\n'
+                "void after(void) {}\n"
+            )
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps({"candidates": [{
+                "function": "func_0800BF7C",
+                "candidate": "candidate.c",
+                "target": "asm/bitmap_font/asm_0800bf7c.s",
+                "mode": "included_stub",
+                "host_source": "src/bitmap_font.c",
+                "include_line": '#include "asm/bitmap_font/asm_0800bf7c.s"',
+                "decomp_include_line": '#include "decomp/asm_0800bf7c.c"',
+            }]}))
+
+            entry = decomp_cycle.load_manifest(root, manifest)[0]
+            _, transform = decomp_cycle.source_for_apply(entry, candidate.read_text())
+            self.assertEqual(transform, "added_include_level_guard")
+            decomp_cycle.apply_entry(root, entry)
+
+            source = root / "src/decomp/asm_0800bf7c.c"
+            self.assertTrue(source.read_text().startswith("#if __INCLUDE_LEVEL__ > 0\n"))
+            self.assertTrue(source.read_text().rstrip().endswith("#endif"))
+            self.assertIn('#include "decomp/asm_0800bf7c.c"', host.read_text())
+            self.assertFalse(target.exists())
+            self.assertTrue((root / "asm/converted/asm_0800bf7c.s").is_file())
+
+    def test_source_for_apply_preserves_existing_include_level_guard(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidate = root / "candidate.c"
+            candidate.write_text("#if __INCLUDE_LEVEL__ > 0\nvoid f(void) {}\n#endif\n")
+            entry = {"mode": "included_stub"}
+            prepared, transform = decomp_cycle.source_for_apply(entry, candidate.read_text())
+            self.assertEqual(transform, "preserved_existing_include_level_guard")
+            self.assertEqual(prepared, candidate.read_text())
+
 
 if __name__ == "__main__":
     unittest.main()
