@@ -12,11 +12,9 @@ glabel func_080D74F4
 /* 080D74FC */ MOVS R1, #2
 /* 080D74FE */ STRB R1, [R0]
 /* 080D7500 */ BX LR
-
 .balign 4, 0
 _080D7504:
 /* 080D7504 */ .word gCurrentSceneVariable
-
 .balign 4, 0
 _080D7508:
 /* 080D7508 */ .word 0x0000043A

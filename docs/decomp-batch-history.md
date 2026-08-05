@@ -6,6 +6,7 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 174 | pending | +1 report matched / +1 standalone_tu decomp file / +1 linked C TU | Converted `func_080D74F4` to a real-C scene-variable flag setter. Clean Docker ROM: `wariowareinc.gba: OK`; SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1379 / 5960**, **919 C / 5768 asm-only**. |
 | 173 | pending | +1 report matched / +1 standalone_tu decomp file / +1 linked C TU | Converted `func_080E1A6C` to a real-C paired accumulator. Clean Docker ROM: `wariowareinc.gba: OK`; SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1378 / 5960**, **918 C / 5769 asm-only**. |
 | 172 | pending | +2 report matched / +2 standalone_tu decomp files / +2 linked C TUs | Converted `func_08003998` and `func_080039D0` to real C serialization/deserialization helpers. Clean Docker ROM: `wariowareinc.gba: OK`; SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1377 / 5960**, **917 C / 5770 asm-only**. |
 | 171 | pending | +1 report matched / +1 standalone_tu decomp file / +1 linked C TU | Converted `func_0800D224` to a real C indexed store into `gBeatscriptScene + 0x1C5C`. Clean Docker ROM: `wariowareinc.gba: OK`; SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1375 / 5960**, **915 C / 5772 asm-only**. |

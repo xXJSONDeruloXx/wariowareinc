@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 173` — strict-ROM C conversion of an accumulator helper
-- `build/report.json`: **1378 / 5960 matched functions** = **23.120806%**
-- `matched_code_percent`: **6.5150304%**
-- `tools/gen_objdiff.py`: **918 linked C TUs / 5769 non-C units**
-- `src/decomp/*.c`: **1095 decompiled function files** = **899 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 174` — strict-ROM C conversion of a scene-variable flag setter
+- `build/report.json`: **1379 / 5960 matched functions** = **23.137585%**
+- `matched_code_percent`: **6.5174327%**
+- `tools/gen_objdiff.py`: **919 linked C TUs / 5768 non-C units**
+- `src/decomp/*.c`: **1096 decompiled function files** = **900 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -19,7 +19,12 @@ Reach at least **80% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
-- current gap: **3390** more matched functions
+- current gap: **3389** more matched functions
+
+### Batch 174 — accepted (real-C scene-variable flag setter)
+- Converted `func_080D74F4` to real C. It loads `gCurrentSceneVariable`, adds the separate `0x43A` offset literal, and stores byte value `2`.
+- Ordinary C pointer arithmetic preserves the target's separate global/offset loads and `ADDS` ordering; this TU contains no inline asm.
+- Verification: clean Docker ROM **`wariowareinc.gba: OK`**; both ROMs hash to `3f556448d290fa5406d6ed367fee16cc02387ad3`; fresh report **1379 / 5960**, **919 C / 5768 asm-only**. The linked C unit reports 100%.
 
 ### Batch 173 — accepted (real-C paired accumulator)
 - Converted `func_080E1A6C` to real C: it accumulates two paired `u32` fields from offsets `0x24/0x28` into fields `0x4/0x8` of the supplied object.

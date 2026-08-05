@@ -198,3 +198,6 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Batch 173 — paired accumulator (2026-08-05)
 - A direct C spelling of two offset-based `u32` accumulations reproduced the target's load/add/store sequence without pins or barriers.
 - This is a low-risk family worth prioritizing when the source and destination offsets are regular and the compiler can retain the same base register.
+## Batch 174 — scene-variable flag setter (2026-08-05)
+- The established large-offset global pattern transferred directly with ordinary C pointer arithmetic; no register pins or barriers are needed for this setter.
+- The object and full ROM matched exactly, confirming this is a productive family for nearby scene-state helpers.
