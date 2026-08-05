@@ -65,6 +65,37 @@ class DecompCycleTests(unittest.TestCase):
                 ["src/decomp/new.c"],
             )
 
+    def test_batch_receipt_selection_ignores_unselected_near_misses(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            exact_candidate = root / "exact.c"
+            near_candidate = root / "near.c"
+            exact_candidate.write_text("void func_0800D23C(void) {}\n")
+            near_candidate.write_text("void func_080020FC(void) {}\n")
+            exact_entry = {
+                "function": "func_0800D23C",
+                "candidate": exact_candidate,
+                "candidate_rel": "exact.c",
+            }
+            isolation = {
+                "results": [
+                    {
+                        "function": "func_080020FC",
+                        "candidate": "near.c",
+                        "candidate_sha256": decomp_cycle.file_sha256(near_candidate),
+                        "status": "near_miss",
+                    },
+                    {
+                        "function": "func_0800D23C",
+                        "candidate": "exact.c",
+                        "candidate_sha256": decomp_cycle.file_sha256(exact_candidate),
+                        "status": "exact",
+                    },
+                ]
+            }
+            result = decomp_cycle.isolation_result_for_entry(isolation, exact_entry)
+            self.assertEqual(result["status"], "exact")
+
     def test_isolation_script_links_target_and_candidate_with_target_symbols(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

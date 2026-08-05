@@ -845,6 +845,24 @@ def isolate_command(root: Path, manifest: Path, output: Path | None, *, record: 
     return 0
 
 
+def isolation_result_for_entry(isolation: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]:
+    """Select this candidate from a receipt that may contain a larger batch."""
+    candidate_sha256 = file_sha256(entry["candidate"])
+    for result in isolation.get("results", []):
+        if not isinstance(result, dict):
+            continue
+        if str(result.get("function", "")).lower() != entry["function"].lower():
+            continue
+        recorded_sha256 = result.get("candidate_sha256")
+        if recorded_sha256:
+            if recorded_sha256 != candidate_sha256:
+                continue
+        elif result.get("candidate") != entry.get("candidate_rel"):
+            continue
+        return result
+    return {}
+
+
 def apply_command(root: Path, manifest: Path, function: str, output: Path | None, *, force: bool,
                   isolation_receipt: Path | None = None) -> int:
     entries = load_manifest(root, manifest)
@@ -866,7 +884,7 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
     else:
         isolation = run_isolation(root, [entry], record=True)
         isolation_reused = False
-    isolated_result = isolation["results"][0] if isolation["results"] else {}
+    isolated_result = isolation_result_for_entry(isolation, entry)
     if isolated_result.get("status") != "exact" and not force:
         receipt = {
             "schema": 1, "kind": "apply", "function": function,
@@ -978,7 +996,11 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
     else:
         isolation = run_isolation(root, entries, record=True)
         isolation_reused = False
-    failed = [result for result in isolation["results"] if result.get("status") != "exact"]
+    failed = []
+    for entry in entries:
+        result = isolation_result_for_entry(isolation, entry)
+        if result.get("status") != "exact":
+            failed.append(result or {"function": entry["function"], "status": "missing"})
     if failed and not force:
         receipt = {
             "schema": 1, "kind": "apply_batch",
