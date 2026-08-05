@@ -201,3 +201,7 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Batch 174 — scene-variable flag setter (2026-08-05)
 - The established large-offset global pattern transferred directly with ordinary C pointer arithmetic; no register pins or barriers are needed for this setter.
 - The object and full ROM matched exactly, confirming this is a productive family for nearby scene-state helpers.
+
+## Conker tooling audit (2026-08-05)
+- Ported the useful part of Conker's workflow: append-only attempt provenance plus keep-best near-miss seeds. The WarioWare recorder captures Git/ROM hashes and structured diff evidence while leaving source and acceptance state untouched.
+- Deliberately did not port Conker's N64/IDO-specific harness, Transmuter, dashboard, or orchestrator. WarioWare already has a Docker/devkitARM gate and Mizuchi candidate tooling; those components would add unrelated compiler assumptions.

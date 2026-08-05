@@ -87,6 +87,26 @@ Track:
 
 ## Batch workflow
 1. Select a narrow, sibling-rich candidate set with `query_candidates` (default `conversionMode=recommended`).
+
+### Near-miss provenance
+
+When a candidate compiles but does not match, preserve the evidence for a future
+run instead of relying on chat history:
+
+```bash
+python3 tools/record_nearmiss.py FUNC TARGET.s SCORE candidate.c \
+  --reason rom_mismatch \
+  --diff-json /tmp/diff.json \
+  --command 'docker run ... make -j4'
+```
+
+Scores are lower-is-better. Each attempt is appended to
+`tools/attempts.tsv`; `.nearmiss/FUNC.json` and `.nearmiss/FUNC.full.c` are
+updated only when the candidate beats the previous stored score. The JSON
+captures the candidate hash, Git branch/commit, UTC timestamp, ROM and
+baserom hashes, build command, and structured diff evidence. This is a
+provenance ledger and seed store, not an acceptance mechanism: only the clean
+Docker build emitting `wariowareinc.gba: OK` accepts a function.
 2. `recommended` includes `standalone_tu` and `included_stub` candidates that the tools can apply mechanically.
 3. In the current post-standalone phase, assume **one function per chunk is no longer always optimal**. Prefer a tiny linked batch when a caller/callee pair is obvious, when callee-first conversion reduces risk, or when a dirty-worktree false mismatch would otherwise burn repeated chunks.
 4. Call `preflight_candidate` before iteration; proceed when `safeForAutonomous=true` for each function in the proposed batch.
