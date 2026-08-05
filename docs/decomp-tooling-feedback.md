@@ -192,3 +192,6 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Batch 171 — indexed large-offset store (2026-08-05)
 - The earlier large-global-offset store pattern transferred to an indexed word store: pin the base in `r2`, shift the index before introducing the offset literal, then preserve `ADDS R2,R3` followed by `ADDS R0,R2`.
 - The real-C object matched exactly and the clean ROM gate passed. This confirms the pattern extends beyond fixed halfword stores when the compiler-visible operand order is controlled.
+## Batch 172 — explicit byte serialization (2026-08-05)
+- Ordinary C pointer increments and explicit shifts were sufficient to reproduce both the unrolled writer and reader; no register pins or barriers were needed.
+- The report confirms both new units at 100%, and the strict ROM gate passed. This is a useful easy family because the compiler's byte-width operations naturally select the target `STRB`/`LDRB` forms.

@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 171` — strict-ROM C conversion of a beatscript table store
-- `build/report.json`: **1375 / 5960 matched functions** = **23.070469%**
-- `matched_code_percent`: **6.507582%**
-- `tools/gen_objdiff.py`: **915 linked C TUs / 5772 non-C units**
-- `src/decomp/*.c`: **1092 decompiled function files** = **896 standalone_tu** + **196 included_stub**
+- Verified working tree: `batch 172` — strict-ROM C conversion of serialization helpers
+- `build/report.json`: **1377 / 5960 matched functions** = **23.104027%**
+- `matched_code_percent`: **6.5132184%**
+- `tools/gen_objdiff.py`: **917 linked C TUs / 5770 non-C units**
+- `src/decomp/*.c`: **1094 decompiled function files** = **898 standalone_tu** + **196 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -19,7 +19,11 @@ Reach at least **80% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5960`), that means:
 - target: **4768 / 5960** matched functions
-- current gap: **3393** more matched functions
+- current gap: **3391** more matched functions
+
+### Batch 172 — accepted (real-C serialization helpers)
+- Converted `func_08003998` and `func_080039D0` to real C little-endian 32-bit serialization/deserialization helpers. Sequential pointer operations and explicit shifts reproduce the target's unrolled byte accesses exactly.
+- Verification: clean Docker ROM **`wariowareinc.gba: OK`**; both ROMs hash to `3f556448d290fa5406d6ed367fee16cc02387ad3`; fresh report **1377 / 5960**, **917 C / 5770 asm-only**. Both linked units report 100%.
 
 ### Batch 171 — accepted (real-C beatscript table store)
 - Converted `func_0800D224` to a real C indexed store into `gBeatscriptScene + 0x1C5C`, preserving the target's separate base/offset loads and operand order with register pins and empty barriers.

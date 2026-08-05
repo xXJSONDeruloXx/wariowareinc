@@ -314,6 +314,10 @@ For stores indexed from `gBeatscriptScene` at a large fixed offset, use a regist
 
 For tiny helpers that load `gCurrentSceneVariable`, then load a nested pointer at `+0xC`, register-pinned `u8 *` bases preserve the original `LDR` chain and low-register stores. An empty compiler barrier after the loads can keep the shift and field update in the target order; the barrier must contain no instruction text.
 
+### Little-endian byte serialization
+
+For unrolled four-byte readers/writers, use a byte pointer with sequential post-increment for stores, and explicit `LDRB`-equivalent byte loads with shifts/or operations for reads. This can produce exact Thumb without register pins.
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers
