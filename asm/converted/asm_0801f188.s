@@ -15,9 +15,8 @@ glabel func_0801F188
 /* 0801F196 */ STRH R0, [R1]
 /* 0801F198 */ STRH R3, [R1, #0X12]
 /* 0801F19A */ BX LR
-
 .balign 4, 0
 _0801F19C:
-/* 0801F19C */ @ literal emitted by .ltorg for '=...' 
+/* 0801F19C */ @ literal emitted by .ltorg for '=...'
 .ltorg
 .end

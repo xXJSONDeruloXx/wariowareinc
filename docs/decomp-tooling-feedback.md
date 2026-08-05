@@ -182,3 +182,7 @@ Use this file to record where the current decomp tools helped, where they missed
 - Register-pinned C (`r1` base, `r2` offset) plus an empty compiler barrier restored the exact target instruction order and literal-pool layout. This remains source-level real C; the barrier contains no instruction text.
 - The first full-build attempt also reinforced the integration rule that converted assembly must move to `asm/converted/`; leaving it in `SFILES` creates duplicate symbols even when its linker-script entry is replaced.
 - Both linked units matched 100%, the strict ROM gate passed, and the report advanced to **1368 / 5960** and **22.953020%**.
+## Batch 169 — graphics-buffer ordering (2026-08-05)
+- m2c-style semantic translation was straightforward, but the first C spelling hoisted the literal load before the target address add in `func_0805CB5C`, causing a ROM mismatch despite similar isolated code.
+- A statement-level empty barrier after `r0 += 0x54` restored the target order. The final four objects matched and the clean ROM gate passed.
+- Lesson: for tiny register-sensitive stores, inspect the linked bytes—not just semantic output or a disassembly that omits literal-pool ordering.
