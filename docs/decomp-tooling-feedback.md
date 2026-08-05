@@ -229,3 +229,8 @@ Use this file to record where the current decomp tools helped, where they missed
 - Candidate mining found four unmatched standalone functions sharing the Batch 175 graphics-buffer clear sequence. Three ended in `func_0800CDB0(1)` and one in `func_0800418C()`; existing C siblings supplied the exact prototypes and source spelling.
 - One `isolate` invocation scored all four candidates at **100.0%** with `comparison: linked_elf`, and one `apply-batch` full-ROM transaction accepted all four. This confirms the new loop can safely amortize the Docker startup/build cost across a small linked family.
 - The report advanced from **1381** to **1385** matched functions with the baseline ROM SHA-1 unchanged. Keep batches sibling-rich but semantically narrow; the four functions had identical clear ordering and only a known final call difference.
+
+## Batch 177 — exact offset screen with preserved near misses (2026-08-05)
+- A six-candidate isolation screen found two exact real-C candidates: `func_0808BD98` (large scene-variable halfword store) and `func_080AAA40` (indexed scene-variable halfword store). The other four remained isolated near misses and were not applied.
+- `func_080AAA40` confirms that the manifest candidate can preserve a split `index << 1` plus `0x83 << 2` computation when the base load and additions are written as separate C statements.
+- The exact pair passed one `apply-batch` transaction and moved the report from **1385** to **1387** matched functions. This is the intended loop behavior: collect several probes in one container, accept only exact results, and retain the rejected hypotheses for later shaping rather than mixing them into the ROM transaction.
