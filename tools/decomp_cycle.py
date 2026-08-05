@@ -781,6 +781,13 @@ def missing_undefined_symbols(root: Path, candidate_text: str) -> list[str]:
 
 
 def validate_candidate_linker_symbols(root: Path, entry: dict[str, Any]) -> None:
+    # Included stubs are assembled as part of their original host TU.  Those
+    # host files already emit include/gba.inc, which defines the D_* address
+    # symbols in the same object; requiring every such symbol in the global
+    # standalone linker map would reject valid host-TU conversions before the
+    # real ROM gate gets a chance to verify them.
+    if entry.get("mode") == "included_stub":
+        return
     missing = missing_undefined_symbols(root, entry["candidate"].read_text(errors="replace"))
     if missing:
         raise CycleError(

@@ -106,6 +106,28 @@ class DecompCycleTests(unittest.TestCase):
                 ["D_083A98D0"],
             )
 
+    def test_included_stub_symbols_are_validated_in_the_host_tu(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidate = root / "candidate.c"
+            candidate.write_text("extern u8 D_083A4A1C[];\n")
+            entry = {"mode": "included_stub", "candidate": candidate}
+
+            # The host TU owns the gba.inc symbol environment; the standalone
+            # undefined_syms.ld preflight must not reject this layout.
+            decomp_cycle.validate_candidate_linker_symbols(root, entry)
+
+    def test_standalone_symbols_still_require_the_linker_map(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "undefined_syms.ld").write_text("D_03000000 = 0x03000000;\n")
+            candidate = root / "candidate.c"
+            candidate.write_text("extern u8 D_083A4A1C[];\n")
+            entry = {"function": "func_08002038", "mode": "standalone_tu", "candidate": candidate}
+
+            with self.assertRaises(decomp_cycle.CycleError):
+                decomp_cycle.validate_candidate_linker_symbols(root, entry)
+
     def test_isolation_script_links_target_and_candidate_with_target_symbols(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
