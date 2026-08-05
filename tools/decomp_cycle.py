@@ -55,6 +55,8 @@ ROM_AFFECTING_FILES = {
 EVIDENCE_PREFIXES = (".decomp-runs/", ".nearmiss/", ".mizuchi-tmp/")
 EVIDENCE_FILES = {"tools/attempts.tsv"}
 INCLUDE_LEVEL_GUARD_RE = re.compile(r"^\s*#if\s+__INCLUDE_LEVEL__\s*>\s*0\s*$", re.MULTILINE)
+D_SYMBOL_RE = re.compile(r"\bD_[0-9A-Fa-f]{8}\b")
+D_SYMBOL_ASSIGN_RE = re.compile(r"^\s*(D_[0-9A-Fa-f]{8})\s*=", re.MULTILINE)
 
 
 class CycleError(RuntimeError):
@@ -769,6 +771,24 @@ def source_for_apply(entry: dict[str, Any], candidate_text: str) -> tuple[str, s
     return f"#if __INCLUDE_LEVEL__ > 0\n{text}#endif\n", "added_include_level_guard"
 
 
+def missing_undefined_symbols(root: Path, candidate_text: str) -> list[str]:
+    """Find D_ symbols that C needs but the linker map does not define."""
+    linker = root / "undefined_syms.ld"
+    if not linker.is_file():
+        return sorted(set(D_SYMBOL_RE.findall(candidate_text)))
+    defined = set(D_SYMBOL_ASSIGN_RE.findall(linker.read_text(errors="replace")))
+    return sorted(set(D_SYMBOL_RE.findall(candidate_text)) - defined)
+
+
+def validate_candidate_linker_symbols(root: Path, entry: dict[str, Any]) -> None:
+    missing = missing_undefined_symbols(root, entry["candidate"].read_text(errors="replace"))
+    if missing:
+        raise CycleError(
+            f"{entry['function']}: candidate references D_ symbols missing from undefined_syms.ld: "
+            + ", ".join(missing)
+        )
+
+
 def apply_entry(root: Path, entry: dict[str, Any]) -> list[Path]:
     source = entry["source"]
     target = entry["target"]
@@ -876,6 +896,7 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
                          "; generated evidence paths are allowed, source/tool edits are not")
     if has_nonempty_asm(entry["candidate"].read_text(errors="replace")):
         raise CycleError("refusing apply: candidate contains naked/original/instruction-bearing asm")
+    validate_candidate_linker_symbols(root, entry)
     _, source_transform = source_for_apply(entry, entry["candidate"].read_text())
 
     if isolation_receipt:
@@ -968,6 +989,7 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
     for entry in entries:
         if has_nonempty_asm(entry["candidate"].read_text(errors="replace")):
             raise CycleError(f"{entry['function']}: refusing apply: candidate contains naked/original/instruction-bearing asm")
+        validate_candidate_linker_symbols(root, entry)
     source_transforms = {
         entry["function"]: source_for_apply(entry, entry["candidate"].read_text())[1]
         for entry in entries

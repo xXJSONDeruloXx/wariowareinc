@@ -5,16 +5,21 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 182` — two strict-ROM standalone C wrapper conversions plus the hardened candidate lifecycle
-- `build/report.json`: **1403 / 5960 matched functions** = **23.540268%**
-- `matched_code_percent`: **6.5747647%**
-- `tools/gen_objdiff.py`: **943 linked C TUs / 5744 non-C units**
-- `src/decomp/*.c`: **1121 decompiled function files** = **924 standalone_tu** + **197 included_stub**
+- Verified working tree: `batch 183` — four strict-ROM standalone C conversions plus the hardened candidate lifecycle
+- `build/report.json`: **1407 / 5960 matched functions** = **23.607382%**
+- `matched_code_percent`: **6.5836096%**
+- `tools/gen_objdiff.py`: **947 linked C TUs / 5740 non-C units**
+- `src/decomp/*.c`: **1125 decompiled function files** = **928 standalone_tu** + **197 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5960**, so **87** additional matched functions are needed.
+- 25% milestone: **1490 / 5960**, so **83** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
+
+### Batch 183 — accepted (strict leaf and ASM-callee screen)
+- Converted `func_0800EA44`, `func_08038694`, `func_080102C4`, and `func_08072C20` to ordinary C. One eight-candidate isolation pass found six exact spellings; two exact callers of already-converted C helpers remained evidence-only, and two pointer/store candidates remained near misses.
+- The first full-context attempt rolled back because `D_083A98D0` was present in `include/undefined_syms.inc` but missing from `undefined_syms.ld`. Adding the canonical `0x083A98D0` linker definition and rerunning the immutable screen fixed the integration issue; the corrected four-entry transaction passed one full Docker ROM/report gate with `wariowareinc.gba: OK`.
+- Fresh report: **1407 / 5960**, **6.5836096%** matched code, with **947 C / 5740 asm-only** units. Both ROMs remain SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Receipts: `.decomp-runs/20260805T-round-0805b-isolation-v2.json` and `.decomp-runs/20260805T-round-0805b-apply-v2.json`.
 
 ### Batch 182 — accepted (strict standalone wrapper fan-in)
 - Converted `func_0800D23C` and `func_08019A8C` to ordinary C. The first eight-candidate isolation pass found these two exact wrapper spellings and retained six pointer/global/bit-operation near misses as evidence only.

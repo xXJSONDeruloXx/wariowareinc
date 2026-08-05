@@ -96,6 +96,16 @@ class DecompCycleTests(unittest.TestCase):
             result = decomp_cycle.isolation_result_for_entry(isolation, exact_entry)
             self.assertEqual(result["status"], "exact")
 
+    def test_missing_undefined_symbols_are_reported_before_apply(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "undefined_syms.ld").write_text("D_03000000 = 0x03000000;\n")
+            candidate = "extern u8 D_03000000[]; extern u8 D_083A98D0[];\n"
+            self.assertEqual(
+                decomp_cycle.missing_undefined_symbols(root, candidate),
+                ["D_083A98D0"],
+            )
+
     def test_isolation_script_links_target_and_candidate_with_target_symbols(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
