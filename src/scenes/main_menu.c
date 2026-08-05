@@ -187,7 +187,7 @@ void func_0801208C(void) {
 
 #include "asm/scenes/main_menu/asm_08012278.s"
 
-#include "asm/scenes/main_menu/asm_080122fc.s"
+#include "../decomp/asm_080122fc.c"
 
 #include "asm/scenes/main_menu/asm_08012350.s"
 
@@ -249,7 +249,7 @@ void func_0801208C(void) {
 
 #include "../decomp/asm_08013114.c"
 
-#include "asm/scenes/main_menu/asm_0801312c.s"
+#include "../decomp/asm_0801312c.c"
 
 #include "../decomp/asm_08013184.c"
 
@@ -351,7 +351,7 @@ void func_0801208C(void) {
 
 #include "../decomp/asm_080148bc.c"
 
-#include "asm/scenes/main_menu/asm_080148ec.s"
+#include "../decomp/asm_080148ec.c"
 
 #include "asm/scenes/main_menu/asm_08014948.s"
 
@@ -369,7 +369,7 @@ void func_0801208C(void) {
 
 #include "../decomp/asm_08014c6c.c"
 
-#include "asm/scenes/main_menu/asm_08014c9c.s"
+#include "../decomp/asm_08014c9c.c"
 
 #include "asm/scenes/main_menu/asm_08014cf8.s"
 

@@ -5,16 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 183` — four strict-ROM standalone C conversions plus the hardened candidate lifecycle
+- Verified working tree: `batch 184` — four strict-ROM included-stub C conversions plus the hardened candidate lifecycle
 - `build/report.json`: **1407 / 5960 matched functions** = **23.607382%**
-- `matched_code_percent`: **6.5836096%**
+- `matched_code_percent`: **6.584173%**
 - `tools/gen_objdiff.py`: **947 linked C TUs / 5740 non-C units**
-- `src/decomp/*.c`: **1125 decompiled function files** = **928 standalone_tu** + **197 included_stub**
+- `src/decomp/*.c`: **1129 decompiled function files** = **928 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - 25% milestone: **1490 / 5960**, so **83** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
+- That 30% milestone is **381** additional matched functions from the current baseline.
+
+### Batch 184 — accepted (included-stub task-wrapper batch)
+- Converted the main-menu task wrappers `func_080122FC`, `func_0801312C`, `func_080148EC`, and `func_08014C9C` to ordinary C with register-shaped calls, callback pointers, and host-TU include guards. Their original assembly sources now live under `asm/converted/`.
+- m2c supplied the usable wrapper skeletons. Normalized linked-ELF isolation reported **99.59–99.72%** because the included-stub candidates retained external `BL` relocation records even though the generated instructions and host-TU layout matched. Direct object disassembly plus the full-context transaction established the relocation-only nature of the near miss.
+- The forced research apply still required the normal clean full-ROM gate; it passed with `wariowareinc.gba: OK` and SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. The report remains **1407 / 5960** matched functions because included stubs are already part of linked host TUs; matched code rose to **6.584173%** and source coverage is **1129 files** (`928 standalone_tu` + `201 included_stub`).
+- The included-stub linker-symbol preflight was corrected in `d7f9d29` to validate symbols through the host TU rather than incorrectly requiring every `D_XXXXXXXX` reference in the standalone undefined-symbol map; the lifecycle regression suite passed **21 tests**.
 
 ### Batch 183 — accepted (strict leaf and ASM-callee screen)
 - Converted `func_0800EA44`, `func_08038694`, `func_080102C4`, and `func_08072C20` to ordinary C. One eight-candidate isolation pass found six exact spellings; two exact callers of already-converted C helpers remained evidence-only, and two pointer/store candidates remained near misses.
