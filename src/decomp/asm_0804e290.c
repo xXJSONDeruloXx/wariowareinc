@@ -8,5 +8,6 @@ void func_0804E290(s32 arg0, s16 arg1) {
     base = (u8 *)&gGraphicsBuffer;
     offset >>= 0x0F;
     base += 0x54;
-    *(s16 *)(base + offset) = arg1;
+    offset += (u32)base;
+    *(s16 *)offset = arg1;
 }

@@ -6,6 +6,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 33 — sprite, scene, music-table, and graphics fan-in (2026-08-05)
+- m2c supplied ten compact standalone skeletons. The first screen found **5 exact / 4 near miss / 1 compile error**; register-bound variants recovered the three music-table siblings and the graphics-buffer store, producing a combined **10 exact** manifest.
+- `func_0800C7A4`, `func_0800CE6C`, `func_08016688`, `func_08018534`, `func_08019644`, and `func_080C477C` matched directly through typed sprite/scene headers, explicit field offsets, or signed division. The music siblings required a base in `R4` and an offset/address accumulator in `R0`; `func_0804E290` required the same two-register accumulator to prevent folding `gGraphicsBuffer + 0x54` into the literal symbol.
+- The rejected first spellings remain in `.nearmiss/` and `tools/attempts.tsv`; the best near misses show only the three-operand add or literal-folding differences. No instruction-bearing or volatile inline asm was added.
+- The combined exact-only screen and one transactional full-ROM gate passed. Report progress is **1464 → 1474** matched functions, **1004 → 1014 C TUs**, and ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+
 ## Round 32 — scene-table and audio wrapper fan-in (2026-08-05)
 - m2c supplied seven compact standalone skeletons. One Docker isolation invocation classified **6 exact / 1 near miss**; the exact subset was selected by candidate hash and reused for one transactional full-ROM gate.
 - The three scene-table siblings matched as ordinary C when the candidates used `scenes.h`, raw `*(u32 *)((u8 *)gCurrentSceneData + 8)`, and `u8 D_083A98xx[]` table addresses. The audio siblings matched with an explicit non-void return for `func_0800C7FC`, a declared `u16` key read in `func_0801E918`, and a typed data-symbol pointer for `func_08024494`.

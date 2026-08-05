@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 189` — six strict-ROM standalone C scene/audio wrappers plus the hardened candidate lifecycle
-- `build/report.json`: **1464 / 5960 matched functions** = **24.563759%**
-- `matched_code_percent`: **6.752255%**
-- `tools/gen_objdiff.py`: **1004 linked C TUs / 5683 non-C units**
-- `src/decomp/*.c`: **1186 decompiled function files** = **985 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 190` — ten strict-ROM standalone C sprite/scene/audio helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1474 / 5960 matched functions** = **24.731544%**
+- `matched_code_percent`: **6.7847543%**
+- `tools/gen_objdiff.py`: **1014 linked C TUs / 5673 non-C units**
+- `src/decomp/*.c`: **1196 decompiled function files** = **995 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5960**, so **26** additional matched functions are needed.
+- 25% milestone: **1490 / 5960**, so **16** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
-- That 30% milestone is **324** additional matched functions from the current baseline.
+- That 30% milestone is **314** additional matched functions from the current baseline.
+
+### Batch 190 — accepted (sprite, scene, music-table, and graphics helpers)
+- Converted ten standalone functions to ordinary C: `func_0800C7A4`, `func_0800CE6C`, `func_08016688`, `func_08018534`, `func_0801911C`, `func_0801913C`, `func_0801915C`, `func_08019644`, `func_0804E290`, and `func_080C477C`.
+- Three sprite/scene wrappers matched through existing typed headers and raw scene-data offsets. The three adjacent music-table siblings required a register-bound base plus an `R0` address accumulator so the compiler emitted the target `ADD R0,R4`, table-entry load, and call sequence. The graphics-buffer indexed store used the same accumulator pattern to preserve the separate `gGraphicsBuffer` literal and `+0x54` add; the division helper matched as direct signed C arithmetic.
+- One combined ten-entry m2c isolation receipt passed exact-only selection, followed by one transactional full Docker ROM/report gate. The C candidates contain no instruction-bearing or volatile inline asm. Added canonical `D_083AE428`, `D_083AE430`, and `D_083AE438` linker assignments.
+- Fresh report: **1474 / 5960**, **6.7847543%** matched code, **1014 C / 5673 asm-only** units, and **1196** decomp files (`995 standalone_tu` + `201 included_stub`). `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 
 ### Batch 189 — accepted (scene-table and audio wrapper fan-in)
 - Converted six standalone functions to ordinary C: `func_0800C7FC`, `func_0801004C`, `func_080102A4`, `func_08010328`, `func_0801E918`, and `func_08024494`.
