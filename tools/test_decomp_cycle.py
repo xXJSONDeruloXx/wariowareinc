@@ -174,6 +174,41 @@ class DecompCycleTests(unittest.TestCase):
             self.assertEqual(transform, "preserved_existing_include_level_guard")
             self.assertEqual(prepared, candidate.read_text())
 
+    def test_reuse_isolation_receipt_checks_current_input_hashes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidate = root / "candidate.c"
+            candidate.write_text("void func_08002038(void) {}\n")
+            target = root / "target.s"
+            target.write_text(".text\n")
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps({"candidates": [{
+                "function": "func_08002038",
+                "candidate": "candidate.c",
+                "target": "target.s",
+            }]}))
+            entry = decomp_cycle.load_manifest(root, manifest)[0]
+            receipt = root / "isolation.json"
+            receipt.write_text(json.dumps({
+                "schema": 1,
+                "kind": "isolation",
+                "results": [{
+                    "function": "func_08002038",
+                    "candidate": "candidate.c",
+                    "candidate_sha256": decomp_cycle.file_sha256(candidate),
+                    "target_sha256": decomp_cycle.file_sha256(target),
+                    "target_object_sha256": None,
+                    "status": "exact",
+                }],
+            }))
+
+            isolation = decomp_cycle.reuse_isolation_receipt(root, receipt, entry)
+            self.assertEqual(isolation["results"][0]["status"], "exact")
+
+            candidate.write_text("void func_08002038(void) { return; }\n")
+            with self.assertRaises(decomp_cycle.CycleError):
+                decomp_cycle.reuse_isolation_receipt(root, receipt, entry)
+
 
 if __name__ == "__main__":
     unittest.main()

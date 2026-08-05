@@ -5,16 +5,22 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 180` — eight strict-ROM C conversions of arithmetic/packing leaves
+- Verified working tree: `batch 181` — one strict-ROM included-stub C conversion plus the hardened candidate lifecycle
 - `build/report.json`: **1401 / 5960 matched functions** = **23.506712%**
 - `matched_code_percent`: **6.5699472%**
 - `tools/gen_objdiff.py`: **941 linked C TUs / 5746 non-C units**
-- `src/decomp/*.c`: **1118 decompiled function files** = **920 standalone_tu** + **196 included_stub**
+- `src/decomp/*.c`: **1119 decompiled function files** = **922 standalone_tu** + **197 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - 25% milestone: **1490 / 5960**, so **89** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5960**.
+
+### Batch 181 — accepted (included-stub lifecycle exercise)
+- Converted `func_0800BF7C` in `bitmap_font.c` from the original ASM include to ordinary C. The source contains only C declarations/control flow plus the required `__INCLUDE_LEVEL__` wrapper; it has no instruction-bearing inline asm.
+- `tools/decomp_permute.py screen` compiled an m2c spelling and an unsigned-coordinate spelling in one isolation container. The m2c candidate was exact; the alternate remained a recorded **87.878784%** near miss.
+- The first full-context apply intentionally exposed a lifecycle bug: the raw candidate was inserted without the include-level guard, causing a duplicate definition. The transaction rolled back and rebuilt the exact baseline. After the tool fix, the same candidate passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`; SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Report metrics remain **1401 / 5960** and linked C units remain **941 / 6687**, because included stubs are already part of their host C TU. Source coverage is now **1119 files** (`922 standalone_tu` + `197 included_stub`).
 
 ## Goal
 Reach at least **80% matched-function progress** while preserving byte-identical ROM output at every accepted milestone.

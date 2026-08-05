@@ -227,6 +227,44 @@ def load_manifest(root: Path, manifest_path: Path) -> list[dict[str, Any]]:
     return normalized
 
 
+def reuse_isolation_receipt(root: Path, receipt_path: Path, entry: dict[str, Any]) -> dict[str, Any]:
+    """Reuse a fresh exact screen without paying for a second Docker pass."""
+    receipt_path = root_path(root, receipt_path, must_exist=True)
+    try:
+        receipt = json.loads(receipt_path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise CycleError(f"could not read isolation receipt {receipt_path}: {exc}") from exc
+    if receipt.get("kind") not in ("isolation", "permutation_screen"):
+        raise CycleError("isolation receipt must be an isolation or permutation_screen receipt")
+    current_commit = git_output(root, "rev-parse", "HEAD")
+    if receipt.get("commit") and receipt["commit"] != current_commit:
+        raise CycleError("isolation receipt is stale for the current tool/source commit; rerun isolate or screen")
+    isolation = receipt.get("isolation") if receipt.get("kind") == "permutation_screen" else receipt
+    if not isinstance(isolation, dict) or not isinstance(isolation.get("results"), list):
+        raise CycleError("isolation receipt has no usable results")
+
+    current = entry_identity(root, entry)
+    matches: list[dict[str, Any]] = []
+    for result in isolation["results"]:
+        if not isinstance(result, dict) or result.get("function", "").lower() != entry["function"].lower():
+            continue
+        identity_matches = True
+        for key in ("candidate_sha256", "target_sha256", "target_object_sha256"):
+            recorded = result.get(key)
+            observed = current.get(key)
+            if recorded and observed and recorded != observed:
+                identity_matches = False
+        if not identity_matches:
+            continue
+        if not result.get("candidate_sha256") and result.get("candidate") != current.get("candidate"):
+            continue
+        matches.append(result)
+    exact = [result for result in matches if result.get("status") == "exact"]
+    if len(exact) != 1:
+        raise CycleError("isolation receipt does not contain one exact result for the current candidate")
+    return isolation
+
+
 def container_script(root: Path, entries: list[dict[str, Any]], run_dir: Path) -> str:
     """Build one shell script that compiles and normalizes every pair."""
 
@@ -800,7 +838,8 @@ def isolate_command(root: Path, manifest: Path, output: Path | None, *, record: 
     return 0
 
 
-def apply_command(root: Path, manifest: Path, function: str, output: Path | None, *, force: bool) -> int:
+def apply_command(root: Path, manifest: Path, function: str, output: Path | None, *, force: bool,
+                  isolation_receipt: Path | None = None) -> int:
     entries = load_manifest(root, manifest)
     selected = [entry for entry in entries if entry["function"].lower() == function.lower()]
     if len(selected) != 1:
@@ -814,7 +853,12 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
         raise CycleError("refusing apply: candidate contains naked/original/instruction-bearing asm")
     _, source_transform = source_for_apply(entry, entry["candidate"].read_text())
 
-    isolation = run_isolation(root, [entry], record=True)
+    if isolation_receipt:
+        isolation = reuse_isolation_receipt(root, isolation_receipt, entry)
+        isolation_reused = True
+    else:
+        isolation = run_isolation(root, [entry], record=True)
+        isolation_reused = False
     isolated_result = isolation["results"][0] if isolation["results"] else {}
     if isolated_result.get("status") != "exact" and not force:
         receipt = {
@@ -825,6 +869,8 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
             "manifest_sha256": file_sha256(manifest),
             "candidate_identities": [entry_identity(root, entry)],
             "source_transform": source_transform,
+            "isolation_receipt": root_relative(root, isolation_receipt) if isolation_receipt else None,
+            "isolation_reused": isolation_reused,
             "isolation": isolation,
             "note": "No source/linker/assembly files were changed because isolated comparison was not exact.",
         }
@@ -851,6 +897,8 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
                 "manifest_sha256": file_sha256(manifest),
                 "candidate_identities": [entry_identity(root, entry)],
                 "source_transform": source_transform,
+                "isolation_receipt": root_relative(root, isolation_receipt) if isolation_receipt else None,
+                "isolation_reused": isolation_reused,
                 "isolation": isolation, "full_verify": full, "objdiff_metrics": metrics,
                 "changed_paths": [root_relative(root, path) for path in snapshot],
                 "note": "Matching source/linker/assembly changes intentionally remain in the worktree for review and commit.",
@@ -871,6 +919,8 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
             "manifest_sha256": file_sha256(manifest),
             "candidate_identities": [entry_identity(root, entry)],
             "source_transform": source_transform,
+            "isolation_receipt": root_relative(root, isolation_receipt) if isolation_receipt else None,
+            "isolation_reused": isolation_reused,
             "isolation": isolation, "full_verify": full, "rollback_verify": rollback,
             "error": str(exc),
             "changed_paths": [root_relative(root, path) for path in snapshot],
@@ -882,7 +932,8 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
         return 1
 
 
-def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, force: bool) -> int:
+def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, force: bool,
+                        isolation_receipt: Path | None = None) -> int:
     """Apply a manifest as one rollback-capable full-ROM transaction."""
     entries = load_manifest(root, manifest)
     dirty = blocking_dirty_paths(root)
@@ -897,7 +948,29 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
         for entry in entries
     }
 
-    isolation = run_isolation(root, entries, record=True)
+    if isolation_receipt:
+        # Batch reuse is conservative: verify each exact entry against the
+        # same receipt before any source files are touched.
+        receipt_path = root_path(root, isolation_receipt, must_exist=True)
+        try:
+            receipt = json.loads(receipt_path.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise CycleError(f"could not read isolation receipt {receipt_path}: {exc}") from exc
+        if receipt.get("kind") == "permutation_screen":
+            isolation = receipt.get("isolation")
+        else:
+            isolation = receipt
+        if not isinstance(isolation, dict) or not isinstance(isolation.get("results"), list):
+            raise CycleError("isolation receipt has no usable results")
+        current_commit = git_output(root, "rev-parse", "HEAD")
+        if receipt.get("commit") and receipt["commit"] != current_commit:
+            raise CycleError("isolation receipt is stale for the current tool/source commit; rerun isolate")
+        for entry in entries:
+            reuse_isolation_receipt(root, isolation_receipt, entry)
+        isolation_reused = True
+    else:
+        isolation = run_isolation(root, entries, record=True)
+        isolation_reused = False
     failed = [result for result in isolation["results"] if result.get("status") != "exact"]
     if failed and not force:
         receipt = {
@@ -909,6 +982,8 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
             "manifest_sha256": file_sha256(manifest),
             "candidate_identities": [entry_identity(root, entry) for entry in entries],
             "source_transforms": source_transforms,
+            "isolation_receipt": root_relative(root, isolation_receipt) if isolation_receipt else None,
+            "isolation_reused": isolation_reused,
             "isolation": isolation,
             "note": "No source/linker/assembly files were changed because every isolated comparison was not exact.",
         }
@@ -942,6 +1017,8 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
                 "manifest_sha256": file_sha256(manifest),
                 "candidate_identities": [entry_identity(root, entry) for entry in entries],
                 "source_transforms": source_transforms,
+                "isolation_receipt": root_relative(root, isolation_receipt) if isolation_receipt else None,
+                "isolation_reused": isolation_reused,
                 "isolation": isolation, "full_verify": full, "objdiff_metrics": metrics,
                 "changed_paths": [root_relative(root, path) for path in snapshot],
                 "note": "Matching source/linker/assembly changes intentionally remain in the worktree for review and commit. One full-ROM gate covered the batch.",
@@ -965,6 +1042,8 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
             "manifest_sha256": file_sha256(manifest),
             "candidate_identities": [entry_identity(root, entry) for entry in entries],
             "source_transforms": source_transforms,
+            "isolation_receipt": root_relative(root, isolation_receipt) if isolation_receipt else None,
+            "isolation_reused": isolation_reused,
             "isolation": isolation, "full_verify": full, "rollback_verify": rollback,
             "error": str(exc),
             "changed_paths": [root_relative(root, path) for path in snapshot],
@@ -992,12 +1071,16 @@ def build_parser() -> argparse.ArgumentParser:
     apply.add_argument("--output", type=Path)
     apply.add_argument("--force", action="store_true",
                        help="research-only: apply even when isolation is not exact; the ROM gate still controls acceptance")
+    apply.add_argument("--isolation-receipt", type=Path,
+                       help="reuse a fresh exact isolation/screen receipt instead of launching another isolation container")
 
     apply_batch = subparsers.add_parser("apply-batch", help="isolate, apply, verify, and rollback a candidate batch as one transaction")
     apply_batch.add_argument("--manifest", type=Path, required=True)
     apply_batch.add_argument("--output", type=Path)
     apply_batch.add_argument("--force", action="store_true",
                              help="research-only: apply even when one or more isolated comparisons are not exact; the ROM gate still controls acceptance")
+    apply_batch.add_argument("--isolation-receipt", type=Path,
+                             help="reuse a fresh exact isolation receipt instead of launching another isolation container")
 
     verify = subparsers.add_parser("verify", help="run the clean Docker ROM gate for the current worktree")
     verify.add_argument("--output", type=Path)
@@ -1015,9 +1098,13 @@ def main(argv: list[str] | None = None) -> int:
             return isolate_command(root, args.manifest.resolve(), args.output, record=not args.no_record,
                                    require_exact=args.require_exact)
         if args.command == "apply":
-            return apply_command(root, args.manifest.resolve(), args.function, args.output, force=args.force)
+            receipt = args.isolation_receipt.resolve() if args.isolation_receipt else None
+            return apply_command(root, args.manifest.resolve(), args.function, args.output, force=args.force,
+                                 isolation_receipt=receipt)
         if args.command == "apply-batch":
-            return apply_batch_command(root, args.manifest.resolve(), args.output, force=args.force)
+            receipt = args.isolation_receipt.resolve() if args.isolation_receipt else None
+            return apply_batch_command(root, args.manifest.resolve(), args.output, force=args.force,
+                                       isolation_receipt=receipt)
         if args.command == "verify":
             return verify_current(root, args.output, report=not args.no_report)
     except (CycleError, OSError, json.JSONDecodeError) as exc:

@@ -137,8 +137,9 @@ python3 tools/decomp_permute.py screen \
 ```
 
 This produces one durable `permutation_screen` receipt containing every
-candidate hash and exact/near-miss result. It never changes `src/`, `asm/`, or
-the linker. After reviewing the exact list, select one winner explicitly:
+candidate hash, immutable candidate snapshots, and exact/near-miss results. It
+never changes `src/`, `asm/`, or the linker. After reviewing the exact list,
+select one winner explicitly:
 
 ```bash
 python3 tools/decomp_permute.py accept \
@@ -146,8 +147,10 @@ python3 tools/decomp_permute.py accept \
   --variant .mizuchi-tmp/permutations/FUNC-best.c
 ```
 
-`accept` delegates to `decomp_cycle.py apply`, so the winner is isolated again,
-mechanically applied, and admitted only by the clean Docker ROM/report gate.
+`accept` delegates to `decomp_cycle.py apply`, reusing the screen's isolation
+receipt when the commit and candidate/target hashes still match, then
+mechanically applies the winner and admits it only by the clean Docker
+ROM/report gate. A stale receipt fails closed and must be re-screened.
 The Pi `apply_conversion` frontend is routed through the same cycle; its
 `verify:false` mode is intentionally refused for real applies (dry-run still
 works).

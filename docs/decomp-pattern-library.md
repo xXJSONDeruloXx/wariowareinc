@@ -11,6 +11,7 @@
 - count `src/decomp/*.c` separately when you want total decompiled function-file coverage (`standalone_tu` + `included_stub`)
 - **Included-stub isolated BL normalization**: when a candidate is compared against a whole host-TU object, import the host object's section-relative `T/R/D/B` symbol offsets into the candidate link. Otherwise every external call can appear as a false `BL 0` mismatch even when the function bytes are exact. Keep the entry function excluded from that map so the candidate remains rooted at offset zero.
 - **Embedded asm label transport**: C-string asm stores labels as lines ending in `\\n\\`; strip that transport suffix before parsing labels/directives for m2c/asmlift. Parsing only address-commented instructions drops branch targets and creates a false decompiler failure.
+- **Included-stub apply representation**: screen the raw C body as a standalone object, then wrap it at apply time with `#if __INCLUDE_LEVEL__ > 0` / `#endif`. The Makefile compiles `src/decomp/*.c` separately while the host TU also textually includes the same file; omitting the guard creates a duplicate definition. The guard is a build-integration wrapper, not an instruction-matching candidate change.
 - **agbcc requires `-mthumb-interwork`** to generate interwork-safe epilogues (`POP {R0}; BX R0` or `POP {R1}; BX R1`). Without it, agbcc generates `POP {PC}` which is NOT interwork-safe and does NOT match the original. The Makefile passes `-mthumb-interwork` via `CFLAGS`. When doing isolated agbcc testing, always include this flag.
 
 ## Proven high-yield families

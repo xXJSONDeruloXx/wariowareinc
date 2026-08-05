@@ -24,10 +24,16 @@ input identities in receipts, bounded near-miss history, and
 `tools/decomp_permute.py` for one-container variant fan-in. A two-variant
 `func_0800BF7C` screen selected one exact spelling and preserved the other as a
 near-miss; no source was accepted until the transactional full-ROM step.
+The first full-context apply then caught the missing `__INCLUDE_LEVEL__` guard
+for an included stub, rolled back cleanly, and rebuilt the exact baseline. The
+apply path now adds that wrapper, snapshots candidate inputs under
+`.decomp-runs/`, and reuses a fresh hash-validated screen receipt instead of
+paying for a second isolation container.
 
 ## Latest accepted batches
 | Iteration / Batch | Commit | Δ matched | Summary |
 |---|---|---:|---|
+| 181 | pending | +0 report matched / +1 included_stub decomp file / +0 linked C TUs | Converted `func_0800BF7C` in `bitmap_font.c` to real C. A two-variant permutation screen found one exact m2c spelling and one 87.878784%-matching unsigned-coordinate near miss. The first full-context apply exposed the missing include-level guard, rolled back to the exact ROM, and the corrected transactional apply passed `wariowareinc.gba: OK`; SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. |
 | 180 | pending | +8 report matched / +8 standalone_tu decomp files / +8 linked C TUs | Converted `func_080F1F9C`, `func_080F28F8`, `func_080F2C50`, `func_08035ACC`, `func_08003014`, `func_0803F224`, `func_0803F26C`, and `func_0806754C` to real C. A ten-candidate pure-leaf isolation screen found eight exact candidates after isolation was aligned with the Makefile's zero-filled `.text` tail; one malformed target symbol used the explicitly recorded raw-object fallback. One transactional full Docker gate preserved SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1401 / 5960**, **941 C / 5746 asm-only**. Receipt: `.decomp-runs/20260805T2008-pure-leaves-exact.json`. |
 | 179 | pending | +4 report matched / +4 standalone_tu decomp files / +4 linked C TUs | Converted `func_0809C47C`, `func_080195E4`, `func_080DF440`, and `func_080DCD54` to real-C wrapper/reload helpers. One normalized linked-ELF isolation pass scored all four at 100%; one transactional full Docker gate preserved SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1393 / 5960**, **933 C / 5754 asm-only**. |
 | 178 | pending | +2 report matched / +2 standalone_tu decomp files / +2 linked C TUs | Solved two preserved scene-state near misses with readable register-shaped C: `func_080C4A48` and `func_080EC308`. Both normalized isolation comparisons reached 100%; one transactional full Docker gate preserved SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report: **1389 / 5960**, **929 C / 5758 asm-only**. |

@@ -47,6 +47,26 @@ class DecompPermuteTests(unittest.TestCase):
         with self.assertRaises(decomp_permute.decomp_cycle.CycleError):
             decomp_permute.choose_candidate(receipt, "variants/near.c")
 
+    def test_choose_candidate_prefers_immutable_snapshot(self) -> None:
+        receipt = {
+            "kind": "permutation_screen",
+            "exact_candidates": [".mizuchi-tmp/variants/exact.c"],
+            "candidates": [{
+                "function": "func_08002038",
+                "candidate": ".mizuchi-tmp/variants/exact.c",
+            }],
+            "candidate_snapshots": [{
+                "candidate": ".mizuchi-tmp/variants/exact.c",
+                "snapshot": ".decomp-runs/run-candidates/000-exact.c",
+            }],
+            "isolation": {"results": [{
+                "candidate": ".mizuchi-tmp/variants/exact.c",
+                "status": "exact",
+            }]},
+        }
+        _, entry = decomp_permute.choose_candidate(receipt, None)
+        self.assertEqual(entry["candidate"], ".decomp-runs/run-candidates/000-exact.c")
+
 
 if __name__ == "__main__":
     unittest.main()

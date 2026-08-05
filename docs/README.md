@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 180` — eight strict-ROM C conversions of arithmetic/packing leaves
+- Verified working tree: `batch 181` — one strict-ROM included-stub C conversion plus the hardened candidate lifecycle
 - `build/report.json`: **1401 / 5960 matched functions** (**23.506712%**) · **6.5699472%** matched code
 - `tools/gen_objdiff.py`: **941 linked C TUs / 5746 non-C units**
-- `src/decomp/*.c`: **1118 decompiled function files** = **920 standalone_tu** + **196 included_stub**
+- `src/decomp/*.c`: **1119 decompiled function files** = **922 standalone_tu** + **197 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **30 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
@@ -29,8 +29,8 @@ If an agent resumes cold, read these first:
 The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
 
 - `isolate` evaluates a manifest of C permutations/siblings in one Docker compiler invocation, links normalized comparison ELFs using the target's absolute symbol map, and writes a structured `.decomp-runs/` receipt.
-- `tools/decomp_permute.py screen` fans a directory of m2c/asmlift/manual C spellings into one isolation pass; `accept` can select only a recorded exact winner for the normal transactional apply.
-- `apply` requires an isolated exact match, applies the mechanical conversion, runs the strict ROM/report gate, and restores the candidate transaction plus a clean baseline on failure.
+- `tools/decomp_permute.py screen` fans a directory of m2c/asmlift/manual C spellings into one isolation pass, snapshots every input under `.decomp-runs/`, and records exact/near-miss hashes; `accept` can select only a recorded exact winner for the normal transactional apply.
+- `apply` requires an isolated exact match, applies the mechanical conversion, runs the strict ROM/report gate, and restores the candidate transaction plus a clean baseline on failure. A fresh screen receipt is reused when its commit and input hashes still match, avoiding a redundant isolation container.
 - `apply-batch` performs the same guarded transaction for a small exact manifest, with one isolation pass and one full-ROM gate for the batch.
 - `verify` runs the current-worktree Docker gate for hooks or a final check.
 

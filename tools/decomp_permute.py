@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -76,6 +77,25 @@ def screen(root: Path, manifest_path: Path, candidates_dir: Path, output: Path |
     template = read_manifest(manifest_path)
     files = candidate_files(root, candidates_dir)
     entries, raw_entries = expanded_entries(root, template, files)
+    receipt_path = output or root / ".decomp-runs" / f"{now_stamp()}-permutation-{entries[0]['function']}.json"
+    receipt_path = receipt_path if receipt_path.is_absolute() else root / receipt_path
+    receipt_path = receipt_path.resolve()
+    decomp_cycle.root_relative(root, receipt_path)
+
+    # Candidate paths often live in ignored scratch directories.  Preserve the
+    # exact screened inputs beside the receipt so later acceptance and audit
+    # do not depend on an agent's temporary workspace surviving.
+    snapshot_dir = root / ".decomp-runs" / f"{receipt_path.stem}-candidates"
+    snapshot_dir.mkdir(parents=True, exist_ok=True)
+    candidate_snapshots = []
+    for index, path in enumerate(files):
+        snapshot = snapshot_dir / f"{index:03d}-{path.name}"
+        shutil.copyfile(path, snapshot)
+        candidate_snapshots.append({
+            "candidate": decomp_cycle.root_relative(root, path),
+            "snapshot": decomp_cycle.root_relative(root, snapshot),
+            "sha256": decomp_cycle.file_sha256(snapshot),
+        })
     isolation = decomp_cycle.run_isolation(root, entries, record=record)
     results = isolation["results"]
     exact = [result for result in results if result.get("status") == "exact"]
@@ -90,14 +110,13 @@ def screen(root: Path, manifest_path: Path, candidates_dir: Path, output: Path |
         "template_manifest_sha256": decomp_cycle.file_sha256(manifest_path),
         "candidate_directory": decomp_cycle.root_relative(root, candidates_dir),
         "candidate_count": len(entries),
+        "candidate_snapshots": candidate_snapshots,
         "candidate_identities": [decomp_cycle.entry_identity(root, entry) for entry in entries],
         "candidates": raw_entries,
         "isolation": isolation,
         "exact_candidates": [result.get("candidate") for result in exact],
         "ok": bool(exact),
     }
-    receipt_path = output or root / ".decomp-runs" / f"{now_stamp()}-permutation-{entries[0]['function']}.json"
-    receipt_path = receipt_path if receipt_path.is_absolute() else root / receipt_path
     decomp_cycle.write_receipt(root, receipt, receipt_path)
     print(json.dumps({
         "ok": bool(exact),
@@ -118,7 +137,11 @@ def choose_candidate(receipt: dict[str, Any], variant: str | None) -> tuple[dict
     if chosen not in exact:
         raise decomp_cycle.CycleError(f"variant is not an exact candidate in the receipt: {chosen}")
     result = next(item for item in receipt["isolation"]["results"] if item.get("candidate") == chosen)
-    template = next(item for item in receipt["candidates"] if item.get("candidate") == chosen)
+    template = dict(next(item for item in receipt["candidates"] if item.get("candidate") == chosen))
+    for snapshot in receipt.get("candidate_snapshots", []):
+        if snapshot.get("candidate") == chosen and snapshot.get("snapshot"):
+            template["candidate"] = snapshot["snapshot"]
+            break
     return result, template
 
 
@@ -141,7 +164,7 @@ def accept(root: Path, receipt_path: Path, variant: str | None, output: Path | N
     manifest = run_dir / f"{receipt_path.stem}-apply-manifest.json"
     manifest.write_text(json.dumps({"candidates": [template]}, indent=2) + "\n")
     command = [sys.executable, "tools/decomp_cycle.py", "apply", "--manifest", str(manifest),
-               "--function", str(template["function"])]
+               "--function", str(template["function"]), "--isolation-receipt", str(receipt_path)]
     if output:
         command.extend(["--output", str(output)])
     completed = subprocess.run(command, cwd=root, text=True, check=False)
