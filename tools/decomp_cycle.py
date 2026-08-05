@@ -683,7 +683,14 @@ def gen_objdiff(root: Path) -> dict[str, Any]:
 
 
 def git_status(root: Path) -> str:
-    return git_output(root, "status", "--porcelain")
+    # Do not use git_output here: its general-purpose strip() removes the
+    # leading index/worktree status column from a porcelain line such as
+    # `` M tools/attempts.tsv``.  The dirty-path guard needs that column to
+    # slice the pathname at the correct offset.
+    try:
+        return run_command(["git", "status", "--porcelain"], root, timeout=30).stdout
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return ""
 
 
 def blocking_dirty_paths(root: Path) -> list[str]:

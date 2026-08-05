@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import decomp_cycle
@@ -52,6 +53,17 @@ class DecompCycleTests(unittest.TestCase):
     def test_rom_path_policy(self) -> None:
         self.assertTrue(decomp_cycle.ROM_AFFECTING_FILES)
         self.assertIn("src/decomp/example.c", decomp_cycle.ROM_AFFECTING_PREFIXES[0] + "decomp/example.c")
+
+    def test_dirty_guard_preserves_porcelain_status_column(self) -> None:
+        with patch.object(
+            decomp_cycle,
+            "git_status",
+            return_value=" M tools/attempts.tsv\n?? .decomp-runs/run.json\n M src/decomp/new.c\n",
+        ):
+            self.assertEqual(
+                decomp_cycle.blocking_dirty_paths(Path("/repo")),
+                ["src/decomp/new.c"],
+            )
 
     def test_isolation_script_links_target_and_candidate_with_target_symbols(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
