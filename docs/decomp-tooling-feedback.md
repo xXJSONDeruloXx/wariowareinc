@@ -17,6 +17,21 @@ Use this file to record where the current decomp tools helped, where they missed
   objdiff and the transactional full-ROM gate. It does not relax exact-only
   admission.
 
+## Round 71 — named-symbol and scene-wrapper fan-in (2026-08-06)
+- m2c supplied compact skeletons for two named sound-player wrappers, two
+  scene/sprite wrappers, and a heap-record cleanup helper. The first screen
+  used one Docker isolation invocation and classified **0 exact / 4 near miss /
+  1 compile error**; the repaired screen reached **2 exact / 3 near miss**.
+- The explicit-address manifest support was necessary for the exported
+  `set_soundplayer_pitch`/`set_soundplayer_volume` symbols. The screen also
+  exposed that the sprite wrapper needed the handler global loaded before the
+  scene-data global, while the cleanup candidate needed a local `extern`
+  declaration to avoid the project's conflicting heap-header prototype.
+- `func_0800E800` and `func_08004EAC` were the only candidates admitted. The
+  apply reused the v3 receipt and ran one clean full Docker ROM/report gate;
+  it passed with the unchanged SHA-1. The three near misses remain durable
+  seeds rather than source changes.
+
 ## Round 33 — sprite, scene, music-table, and graphics fan-in (2026-08-05)
 - m2c supplied ten compact standalone skeletons. The first screen found **5 exact / 4 near miss / 1 compile error**; register-bound variants recovered the three music-table siblings and the graphics-buffer store, producing a combined **10 exact** manifest.
 - `func_0800C7A4`, `func_0800CE6C`, `func_08016688`, `func_08018534`, `func_08019644`, and `func_080C477C` matched directly through typed sprite/scene headers, explicit field offsets, or signed division. The music siblings required a base in `R4` and an offset/address accumulator in `R0`; `func_0804E290` required the same two-register accumulator to prevent folding `gGraphicsBuffer + 0x54` into the literal symbol.
