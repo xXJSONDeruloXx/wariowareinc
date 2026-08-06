@@ -431,6 +431,15 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Difference load order**: for a helper whose target loads the argument field first, then the global-scene field, subtracts into the result register, and compares that result with the second argument, pin the incoming values to the target ABI registers and spell the loads/subtraction as separate C statements. `func_08089648` matches with register-bound locals and no instruction asm.
 - **Asmlift exact skeletons still need project validation**: `func_0805C5D8` and `func_08088B80` were exact from the first asmlift-shaped C spelling, but Round 70 still screened all five candidates through the same Docker isolation receipt. Semantic similarity is a discovery aid; only exact isolated code followed by the full ROM gate is admissible.
 
+### Round 74 additions: wrapper batches and register-role repair
+
+- **Multi-call wrapper fan-in**: a small ordinary-C batch can preserve several direct `BL` calls when each callee's ABI is declared explicitly. `func_08022650` keeps three zero-argument calls ahead of the `gCurrentKeys` byte test, while `func_0803292C` keeps the incoming argument in R4 across four calls.
+- **Saved scene pointer across a call**: for `func_08024F68`, initialize a local byte pointer from `D_03006524` before `scene_set_current_thread(0)`, then read the `+0x50` field after the call. This preserves the target's R4 lifetime; reloading the global after the call changes the stream.
+- **Scene-variable accumulate/store**: `((u8 *)gCurrentSceneVariable + (0xE7 << 3))` plus a separate load/add/store reproduces the target's scaled offset and R1/R2 order for `func_08072700`.
+- **Graphics-buffer register roles**: when a target loads the graphics base into R1, the halfword into R2, and a mask into R0 before zeroing R2 for two later stores, bind those roles in ordinary-C locals. `func_08039A44` is exact with register declarations and no instruction text.
+- **R4 table base across RNG**: a numeric ROM table pointer may be initialized in a register-bound R4 local, but agbcc can legally delay the load until after the RNG call. An empty nonvolatile `"+r"` constraint keeps the base live without emitting an instruction; `func_0801A688` is the proof.
+- **Header-local candidate context**: a project header can introduce unrelated `-Werror` warnings into an isolated candidate. For `func_08022650`, direct declarations for the needed symbols were safer than including the broad beatscript header; for `func_080733AC`, `scenes.h` was required to declare `gCurrentSceneData`.
+
 ### Round 73 additions: scene-data callers and literal-pool accounting
 
 - **Scene-data caller pair**: when a short wrapper loads `gCurrentSceneData` or `gCurrentSceneVariable`, derives a pointer field and a signed halfword at separate offsets, then calls an already-converted helper, use a raw `u8 *` base and explicit byte offsets. `func_08016B14` and `func_080241E8` both matched with ordinary C; the full-context gate is still required because the callee is already C.
