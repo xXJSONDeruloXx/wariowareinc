@@ -406,6 +406,13 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Fall-through branch spelling**: if the target branches directly to the false return and places the mutating path in fall-through order, write `if (predicate != 0) return 0; mutate(); return 1;` rather than the semantically equivalent `if (predicate == 0) { mutate(); return 1; }`. `func_08015E24` changed from `BEQ` to the target `BNE` layout this way.
 - **Thumb callback addend**: a callback passed as data may require the function address's Thumb `+1` addend in the literal pool. An explicit ordinary-C cast such as `(void (*)(u32))(set_pause_beatscript_scene + 1)` preserves that relocation/addend; omitting it can leave all instructions equal while changing a pool byte, as Round 67's `func_080166E4` screen demonstrated.
 
+### Round 68 additions: predicate polarity and typed copy loops
+
+- **Boolean fall-through polarity**: when the target uses `CMP; BEQ; MOVS #1; B; MOVS #0`, write the equality case as the early return (`if (value == 0) return 1; return 0;`). The semantically equivalent inverted test emits `BNE` with the return constants swapped; `func_080D74D0` was a 99.53333% near miss until this source-level shape was corrected.
+- **Project typedef header order**: `include/types.h` declares structs and aliases that assume the typedefs from `global.h`. Standalone isolation candidates that use `u8`/`u16`/`s32` and include `types.h` must include `global.h` first; otherwise agbcc reports a misleading cascade of struct/type errors. The `func_080721A0`/`func_080721BC` loop pair is the current proof.
+- **Typed byte/halfword copy loops**: a check-before-loop C spelling with typed pointers and a widened `s32` count reproduces the target's `PUSH {LR}`, low-register destination copy, post-increment, decrement, and `BNE` sequence for both byte and halfword strides. Keep the source and destination pointer increments as separate statements when preserving the target's register order.
+- **Reloaded scene-data wrapper arguments**: direct raw-byte-pointer expressions can preserve a target that computes an output pointer or field pointer first, then loads the scene-data halfword as the later call argument. The three Round 68 scene wrappers demonstrate this without a linker-map addition by using the proven numeric ROM address for `D_083FBAA4`.
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers

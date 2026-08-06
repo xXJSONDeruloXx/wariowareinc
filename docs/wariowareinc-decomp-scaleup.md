@@ -5,18 +5,25 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 215` — seven strict-ROM standalone beatscript, scene-data, save, and key-wrapper siblings and the hardened candidate lifecycle
-- `build/report.json`: **1580 / 5937 matched functions** = **26.612768%**
-- `matched_code`: **70918 / 993672** = **7.1369624%**
-- `tools/gen_objdiff.py`: **1120 linked C TUs / 5567 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1304 decompiled function files** = **1101 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 216` — nine strict-ROM scene-data, predicate, state-clear, and byte/halfword-copy siblings and the hardened candidate lifecycle
+- `build/report.json`: **1589 / 5937 matched functions** = **26.76436%**
+- `matched_code`: **71212 / 993686** = **7.166449%**
+- `tools/gen_objdiff.py`: **1129 linked C TUs / 5558 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1313 decompiled function files** = **1110 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - 25% milestone: **1485 / 5937**, now exceeded by **95** matched functions.
-- 26% milestone: **1544 / 5937**; current progress is **1580**, exceeding it by **36** matches.
-- Active 27% working goal: **1603 / 5937**; **23** additional matched functions are needed.
-- Next 30% milestone: **1782 / 5937**; **202** additional matched functions are needed.
+- 26% milestone: **1544 / 5937**; current progress is **1589**, exceeding it by **45** matches.
+- Active 27% working goal: **1603 / 5937**; **14** additional matched functions are needed.
+- Next 30% milestone: **1782 / 5937**; **193** additional matched functions are needed.
+
+### Batch 216 — accepted (scene-data wrappers, predicates, and copy loops)
+- Converted `func_080B2724`, `func_080B274C`, `func_080C68F8`, `func_080D74D0`, `func_080D750C`, `func_080D6FF4`, `func_080C69CC`, `func_080721A0`, and `func_080721BC` to standalone ordinary C. The batch covers three scene-data sound wrappers, three boolean scene predicates, a two-field state clear, and byte/halfword copy loops.
+- Round 68 screened all nine candidates together. The first pass found **6 exact / 1 near miss / 2 compile errors**; reversing the `080D74D0` condition to match the target's fall-through branch and adding `global.h` before `types.h` for the copy loops produced **9 exact / 0 rejected**.
+- The accepted sources contain ordinary C and register-bound compiler metadata only; there is no instruction-bearing or volatile inline asm. The loop pair uses straightforward typed pointer/count C, while `080C69CC` uses register declarations only to preserve the target's reload and zero-materialization order.
+- The exact-only transaction passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`; post-apply report, objdiff, policy, and SHA-1 checks passed. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1589 / 5937** matched functions (**26.76436%**), **71212 / 993686** matched code (**7.166449%**), **1129 C / 5558 asm-only** units, and **1313** decomp files (`1110 standalone_tu` + `203 included_stub`). Evidence: `.decomp-runs/round-68-isolation-v1.json`, `round-68-isolation-v2.json`, and `round-68-apply-v1.json`; the `080D74D0` first-pass source is preserved in `.nearmiss/`.
 
 ### Batch 215 — accepted (beatscript, scene-data, save, and key wrappers)
 - Converted `func_0800CDB0`, `func_080166E4`, `func_08075E34`, `func_080B2704`, `func_08015E24`, `func_0801E4EC`, and `func_08020FB0` to standalone ordinary C. The batch covers a beatscript bit-field setter, a texture-loader/task-finalizer wrapper, two ROM-sound scene-data wrappers, a save-unlock decision, and two multi-call key-test wrappers.
