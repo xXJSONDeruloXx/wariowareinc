@@ -5,18 +5,25 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 216` — nine strict-ROM scene-data, predicate, state-clear, and byte/halfword-copy siblings and the hardened candidate lifecycle
-- `build/report.json`: **1589 / 5937 matched functions** = **26.76436%**
-- `matched_code`: **71212 / 993686** = **7.166449%**
-- `tools/gen_objdiff.py`: **1129 linked C TUs / 5558 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1313 decompiled function files** = **1110 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 217` — nine strict-ROM scene-state, predicate, and update siblings and the hardened candidate lifecycle
+- `build/report.json`: **1598 / 5937 matched functions** = **26.915949%**
+- `matched_code`: **71486 / 993690** = **7.1939936%**
+- `tools/gen_objdiff.py`: **1138 linked C TUs / 5549 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1322 decompiled function files** = **1119 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - 25% milestone: **1485 / 5937**, now exceeded by **95** matched functions.
-- 26% milestone: **1544 / 5937**; current progress is **1589**, exceeding it by **45** matches.
-- Active 27% working goal: **1603 / 5937**; **14** additional matched functions are needed.
-- Next 30% milestone: **1782 / 5937**; **193** additional matched functions are needed.
+- 26% milestone: **1544 / 5937**; current progress is **1598**, exceeding it by **54** matches.
+- Active 27% working goal: **1603 / 5937**; **5** additional matched functions are needed.
+- Next 30% milestone: **1782 / 5937**; **184** additional matched functions are needed.
+
+### Batch 217 — accepted (scene-state, predicate, and update siblings)
+- Converted `func_080A7A74`, `func_0809E804`, `func_080526D0`, `func_08072DD4`, `func_0805F08C`, `func_080855D8`, `func_0808EA3C`, `func_080D25C4`, and `func_0806F0A0` to standalone ordinary C. The batch covers scene predicates, a scaled scene-data store, a conditional record update, an indexed byte fallback, a conditional halfword store, and two accumulator/clamp helpers.
+- Round 69 screened ten candidates through eight isolated revisions. The first pass found **3 exact / 6 near miss / 1 exact candidate later repaired**; branch polarity, operand ordering, and register-bound locals repaired nine candidates to exact. `func_080DD8A4` remains withheld because agbcc keeps the indexed halfword offset in R0 rather than the target R1 despite several metadata-only C permutations.
+- The accepted sources contain ordinary C and register-bound compiler metadata only; no instruction-bearing or volatile inline asm was accepted. The exact subset used one guarded full-context transaction, while the DD8A4 attempts remain near-miss provenance.
+- The transaction passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`; post-apply report, objdiff, policy, and SHA-1 checks passed. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1598 / 5937** matched functions (**26.915949%**), **71486 / 993690** matched code (**7.1939936%**), **1138 C / 5549 asm-only** units, and **1322** decomp files (`1119 standalone_tu` + `203 included_stub`). Evidence: `.decomp-runs/round-69-isolation-v1.json` through `round-69-isolation-v8.json`, plus `.decomp-runs/round-69-apply-v1.json`.
 
 ### Batch 216 — accepted (scene-data wrappers, predicates, and copy loops)
 - Converted `func_080B2724`, `func_080B274C`, `func_080C68F8`, `func_080D74D0`, `func_080D750C`, `func_080D6FF4`, `func_080C69CC`, `func_080721A0`, and `func_080721BC` to standalone ordinary C. The batch covers three scene-data sound wrappers, three boolean scene predicates, a two-field state clear, and byte/halfword copy loops.

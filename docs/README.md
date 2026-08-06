@@ -11,19 +11,19 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 216` — nine strict-ROM scene-data, predicate, state-clear, and byte/halfword-copy siblings after the beatscript/key-wrapper sweep; repair attempts remain preserved as provenance
-- `build/report.json`: **1589 / 5937 matched functions** (**26.76436%**) · **7.166449%** matched code (**71212 / 993686**)
-- `tools/gen_objdiff.py`: **1129 linked C TUs / 5558 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1313 decompiled function files** = **1110 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 217` — nine strict-ROM scene-state, predicate, and update siblings after the copy-loop sweep; repair attempts remain preserved as provenance
+- `build/report.json`: **1598 / 5937 matched functions** (**26.915949%**) · **7.1939936%** matched code (**71486 / 993690**)
+- `tools/gen_objdiff.py`: **1138 linked C TUs / 5549 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1322 decompiled function files** = **1119 standalone_tu** + **203 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1485 / 5937**; now exceeded by **95** matches
-- 26% milestone at the current function total: **1544 / 5937**; now exceeded by **45** matches
-- 27% active working goal at the current function total: **1603 / 5937**; **14** more matches needed
-- 30% milestone at the current function total: **1782 / 5937**; **193** more matches needed
+- 26% milestone at the current function total: **1544 / 5937**; now exceeded by **54** matches
+- 27% active working goal at the current function total: **1603 / 5937**; **5** more matches needed
+- 30% milestone at the current function total: **1782 / 5937**; **184** more matches needed
 - 80% target at the current function total: **4750 / 5937**
 - Remaining gap to 80%: **3170 matched functions**
 

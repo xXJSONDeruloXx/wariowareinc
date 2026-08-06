@@ -413,6 +413,14 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Typed byte/halfword copy loops**: a check-before-loop C spelling with typed pointers and a widened `s32` count reproduces the target's `PUSH {LR}`, low-register destination copy, post-increment, decrement, and `BNE` sequence for both byte and halfword strides. Keep the source and destination pointer increments as separate statements when preserving the target's register order.
 - **Reloaded scene-data wrapper arguments**: direct raw-byte-pointer expressions can preserve a target that computes an output pointer or field pointer first, then loads the scene-data halfword as the later call argument. The three Round 68 scene wrappers demonstrate this without a linker-map addition by using the proven numeric ROM address for `D_083FBAA4`.
 
+### Round 69 additions: scene update ordering
+
+- **Predicate return polarity**: semantically identical boolean leaves can require opposite source tests. For a target `CMP; BEQ; MOVS #1; B; MOVS #0`, use `if (value == 0) return 1; return 0;`; for `CMP; BNE; MOVS #0; B; MOVS #1`, use `if (value != 0) return 0; return 1;`. `080A7A74` and `080D25C4` are paired proof points.
+- **Three-operand add spelling**: if the target has `ADDS R0,R2,R0` after loading an accumulated value, `r0 = r2 + r0;` preserves the three-operand form; `r0 += r2;` can emit the shorter `ADD R0,R2`. `func_080526D0` needed the explicit source order.
+- **Scene-data result/factor pins**: for `MULS R0,R1,R0` followed by a large-offset store, bind the incoming result to R0, the shifted scene-data factor to R1, and the scene-variable base to R2. `func_0809E804` matches with real C and no instruction asm.
+- **Post-compare indexed byte fallback**: if the target branches to a constant fallback before loading the global base, write `if (arg > limit) return fallback;` and assign the base pointer only in the remaining path. Declaring the pointer at function scope but initializing it before the test hoists its literal load and reverses the branch layout; `func_0805F08C` is the exact example.
+- **R1 indexed-halfword reuse trap**: a target that uses one register for the global-pointer literal, indexed `LDRSH` offset, and later accumulator may remain a near miss even with hard-register locals and empty constraints. Keep `func_080DD8A4` as evidence until the source reproduces `LDRSH [R2,R1]`; do not accept the R0-indexed variant merely because all stores and semantics are correct.
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers
