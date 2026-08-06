@@ -5164,7 +5164,7 @@ SECTIONS {
         build/bin/data_080EFE84.bin.o(.rodata*);
         build/asm/asm_080f0d58.s.o(.text*);
         build/src/decomp/asm_080f0de0.c.o(.text*);
-        build/asm/asm_080f0dfc.s.o(.text*);
+        build/src/decomp/asm_080f0dfc.c.o(.text*);
         build/src/decomp/asm_080f0e14.c.o(.text*);
         build/src/decomp/asm_080f0e30.c.o(.text*);
         build/asm/asm_080f0e40.s.o(.text*);
@@ -5204,7 +5204,7 @@ SECTIONS {
         build/asm/asm_080f1fb4.s.o(.text*);
         build/asm/asm_080f1fd0.s.o(.text*);
         build/asm/asm_080f1ff0.s.o(.text*);
-        build/asm/asm_080f2358.s.o(.text*);
+        build/src/decomp/asm_080f2358.c.o(.text*);
         build/asm/asm_080f2374.s.o(.text*);
         build/asm/asm_080f2394.s.o(.text*);
         build/asm/asm_080f23bc.s.o(.text*);

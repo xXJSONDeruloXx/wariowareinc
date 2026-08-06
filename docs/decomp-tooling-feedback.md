@@ -338,3 +338,9 @@ Use this file to record where the current decomp tools helped, where they missed
 ## Batch 179 — wrapper/reload shaping (2026-08-05)
 - The next isolation manifest combined four focused permutations: a non-void callback wrapper, delayed zero initialization, pinned scene-variable reloads, and a call-then-clear wrapper. All four reached **100.0%** in one normalized linked-ELF pass.
 - The full transaction accepted all four and advanced the report from **1389** to **1393** without ROM drift. The most useful feedback was the isolated epilogue mismatch on `func_0809C47C`: changing only the declaration from `void` to non-void corrected `POP {R0}` to the target `POP {R1}`.
+
+## Batch 195 — runtime-table ordering screen (2026-08-05)
+- The eight-entry screen amortized candidate compilation correctly: one Docker isolation invocation produced two exact results and six recorded near misses. The exact-only `apply-batch` reused the same receipt and paid for one full Docker ROM gate.
+- `func_080F0DFC` and `func_080F2358` converted cleanly to real C and advanced the report from **1493** to **1495** with the baseline ROM SHA-1 unchanged. The source files use register-bound C locals only; there is no instruction-bearing or volatile inline asm.
+- The six rejected runtime-table siblings exposed a reusable ordering gap that isolated objdiff made obvious: independent C locals allowed the `arg0+0x18` base load to move before the target's `LSLS/LSRS #24` normalization. `func_080F253C` also demonstrated the known constant-folding trap (`MOVS #2; RSBS` became `SUB #3`), and `func_080F2558` exposed a register-role mismatch around the field/literal loads.
+- The cycle and provenance tooling helped with admission and evidence but did not synthesize a fix for the ordering gap. The next attempt should test only a small barrier/dependency permutation family, keep every non-exact result in `.nearmiss/`, and continue to reject instruction-bearing asm.

@@ -85,6 +85,24 @@ Track:
 - standalone_tu files
 - included_stub files
 
+### Post-commit handoff table
+
+After every accepted commit, the assistant response must include a compact table
+of the current verified state. Use the values from the freshly generated
+`build/report.json`, `tools/gen_objdiff.py`, and the ROM gate receipt:
+
+| Metric | Required value |
+|---|---|
+| Matched functions | `matched_functions / total_functions` and percent |
+| Matched code | `matched_code / total_code` and percent |
+| Linked units | C TUs / asm-only units / total units |
+| Decompiled files | total / standalone_tu / included_stub |
+| ROM identity | `wariowareinc.gba: OK` and ROM SHA-1 |
+| 30% progress | milestone numerator/denominator and remaining gap |
+
+This is a durable handoff requirement, not just a one-session presentation
+preference; it keeps the progress state visible after context compaction.
+
 ## Batch workflow
 1. Select a narrow, sibling-rich candidate set with `query_candidates` (default `conversionMode=recommended`).
 
@@ -210,6 +228,7 @@ duplicate full compile in the normal commit-then-push workflow.
 13. If any tracked metric improved (matched code, linked C TUs, or `src/decomp/*.c` included_stub coverage):
    - update docs
    - commit + push immediately
+   - include the post-commit handoff table in the chat response
 14. If no metric improved but a durable lesson was learned:
    - keep only safe/useful changes
    - document the lesson clearly

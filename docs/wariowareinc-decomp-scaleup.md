@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 194` — eight strict-ROM standalone C wrapper/runtime helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1493 / 5958 matched functions** = **25.058743%**
-- `matched_code_percent`: **6.835438%**
-- `tools/gen_objdiff.py`: **1033 linked C TUs / 5654 non-C units**
-- `src/decomp/*.c`: **1215 decompiled function files** = **1014 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 195` — two strict-ROM standalone runtime-table helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1495 / 5958 matched functions** = **25.092312%**
+- `matched_code`: **67970 / 993616** = **6.840671%**
+- `tools/gen_objdiff.py`: **1035 linked C TUs / 5652 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1217 decompiled function files** = **1016 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5958**, now exceeded by **3** matched functions.
+- 25% milestone: **1490 / 5958**, now exceeded by **5** matched functions.
 - Next 30% milestone: **1788 / 5958**.
-- That 30% milestone is **295** additional matched functions from the current baseline.
+- That 30% milestone is **293** additional matched functions from the current baseline.
+
+### Batch 195 — accepted (runtime-table bitfield siblings)
+- Converted `func_080F0DFC` and `func_080F2358` to standalone ordinary C. The first helper uses the established pinned `D_030068E8` base/offset form and RSBS mask; the second preserves the runtime-record stride, signed 14-bit argument normalization, and halfword mask update.
+- One eight-entry isolation pass used one Docker candidate compile: these two entries were exact, while `func_080F2374`, `func_080F24A0`, `func_080F24C0`, `func_080F253C`, `func_080F2558`, and `func_080F2578` were retained as near-miss evidence. The six misses all hoisted the base load before the target's `LSLS/LSRS #24` normalization; `func_080F253C` also folded the target `MOVS #2; RSBS` into `SUB #3`, and `func_080F2558` swapped the target `LDR R3`/literal-mask register roles.
+- The exact two-entry transactional apply reused that isolation receipt, moved both original assembly sources to `asm/converted/`, updated the linker, and passed the clean full Docker ROM gate. No instruction-bearing or volatile inline asm was added. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1495 / 5958**, **6.840671%** matched code, **1035 C / 5652 asm-only** units, and **1217** decomp files (`1016 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-46-isolation.json` and `.decomp-runs/20260805T-round-46-apply.json`; near misses are retained under `.nearmiss/` and `tools/attempts.tsv`.
 
 ### Batch 194 — accepted (key-test wrappers and runtime table helpers)
 - Converted eight standalone functions to ordinary C: `func_0801B780`, `func_080203F8`, `func_080227F0`, `func_0801CCC0`, `func_0801CDDC`, `func_08016EF8`, `func_080F0DE0`, and `func_080F0E14`.

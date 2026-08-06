@@ -11,17 +11,17 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 194` — eight strict-ROM standalone C wrapper/runtime helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1493 / 5958 matched functions** (**25.058743%**) · **6.835438%** matched code
-- `tools/gen_objdiff.py`: **1033 linked C TUs / 5654 non-C units**
-- `src/decomp/*.c`: **1215 decompiled function files** = **1014 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 195` — two strict-ROM standalone runtime-table helpers, with six rejected sibling spellings preserved as provenance
+- `build/report.json`: **1495 / 5958 matched functions** (**25.092312%**) · **6.840671%** matched code (**67970 / 993616**)
+- `tools/gen_objdiff.py`: **1035 linked C TUs / 5652 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1217 decompiled function files** = **1016 standalone_tu** + **201 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **30 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1490 / 5958**; now exceeded by **3** matches
-- 30% milestone at the current function total: **1788 / 5958**; **295** more matches needed
+- 25% milestone at the current function total: **1490 / 5958**; now exceeded by **5** matches
+- 30% milestone at the current function total: **1788 / 5958**; **293** more matches needed
 - 80% target at the current function total: **4767 / 5958**
 - Remaining gap to 80%: **3274 matched functions**
 
@@ -57,6 +57,15 @@ They are evidence, not permission to retain a nonmatching source change.
 - The decomp tools now autodetect a sibling Mizuchi checkout at `../mizuchi` or use `$MIZUCHI_ROOT` / `$PI_MIZUCHI_ROOT`; if you need an env var, persist it in `~/.zshrc`.
 - The docs in this directory are the durable memory that should survive context compaction and session changes.
 - Any new durable learning should be written back here before the agent yields.
+
+## Post-commit handoff contract
+
+After every accepted commit, the chat handoff must include a compact current-state
+table with the same metrics used by the scale-up loop: matched functions and
+percentage, matched code and percentage, linked C versus asm-only units, total
+and standalone/included decomp files, ROM SHA-1, and the remaining gap to 30%.
+This keeps progress readable across sessions even when the detailed receipts are
+collapsed.
 
 ## Doc map
 ### Active operational docs

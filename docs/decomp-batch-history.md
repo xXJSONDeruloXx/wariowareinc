@@ -455,3 +455,10 @@ This period built the reusable base library of patterns:
 - Durable takeaways:
   - 1-bit `gGraphicsBuffer` bitfield writes can match cleanly with direct assignment when the original just masks to bit 0 and stores it back
   - The byte-level shape at offset `0x854` is a good low-risk filler family when nearby `gGraphicsBuffer` patterns are already proven
+
+## Batch 195 — accepted (runtime-table bitfield siblings)
+- Result: match ✅
+- Report: **1495 / 5958**, **25.092312%**, **6.840671% matched code**
+- Accepted functions: `func_080F0DFC` and `func_080F2358`
+- One eight-entry isolation receipt produced two exact candidates and six near misses. The exact-only two-entry transaction reused the receipt and passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- The six rejected siblings all exposed the same compiler-ordering trap: the base load was hoisted before the required `LSLS/LSRS #24` input normalization. `func_080F253C` additionally folded the target's RSBS mask into `SUB #3`; `func_080F2558` chose the wrong load/literal register roles. No non-empty inline asm was introduced; all candidate and diff evidence remains in `.nearmiss/`, `.decomp-runs/`, and `tools/attempts.tsv`.
