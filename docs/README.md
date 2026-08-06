@@ -11,20 +11,20 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 208` — three strict-ROM standalone wrapper/heap-record siblings; known blocked families remain preserved as provenance
-- `build/report.json`: **1541 / 5941 matched functions** (**25.938395%**) · **7.0184655%** matched code (**69738 / 993636**)
-- `tools/gen_objdiff.py`: **1081 linked C TUs / 5606 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1263 decompiled function files** = **1062 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 209` — four strict-ROM standalone soundplayer/bootstrap siblings; known blocked families remain preserved as provenance
+- `build/report.json`: **1545 / 5937 matched functions** (**26.023245%**) · **7.029306%** matched code (**69846 / 993640**)
+- `tools/gen_objdiff.py`: **1085 linked C TUs / 5602 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1267 decompiled function files** = **1066 standalone_tu** + **201 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **30 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1486 / 5941**; now exceeded by **55** matches
-- 26% working goal at the current function total: **1545 / 5941**; **4** more matches needed
-- 30% milestone at the current function total: **1783 / 5941**; **242** more matches needed
-- 80% target at the current function total: **4753 / 5941**
-- Remaining gap to 80%: **3212 matched functions**
+- 25% milestone at the current function total: **1485 / 5937**; now exceeded by **60** matches
+- 26% working goal at the current function total: **1544 / 5937**; now exceeded by **1** match
+- 30% milestone at the current function total: **1782 / 5937**; **237** more matches needed
+- 80% target at the current function total: **4750 / 5937**
+- Remaining gap to 80%: **3205 matched functions**
 
 ## Automated matching loop
 
