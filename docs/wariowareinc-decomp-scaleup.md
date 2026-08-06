@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 200` — twenty-one strict-ROM standalone runtime/scene/graphics helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1514 / 5958 matched functions** = **25.411213%**
-- `matched_code`: **68566 / 993626** = **6.9005837%**
-- `tools/gen_objdiff.py`: **1054 linked C TUs / 5633 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1236 decompiled function files** = **1035 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 201` — twenty-four strict-ROM standalone runtime/scene/graphics helpers across the current sweep plus the hardened candidate lifecycle
+- `build/report.json`: **1517 / 5958 matched functions** = **25.461563%**
+- `matched_code`: **68694 / 993630** = **6.9134383%**
+- `tools/gen_objdiff.py`: **1057 linked C TUs / 5630 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1239 decompiled function files** = **1038 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5958**, now exceeded by **24** matched functions.
+- 25% milestone: **1490 / 5958**, now exceeded by **27** matched functions.
 - Next 30% milestone: **1788 / 5958**.
-- That 30% milestone is **274** additional matched functions from the current baseline.
+- That 30% milestone is **271** additional matched functions from the current baseline.
+
+### Batch 201 — accepted (beatscript and runtime-table helpers)
+- Converted `func_0800C9C0`, `func_0800CA5C`, and `func_080F2894` to standalone ordinary C. The beatscript setters preserve the target's two distinct base-plus-literal destinations; `func_0800CA5C` uses an empty register-output constraint to prevent agbcc from folding the required `MOVS #0x21; RSBS` mask into `SUB`; and `func_080F2894` uses canonical absolute runtime symbols plus explicit `r0 + r1` operand order.
+- Round 53's final five-entry isolation screen produced **3 exact / 2 near miss** results in one Docker invocation. `func_08004770` remains an ABI/prologue near miss (`PUSH {LR}` / `POP {R1}; BX R1`), and `func_08006148` remains a literal-pool symbol-boundary near miss even though its instruction body and pool bytes are accounted for. Neither entered the ROM transaction.
+- The exact-only three-entry transaction passed one clean full Docker ROM/report gate and moved the original assembly to `asm/converted/`; canonical `D_03000E80`, `D_03000E88`, and `D_03000E90` linker assignments were added. Accepted sources contain no instruction-bearing or volatile inline asm; the only asm syntax is empty compiler metadata. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1517 / 5958**, **6.9134383%** matched code, **1057 C / 5630 asm-only** units, and **1239** decomp files (`1038 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-53-isolation.json`, `.decomp-runs/20260805T-round-53-isolation-v2.json`, `.decomp-runs/20260805T-round-53-isolation-v3.json`, and `.decomp-runs/20260805T-round-53-apply.json`.
 
 ### Batch 200 — accepted (scene-state zero/setter siblings)
 - Converted `func_080B27B8`, `func_080C6898`, `func_080D2768`, `func_080D286C`, and `func_080D28A4` to standalone ordinary C. Each uses explicit register-bound scene-variable base/offset temporaries to preserve the target's non-sequential reloads, scaled offsets, store widths, and literal offset forms.

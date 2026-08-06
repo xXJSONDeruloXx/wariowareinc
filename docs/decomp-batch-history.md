@@ -496,3 +496,9 @@ This period built the reusable base library of patterns:
 - Report: **1514 / 5958**, **25.411213%**, **6.9005837% matched code**
 - Accepted functions: `func_080B27B8`, `func_080C6898`, `func_080D2768`, `func_080D286C`, and `func_080D28A4`
 - All five candidates were exact in one isolation pass. Register-bound base/offset variables retained the target's reload/store order across the zero/setter variants; the exact-only transaction passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+
+## Batch 201 — accepted (beatscript and runtime-table helpers)
+- A five-entry Round 53 m2c/manual screen converged to **3 exact / 2 near miss** after three cheap isolated passes. The accepted functions are `func_0800C9C0`, `func_0800CA5C`, and `func_080F2894`.
+- `func_0800C9C0` required reusing the pinned scene-base pointer as the second store destination to retain the target's `R1` add result. `func_0800CA5C` required an empty `"+r"` output constraint after the OR operation so agbcc retained `MOVS #0x21; RSBS`; it emits no machine instruction. `func_080F2894` required extern absolute runtime symbols and source-level `r0 + r1` ordering for both two-operand adds.
+- `func_08004770` was withheld because ordinary C produced the predicate body but not the target's `PUSH {LR}` / `POP {R1}; BX R1` ABI shape. `func_08006148` was withheld because normalized isolation reports a candidate symbol extending through the literal pool even though the code and pool bytes are otherwise accounted for; no forced apply was used.
+- The exact-only apply moved all three original asm files, added the three linker-map assignments required by the C runtime symbols, and passed one clean Docker ROM gate/report: `1514 → 1517` matched functions, `68694 / 993630` matched code, ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. No instruction-bearing or volatile inline asm was introduced. Receipts and near-miss histories are committed with the batch.
