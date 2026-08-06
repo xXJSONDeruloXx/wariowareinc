@@ -490,3 +490,9 @@ This period built the reusable base library of patterns:
 - Accepted functions: `func_0801B174`, `func_0801C2D4`, `func_0801F698`, and `func_08062488`
 - The exact four-entry transaction passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. `func_0801F698` required an empty `"+r"` output constraint to retain the target constant register/copy; it emits no instructions.
 - Round 50's runtime-table RSBS family remains blocked by `SUB` constant folding, and Round 51's `func_080047D4` remains a literal-pool near miss. Both are preserved in the committed receipts/near-miss ledger.
+
+## Batch 200 — accepted (scene-state zero/setter siblings)
+- Result: match ✅
+- Report: **1514 / 5958**, **25.411213%**, **6.9005837% matched code**
+- Accepted functions: `func_080B27B8`, `func_080C6898`, `func_080D2768`, `func_080D286C`, and `func_080D28A4`
+- All five candidates were exact in one isolation pass. Register-bound base/offset variables retained the target's reload/store order across the zero/setter variants; the exact-only transaction passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.

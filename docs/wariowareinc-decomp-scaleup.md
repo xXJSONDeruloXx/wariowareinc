@@ -5,17 +5,22 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 199` — sixteen strict-ROM standalone runtime/scene/graphics helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1509 / 5958 matched functions** = **25.327291%**
-- `matched_code`: **68394 / 993622** = **6.8833017%**
-- `tools/gen_objdiff.py`: **1049 linked C TUs / 5638 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1231 decompiled function files** = **1030 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 200` — twenty-one strict-ROM standalone runtime/scene/graphics helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1514 / 5958 matched functions** = **25.411213%**
+- `matched_code`: **68566 / 993626** = **6.9005837%**
+- `tools/gen_objdiff.py`: **1054 linked C TUs / 5633 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1236 decompiled function files** = **1035 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5958**, now exceeded by **19** matched functions.
+- 25% milestone: **1490 / 5958**, now exceeded by **24** matched functions.
 - Next 30% milestone: **1788 / 5958**.
-- That 30% milestone is **279** additional matched functions from the current baseline.
+- That 30% milestone is **274** additional matched functions from the current baseline.
+
+### Batch 200 — accepted (scene-state zero/setter siblings)
+- Converted `func_080B27B8`, `func_080C6898`, `func_080D2768`, `func_080D286C`, and `func_080D28A4` to standalone ordinary C. Each uses explicit register-bound scene-variable base/offset temporaries to preserve the target's non-sequential reloads, scaled offsets, store widths, and literal offset forms.
+- One five-entry m2c/manual isolation screen found all five exact. The exact-only transaction moved the assembly sources to `asm/converted/`, updated the linker, and passed one clean full Docker ROM gate. No inline asm was needed. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1514 / 5958**, **6.9005837%** matched code, **1054 C / 5633 asm-only** units, and **1236** decomp files (`1035 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-52-isolation.json` and `.decomp-runs/20260805T-round-52-apply.json`.
 
 ### Batch 199 — accepted (scene, graphics, and mask helpers)
 - Converted `func_0801B174`, `func_0801C2D4`, `func_0801F698`, and `func_08062488` to standalone ordinary C. The scene setters preserve raw byte ABI width and reload order; the graphics helper uses an empty output constraint to keep the target's `R3` constant and `R3 → R0` copy; and the scene mask uses the established pinned R0/R1/R2 form.

@@ -364,3 +364,7 @@ Use this file to record where the current decomp tools helped, where they missed
 - The five-entry screen found exact initial spellings for `func_0801B174` and `func_08062488`; `func_0801C2D4` became exact after widening its byte argument to preserve raw ABI bits; and `func_0801F698` became exact after an empty `"+r"` output constraint prevented R3/R0 coalescing. The accepted four-entry transaction advanced the report **1505 → 1509**.
 - Round 50 confirmed the RSBS blocker is not fixed by merely writing the first bit-mask as a direct expression: `func_080F253C`, `func_080F2598`, and `func_080F25B8` all still become `SUB` sequences. This is now a deliberate blocked family, not an unrecorded failed attempt.
 - `func_080047D4` remains a useful literal-pool research seed: its instructions are close, but the candidate's absolute address pool and alignment shift the inferred symbol boundary. Strict admission correctly withheld it.
+
+## Batch 200 — scene-state sibling sweep (2026-08-05)
+- A five-entry m2c/manual screen for scene-state zero/setter helpers produced **5 exact / 0 near miss** results in one Docker isolation invocation. Existing register/offset patterns transferred directly, including the non-sequential reloads in `func_080D2768` and `func_080D286C`.
+- The exact-only transaction passed one full Docker ROM gate and advanced the report **1509 → 1514**. This is a high-throughput family: the candidate generator needed no asmlift-specific repair and no inline instruction shim; the isolated cycle plus strict gate handled admission.
