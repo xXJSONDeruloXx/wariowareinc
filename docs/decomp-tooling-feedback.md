@@ -32,6 +32,17 @@ Use this file to record where the current decomp tools helped, where they missed
   it passed with the unchanged SHA-1. The three near misses remain durable
   seeds rather than source changes.
 
+### Round 71 boundary follow-up
+- The two named sound-player candidates compiled to complete `.text` sections
+  that were byte-identical to their raw targets, but linked objdiff inferred
+  the target function size only through a local branch label. A separate
+  Docker audit recorded exact 28-byte/24-byte sections and matching SHA-256
+  hashes in `round-71-boundary-audit.json`.
+- Only after that audit did the narrow `--force` path admit them. The full
+  linked ROM gate passed, confirming that the metadata exception did not hide
+  a relocation or integration mismatch. This remains distinct from an
+  ordinary compiler near miss, which stays evidence-only.
+
 ## Round 33 — sprite, scene, music-table, and graphics fan-in (2026-08-05)
 - m2c supplied ten compact standalone skeletons. The first screen found **5 exact / 4 near miss / 1 compile error**; register-bound variants recovered the three music-table siblings and the graphics-buffer store, producing a combined **10 exact** manifest.
 - `func_0800C7A4`, `func_0800CE6C`, `func_08016688`, `func_08018534`, `func_08019644`, and `func_080C477C` matched directly through typed sprite/scene headers, explicit field offsets, or signed division. The music siblings required a base in `R4` and an offset/address accumulator in `R0`; `func_0804E290` required the same two-register accumulator to prevent folding `gGraphicsBuffer + 0x54` into the literal symbol.
