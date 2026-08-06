@@ -98,7 +98,7 @@ of the current verified state. Use the values from the freshly generated
 | Linked units | C TUs / asm-only units / total units |
 | Decompiled files | total / standalone_tu / included_stub |
 | ROM identity | `wariowareinc.gba: OK` and ROM SHA-1 |
-| Active goal progress | current working-goal numerator/denominator and remaining gap (currently 26%) |
+| Active goal progress | current working-goal numerator/denominator and remaining gap (currently 27%) |
 | 30% progress | milestone numerator/denominator and remaining gap |
 
 This is a durable handoff requirement, not just a one-session presentation

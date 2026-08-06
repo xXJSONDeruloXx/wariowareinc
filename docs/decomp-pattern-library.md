@@ -386,6 +386,12 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Raw ABI call through an existing host-TU declaration**: when an included callee already has a narrower or conflicting declaration, do not redeclare it. Cast the existing symbol to a unique local function-pointer typedef with the target's widened `s32`/`u32` register ABI, and call through that pointer. This keeps the source as ordinary C and avoids a same-TU prototype conflict.
 - **Scene-data byte predicate siblings**: `if (((u8 *)gCurrentSceneData)[0x173] == 1) callee();` reproduces the compact `LDR`/`LDRB`/compare/conditional-call wrapper family. Keep the byte cast and direct equality spelling; use the sibling's callee declaration rather than introducing a struct field model.
 
+### Round 64 additions: scene-slot stride setters
+
+- **Raw scene-slot stride family**: for targets that load `*(u8 **)((u8 *)gCurrentSceneVariable + 0x10)`, write one field, add `0x20`, and loop through seven entries, use a `u8 *` pointer plus a `u32` counter initialized before a `do { ... } while (count <= 6)` loop. This preserves the target's low-register pointer, `R2` value copy, and `BLS` loop shape in ordinary C. The word-field variants at offsets `0x0C`, `0x14`, and `0x18` matched with this spelling.
+- **Post-call key-test wrapper**: after a preceding void call, `func_08009EE4(((u16)gCurrentKeys >> 8) & 1);` preserves the target's `LDRH`/`LSRS`/`MOVS`/`ANDS` tail. Keep the explicit `u16` cast when the host headers use a wider key declaration.
+- **Sprite visibility wrapper ABI**: `sprite_id_set_visible(gSpriteHandler, get_current_mem_id(), 0);` naturally preserves the handler in `R4`, copies the returned memory ID into `R1`, and materializes the zero third argument in `R2` for the short wrapper family.
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers
