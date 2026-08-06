@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 207` — six new strict-ROM standalone task-pool scan/mutation siblings plus the hardened candidate lifecycle
-- `build/report.json`: **1538 / 5943 matched functions** = **25.879187%**
-- `matched_code`: **69632 / 993636** = **7.0077977%**
-- `tools/gen_objdiff.py`: **1078 linked C TUs / 5609 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1260 decompiled function files** = **1059 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 208` — three strict-ROM standalone wrapper/heap-record siblings plus the hardened candidate lifecycle
+- `build/report.json`: **1541 / 5941 matched functions** = **25.938395%**
+- `matched_code`: **69738 / 993636** = **7.0184655%**
+- `tools/gen_objdiff.py`: **1081 linked C TUs / 5606 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1263 decompiled function files** = **1062 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1486 / 5943**, now exceeded by **52** matched functions.
-- Active 26% working goal: **1546 / 5943**; **8** additional matched functions are needed.
-- Next 30% milestone: **1783 / 5943**; **245** additional matched functions are needed.
+- 25% milestone: **1486 / 5941**, now exceeded by **55** matched functions.
+- Active 26% working goal: **1545 / 5941**; **4** additional matched functions are needed.
+- Next 30% milestone: **1783 / 5941**; **242** additional matched functions are needed.
+
+### Batch 208 — accepted (wrapper and heap-record allocator siblings)
+- Converted `func_0800200C`, `func_080041B4`, and `func_08005F64` to standalone ordinary C. The first is a nested zero/nonzero dispatcher, the second is a `D_03000684` flag wrapper, and the third allocates/initializes a small heap record through two calls to `func_08006184`.
+- Round 61 used m2c and asmlift for semantic skeletons, then project-aware C shaping. `0800200C` and `080041B4` were normalized-isolation near misses only because their legacy target literal-pool/symbol metadata differs; linked `.text` audits proved exact **24-byte** sections for both. `08005F64` was exact in isolation and its linked `.text` audit proved an exact **60-byte** section. Equal SHA-256 pairs are preserved in `.decomp-runs/20260805T-round-61-linked-bytecheck.json`.
+- Added the canonical `D_03000684 = 0x03000684` linker assignment. A fresh forced three-entry transaction waived only the documented symbol-boundary classification; the clean Docker ROM/report gate passed with `wariowareinc.gba: OK`, preserving ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Accepted sources contain no instruction-bearing or volatile inline asm. `func_08005F64` uses one empty nonvolatile `"+r"` compiler constraint to preserve a register dependency; it emits no instruction text. Fresh report: **1541 / 5941**, **7.0184655%** matched code, **1081 C / 5606 asm-only** units, and **1263** decomp files (`1062 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-61-isolation.json`, `.decomp-runs/20260805T-round-61-linked-bytecheck.json`, and `.decomp-runs/20260805T-round-61-apply.json`.
 
 ### Batch 207 — accepted (task-pool scan and mutation siblings)
 - Converted `func_08005834`, `func_08005870`, `func_080058AC`, `func_080058DC`, `func_080059A8`, and `func_08005A54` to standalone ordinary C. The six functions reuse the `D_030006A0` task pool and its `0x1C`-byte slot stride: owner scans, active-owner cancellation, state-mask setting, field update, and ID/state mutation.
