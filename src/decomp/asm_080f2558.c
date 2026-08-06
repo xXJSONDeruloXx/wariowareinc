@@ -1,10 +1,10 @@
 #include "global.h"
 
-void func_080F253C(void *arg0, s32 arg1, u8 arg2) {
+void func_080F2558(void *arg0, s32 arg1, u8 arg2) {
     register u32 value asm("r2") = arg2;
     register u32 base asm("r0");
     register u32 offset asm("r1") = arg1;
-    register u32 field asm("r3");
+    register u32 mask asm("r3");
 
     value <<= 24;
     value >>= 24;
@@ -12,13 +12,12 @@ void func_080F253C(void *arg0, s32 arg1, u8 arg2) {
     base = *(u32 *)((u8 *)arg0 + 0x18);
     offset <<= 5;
     offset += base;
-    base = 1;
+    base = 0x7F;
     value &= base;
-    field = *(u8 *)offset;
-    asm("" ::: "memory");
-    base = 2;
-    base = -base;
-    base &= field;
+    value <<= 14;
+    base = *(u32 *)(offset + 4);
+    mask = 0xFFE03FFF;
+    base &= mask;
     base |= value;
-    *(u8 *)offset = base;
+    *(u32 *)(offset + 4) = base;
 }

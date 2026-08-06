@@ -462,3 +462,10 @@ This period built the reusable base library of patterns:
 - Accepted functions: `func_080F0DFC` and `func_080F2358`
 - One eight-entry isolation receipt produced two exact candidates and six near misses. The exact-only two-entry transaction reused the receipt and passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - The six rejected siblings all exposed the same compiler-ordering trap: the base load was hoisted before the required `LSLS/LSRS #24` input normalization. `func_080F253C` additionally folded the target's RSBS mask into `SUB #3`; `func_080F2558` chose the wrong load/literal register roles. No non-empty inline asm was introduced; all candidate and diff evidence remains in `.nearmiss/`, `.decomp-runs/`, and `tools/attempts.tsv`.
+
+## Batch 196 — accepted (runtime-table ordering repair)
+- Result: match ✅
+- Report: **1500 / 5958**, **25.176233%**, **6.856774% matched code**
+- Accepted functions: `func_080F2374`, `func_080F24A0`, `func_080F24C0`, `func_080F2558`, and `func_080F2578`
+- An empty memory barrier after the argument's `LSLS/LSRS #24` pair restored the target base-load order for five siblings. `func_080F2558` also needed R0/R3 result/mask reuse. The exact-only transaction passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- `func_080F253C` remains an isolated near miss (`SUB #3` versus target `MOVS #2; RSBS`); it was not applied. The accepted sources use no instruction-bearing asm, and the empty barriers emit no instructions.
