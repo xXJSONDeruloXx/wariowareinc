@@ -431,6 +431,13 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Difference load order**: for a helper whose target loads the argument field first, then the global-scene field, subtracts into the result register, and compares that result with the second argument, pin the incoming values to the target ABI registers and spell the loads/subtraction as separate C statements. `func_08089648` matches with register-bound locals and no instruction asm.
 - **Asmlift exact skeletons still need project validation**: `func_0805C5D8` and `func_08088B80` were exact from the first asmlift-shaped C spelling, but Round 70 still screened all five candidates through the same Docker isolation receipt. Semantic similarity is a discovery aid; only exact isolated code followed by the full ROM gate is admissible.
 
+### Round 72 additions: absolute indirect calls and audio/data wrappers
+
+- **Absolute indirect-call wrapper**: when the target loads an IWRAM function pointer from `D_03003FEC`, calls it with zero, and returns through `_call_via_r1`, a numeric pointer expression such as `((void (*)(u32))*(u32 *)0x03003FEC)(0);` can preserve the target literal and `u32` no-return epilogue without adding a linker-map symbol. If linked objdiff stops at the local literal-pool boundary, audit the complete linked `.text` before considering the metadata-only force path.
+- **Callee result and saved-register ordering**: for `func_080E1F48`'s `LDR R4; BL; ADDS R0,R4`, declare the callee as returning `u32`, pin the table base to `R4`, and use an empty `"+r"` compiler constraint before the call when necessary to keep the load live. The constraint emits no instruction; it is compiler metadata, not an instruction shim.
+- **Project prototype beats generic extern**: use `src/audio.h` for `play_sound` in `func_08023494`; a generic or conflicting declaration can change argument normalization and fail an otherwise direct two-call wrapper. The existing project prototype produced the exact `R4` song-base call sequence.
+- **Boundary audit remains a separate proof**: Round 72's `func_08003DE0` linked objdiff score was a metadata near miss, but its full 20-byte linked `.text` section matched the target with equal SHA-256. Keep the audit receipt and require the clean full-ROM gate; never promote an ordinary instruction near miss through `--force`.
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers

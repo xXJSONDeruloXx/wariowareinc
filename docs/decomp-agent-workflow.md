@@ -195,8 +195,10 @@ python3 tools/decomp_cycle.py apply --manifest candidate.json --function FUNC
 the clean Docker ROM gate plus `make report`, and leaves matching changes in
 the worktree. Any full-build failure restores the exact pre-apply files and
 rebuilds the baseline; the receipt records both the failed attempt and the
-rollback verification. `--force` exists only for tool testing and research; it
-does not weaken the ROM gate and is not part of normal decomp work.
+rollback verification. `--force` is research-only by default. A narrow
+metadata-only exception is permitted when a separate receipt proves the
+complete linked `.text` section byte-identical and the same transaction passes
+the clean ROM gate; it never waives a compiler instruction difference.
 
 For a current-worktree check without a candidate transaction:
 

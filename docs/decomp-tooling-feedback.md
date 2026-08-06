@@ -43,6 +43,13 @@ Use this file to record where the current decomp tools helped, where they missed
   a relocation or integration mismatch. This remains distinct from an
   ordinary compiler near miss, which stays evidence-only.
 
+## Round 72 — gameplay/data fan-in and boundary audit (2026-08-06)
+- The five-pass screen made the current loop practical: one Docker isolation invocation per revision, immutable candidate hashes in each receipt, near-miss records retained automatically, and one fresh full-context Docker gate for the selected three-function batch. The final screen was **2 exact / 1 near miss**.
+- m2c/asmlift-style semantic skeletons were useful for discovery, but the successful spellings required project-aware repair: a numeric absolute pointer for `func_08003DE0`, a widened `u32` callee plus `R4` pin and empty compiler dependency for `func_080E1F48`, and `src/audio.h` for `func_08023494`.
+- The linked objdiff near miss for `func_08003DE0` was metadata-only. A complete linked `.text` audit recorded equal 20-byte sections and SHA-256 `d479c6a815c77122b2ce066889fd20bbcb86355f9174a64085fd1d1148d38f39` in `round-72-boundary-audit.json`; only then did the force path admit it. This reinforces that the boundary exception needs its own receipt and must remain coupled to the ROM gate.
+- The new C contains no instruction-bearing or volatile inline asm. The `asm(\"\" : \"+r\"(r4))` in `func_080E1F48` is an empty compiler metadata constraint; it emits no instruction and is covered by the existing policy. `func_08003DE0`'s `.nearmiss` record correctly remains provenance even after the final audit.
+- Timing remains favorable for small fan-in: five cheap isolated passes plus one full Docker transaction, rather than a full ROM build for every permutation. The expensive step is now deliberately reserved for the selected exact/audited subset.
+
 ## Round 33 — sprite, scene, music-table, and graphics fan-in (2026-08-05)
 - m2c supplied ten compact standalone skeletons. The first screen found **5 exact / 4 near miss / 1 compile error**; register-bound variants recovered the three music-table siblings and the graphics-buffer store, producing a combined **10 exact** manifest.
 - `func_0800C7A4`, `func_0800CE6C`, `func_08016688`, `func_08018534`, `func_08019644`, and `func_080C477C` matched directly through typed sprite/scene headers, explicit field offsets, or signed division. The music siblings required a base in `R4` and an offset/address accumulator in `R0`; `func_0804E290` required the same two-register accumulator to prevent folding `gGraphicsBuffer + 0x54` into the literal symbol.

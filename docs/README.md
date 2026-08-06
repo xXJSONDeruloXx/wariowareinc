@@ -11,20 +11,20 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 220` — named sound-player wrappers admitted after a complete raw-section audit; repair attempts remain preserved as provenance
-- `build/report.json`: **1607 / 5935 matched functions** (**27.076664%**) · **7.222674%** matched code (**71772 / 993704**)
-- `tools/gen_objdiff.py`: **1147 linked C TUs / 5540 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1331 decompiled function files** = **1128 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 221` — three gameplay/data wrappers admitted after a fresh fan-in screen and one complete linked-text boundary audit; repair attempts remain preserved as provenance
+- `build/report.json`: **1610 / 5934 matched functions** (**27.131784%**) · **7.229920%** matched code (**71844 / 993704**)
+- `tools/gen_objdiff.py`: **1150 linked C TUs / 5537 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1334 decompiled function files** = **1131 standalone_tu** + **203 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1484 / 5935**; now exceeded by **123** matches
-- 26% milestone at the current function total: **1544 / 5935**; now exceeded by **63** matches
-- 27% active working goal at the current function total: **1603 / 5935**; exceeded by **4** matches
-- 30% milestone at the current function total: **1781 / 5935**; **174** more matches needed
-- 80% target at the current function total: **4748 / 5935**
+- 25% milestone at the current function total: **1484 / 5934**; now exceeded by **126** matches
+- 26% milestone at the current function total: **1543 / 5934**; now exceeded by **67** matches
+- 27% active working goal at the current function total: **1603 / 5934**; exceeded by **7** matches
+- 30% milestone at the current function total: **1781 / 5934**; **171** more matches needed
+- 80% target at the current function total: **4748 / 5934**
 - Remaining gap to 80%: **3141 matched functions**
 
 ## Automated matching loop
@@ -40,6 +40,12 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
 Manifests for exported symbols such as `set_soundplayer_pitch` may provide an
 explicit eight-digit `address`; this lets the cycle derive canonical paths even
 when the symbol name is not `func_XXXXXXXX`.
+
+Batch 221 also confirms the narrow boundary-audit path: a normalized linked
+objdiff near miss may be admitted only when a complete linked `.text` section
+comparison proves equal size and SHA-256, and the same transaction passes the
+clean Docker ROM gate. This exception covers target symbol metadata only; it
+never waives an instruction difference.
 
 Install the local commit/push protections with `tools/install-hooks.sh`. Near-miss
 records remain in `.nearmiss/` and `tools/attempts.tsv`; each best seed now keeps

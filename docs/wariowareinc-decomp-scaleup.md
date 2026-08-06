@@ -5,18 +5,24 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 220` — named sound-player wrappers admitted after a complete raw-section audit under the hardened candidate lifecycle
-- `build/report.json`: **1607 / 5935 matched functions** = **27.076664%**
-- `matched_code`: **71772 / 993704** = **7.222674%**
-- `tools/gen_objdiff.py`: **1147 linked C TUs / 5540 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1331 decompiled function files** = **1128 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 221` — three gameplay/data wrappers admitted after a fresh fan-in screen and a complete linked-text boundary audit under the hardened candidate lifecycle
+- `build/report.json`: **1610 / 5934 matched functions** = **27.131784%**
+- `matched_code`: **71844 / 993704** = **7.229920%**
+- `tools/gen_objdiff.py`: **1150 linked C TUs / 5537 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1334 decompiled function files** = **1131 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1484 / 5935**, now exceeded by **123** matched functions.
-- 26% milestone: **1544 / 5935**; current progress is **1607**, exceeding it by **63** matches.
-- Active 27% working goal: **1607 / 5935**; reached.
-- Next 30% milestone: **1781 / 5935**; **174** additional matched functions are needed.
+- 25% milestone: **1484 / 5934**, now exceeded by **126** matched functions.
+- 26% milestone: **1543 / 5934**; current progress is **1610**, exceeding it by **67** matches.
+- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **7** matches.
+- Next 30% milestone: **1781 / 5934**; **171** additional matched functions are needed.
+
+### Batch 221 — accepted (gameplay wrappers / data lookup)
+- Converted `func_08003DE0`, `func_080E1F48`, and `func_08023494` to standalone ordinary C. The first uses a numeric absolute IWRAM pointer to preserve the indirect `_call_via_r1` wrapper; the second preserves the target `R4` table base and widened `u32` callee result; the third uses the project audio prototype and two calls through the same ROM song address.
+- Round 72 used five cheap isolated revisions. The final screen classified **2 exact / 1 linked-objdiff near miss**. `func_080E1F48` converged after a `u32` callee declaration, an `R4` pin, and an empty `"+r"` compiler dependency; `func_08023494` converged after using `src/audio.h`; `func_08003DE0` remained a symbol-boundary near miss.
+- The complete linked `.text` audit for `func_08003DE0` proved **20/20** bytes and matching SHA-256 `d479c6a815c77122b2ce066889fd20bbcb86355f9174a64085fd1d1148d38f39`. The forced transaction waived only that target-symbol boundary and passed a clean Docker build/report gate with `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- The accepted files contain ordinary C only plus one empty compiler metadata constraint in `func_080E1F48`; there is no volatile or instruction-bearing inline asm. Round 72 receipts are `.decomp-runs/round-72-isolation-v1.json` through `round-72-isolation-v5.json`, `round-72-boundary-audit.json`, and `round-72-apply.json`.
 
 ### Batch 220 — accepted (named sound-player wrappers)
 - Converted `set_soundplayer_pitch` and `set_soundplayer_volume` to standalone ordinary C. Both preserve the widened argument normalization and call the existing helper with the target `u16`/`s16` value shape.
