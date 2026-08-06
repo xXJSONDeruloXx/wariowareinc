@@ -516,3 +516,12 @@ This period built the reusable base library of patterns:
 - Accepted functions: `func_08002FC0`, `func_08002FE8`, `func_08003028`, `func_08003040`, and `func_08003058`
 - Round 55's six-entry screen retained five symbol-boundary near misses and one genuine two-byte prologue-order near miss. Direct `.text` extraction proved the five accepted candidates byte-identical; the target symbols' internal local-label boundaries were the only normalized-isolation defect. `func_08007AD4` remains in `.nearmiss/` and was not force-applied.
 - The narrow metadata-only force transaction passed the full Docker ROM/report gate with `wariowareinc.gba: OK` and ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Accepted sources are ordinary C with register-bound locals and an old-style C call; no instruction-bearing or volatile inline asm was introduced. Receipts: `.decomp-runs/20260805T-round-55-isolation-v3.json`, `.decomp-runs/20260805T-round-55-apply.json`, and `.decomp-runs/20260805T-round-55-bytecheck.json`.
+
+## Batch 204 — accepted (global-context setter and scene-table byte lookup)
+- Result: match ✅
+- Report: **1529 / 5951**, **25.693161%**, **6.957103% matched code**
+- Accepted functions: `func_08024E34` and `func_08030F9C`
+- Round 56 screened four standalone candidates in one Docker isolation invocation: two exact, with `func_080020FC` retained as a branch-layout near miss and `func_08035FEC` retained as a register/zero-materialization near miss. Only the exact pair entered the transaction.
+- `func_08024E34` required an explicit `extern u32 *D_083C8B64` spelling and the canonical linker assignment; `func_08030F9C` matched through separate scene-variable/table locals and staged `arg1 * 0xE + arg0` arithmetic. Both accepted files are ordinary C with no instruction-bearing or volatile inline asm.
+- The exact-only `apply-batch` transaction passed the full Docker ROM/report gate with `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Receipts: `.decomp-runs/20260805T-round-56-isolation.json` and `.decomp-runs/20260805T-round-56-apply.json`.
+- Fresh report: **1069 C / 5618 asm-only** units and **1251** decomp files (`1050 standalone_tu` + `201 included_stub`).

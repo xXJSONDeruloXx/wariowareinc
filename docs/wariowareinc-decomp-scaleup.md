@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 203` — five new strict-ROM standalone table-copy and bounded-wrapper helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1527 / 5951 matched functions** = **25.659552%**
-- `matched_code`: **69080 / 993632** = **6.9522724%**
-- `tools/gen_objdiff.py`: **1067 linked C TUs / 5620 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1249 decompiled function files** = **1048 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 204` — two new strict-ROM standalone global/scene helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1529 / 5951 matched functions** = **25.693161%**
+- `matched_code`: **69128 / 993632** = **6.957103%**
+- `tools/gen_objdiff.py`: **1069 linked C TUs / 5618 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1251 decompiled function files** = **1050 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1488 / 5951**, now exceeded by **39** matched functions.
+- 25% milestone: **1488 / 5951**, now exceeded by **41** matched functions.
 - Next 30% milestone: **1786 / 5951**.
-- That 30% milestone is **259** additional matched functions from the current baseline.
+- That 30% milestone is **257** additional matched functions from the current baseline.
+
+### Batch 204 — accepted (global-context setter and scene-table byte lookup)
+- Converted `func_08024E34` and `func_08030F9C` to standalone ordinary C. The first uses an explicitly typed absolute `D_083C8B64` pointer so agbcc retains the target's `R4` global-pointer load and four sequential word stores. The second loads `gCurrentSceneVariable` first, then its table pointer, and spells the `arg1 * 0xE + arg0` index so the target's `LSLS/SUBS/LSLS/ADDS` accumulator remains in R2 before the final byte load.
+- Round 56 screened four standalone candidates in one Docker isolation pass: these two were exact, while `func_080020FC` remained a branch-layout near miss and `func_08035FEC` remained a register/zero-materialization near miss. Neither near miss entered the ROM transaction.
+- Added the canonical `D_083C8B64 = 0x083C8B64` assignment to `undefined_syms.ld`; `include/undefined_syms.inc` already carried the address. The exact-only two-entry transaction passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`, ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`, and no instruction-bearing or volatile inline asm in the accepted sources.
+- Fresh report: **1529 / 5951**, **6.957103%** matched code, **1069 C / 5618 asm-only** units, and **1251** decomp files (`1050 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-56-isolation.json` and `.decomp-runs/20260805T-round-56-apply.json`.
 
 ### Batch 203 — accepted (table-copy and bounded-wrapper helpers)
 - Converted `func_08002FC0`, `func_08002FE8`, `func_08003028`, `func_08003040`, and `func_08003058` to standalone ordinary C. The four table-copy/scanning helpers use register-pinned pointers and explicit goto-shaped loops; `func_08003058` preserves the incoming R1–R3 values through an old-style C call to the already-converted initializer.
