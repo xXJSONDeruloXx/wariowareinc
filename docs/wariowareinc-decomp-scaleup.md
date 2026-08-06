@@ -5,18 +5,25 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 213` — five strict-ROM standalone gameplay/call-wrapper siblings and the hardened candidate lifecycle
-- `build/report.json`: **1565 / 5937 matched functions** = **26.360115%**
-- `matched_code`: **70450 / 993662** = **7.089936%**
-- `tools/gen_objdiff.py`: **1105 linked C TUs / 5582 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1289 decompiled function files** = **1086 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 214` — eight strict-ROM standalone scene-variable, sound/RNG, and indexed-state siblings and the hardened candidate lifecycle
+- `build/report.json`: **1573 / 5937 matched functions** = **26.494864%**
+- `matched_code`: **70690 / 993666** = **7.1140604%**
+- `tools/gen_objdiff.py`: **1113 linked C TUs / 5574 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1297 decompiled function files** = **1094 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1485 / 5937**, now exceeded by **80** matched functions.
-- 26% milestone: **1544 / 5937**; current progress is **1565**, exceeding it by **21** matches.
-- Active 27% working goal: **1603 / 5937**; **38** additional matched functions are needed.
-- Next 30% milestone: **1782 / 5937**; **217** additional matched functions are needed.
+- 25% milestone: **1485 / 5937**, now exceeded by **88** matched functions.
+- 26% milestone: **1544 / 5937**; current progress is **1573**, exceeding it by **29** matches.
+- Active 27% working goal: **1603 / 5937**; **30** additional matched functions are needed.
+- Next 30% milestone: **1782 / 5937**; **209** additional matched functions are needed.
+
+### Batch 214 — accepted (scene-variable leaves and indexed state wrappers)
+- Converted `func_080CAAEC`, `func_080B29C8`, `func_0806F0D4`, `func_080AA3DC`, `func_080D2450`, `func_080C691C`, `func_080A99D0`, and `func_08046518` to standalone ordinary C. The batch covers a hardware-register/random-number wrapper, two sound/state wrappers, byte/bit scene leaves, an indexed scene-state store, a ROM-table call wrapper, and a signed scene-byte forwarding wrapper.
+- Round 66 screened nine candidates in one isolation container: **8 exact / 1 near miss**. `func_080D3A60` remains evidence-only because the natural post-call scene-halfword spelling did not reproduce the target instruction sequence; it was not admitted to the ROM transaction.
+- Numeric absolute ROM addresses were used for the two song-table constants and the hardware register where that spelling was already proven to preserve the target bytes. No linker-map assignment was needed.
+- The exact-only transaction passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`; `make report`, `gen_objdiff.py`, and the policy scan passed. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1573 / 5937** matched functions (**26.494864%**), **70690 / 993666** matched code (**7.1140604%**), **1113 C / 5574 asm-only** units, and **1297** decomp files (`1094 standalone_tu` + `203 included_stub`). Evidence: `.decomp-runs/round-66-isolation-v1.json`, `.decomp-runs/round-66-apply-v1.json`, and `.nearmiss/func_080D3A60.json`.
 
 ### Batch 213 — accepted (gameplay and call-wrapper siblings)
 - Converted `func_0800E834`, `func_080253BC`, `func_08025514`, `func_08025530`, and `func_080DF458` to standalone ordinary C. The batch covers a two-call initialization wrapper, two gameplay-state setup/teardown pairs, and a scene-variable sound-loader wrapper.

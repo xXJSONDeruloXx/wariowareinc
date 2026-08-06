@@ -393,6 +393,13 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Sprite visibility wrapper ABI**: `sprite_id_set_visible(gSpriteHandler, get_current_mem_id(), 0);` naturally preserves the handler in `R4`, copies the returned memory ID into `R1`, and materializes the zero third argument in `R2` for the short wrapper family.
 - **Numeric ROM-address fallback**: if a candidate's `D_08xxxxxx` symbol is known to the assembly include but missing from `undefined_syms.ld`, test the equivalent numeric absolute address in isolation. Round 64b proved this can produce exact linked bytes and a byte-identical ROM for `func_080B0760`/`func_080ED380`; use it only with both gates passing, because numeric constants can otherwise lose required relocation identity.
 
+### Round 66 additions: scene-variable leaves and indexed stores
+
+- **Staged indexed scene store**: for a target that shifts an incoming index before adding a fixed scene offset, keep the shift in a separate unsigned local, load the scene base first, then add the fixed offset and shifted index in the target order. `func_080D2450` matched with `arg0 << 24`, later `>> 22`, and a staged `base += 0x3AC` sequence.
+- **Byte/bit scene leaves**: a `u8 *` base local plus explicit byte-pointer arithmetic preserves compact low-register `LDRB`/`STRB` and mask/OR leaves. Numeric shift expressions such as `(0xFF << 1)` can be retained when they reproduce the target's immediate calculation.
+- **Hardware register read as ordinary C**: a `volatile` typed pointer to `0x04000100` is a normal memory access and can match a hardware-register load; it is distinct from volatile inline asm and passes the no-instruction-asm policy.
+- **Post-call offset store trap**: the natural `func(); *(u16 *)(base + (0xDF << 2)) = 1;` spelling for `func_080D3A60` remains a near miss. Keep the candidate and its receipt as evidence until an isolated permutation reproduces the target `MOVS`/shift/address ordering; do not waive it merely because the semantics are obvious.
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers
