@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 202` — five new strict-ROM standalone graphics, scene-state, and DMA-table helpers, bringing the current sweep to twenty-nine accepted helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1522 / 5956 matched functions** = **25.554064%**
-- `matched_code`: **68922 / 993632** = **6.9363704%**
-- `tools/gen_objdiff.py`: **1062 linked C TUs / 5625 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1244 decompiled function files** = **1043 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 203` — five new strict-ROM standalone table-copy and bounded-wrapper helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1527 / 5951 matched functions** = **25.659552%**
+- `matched_code`: **69080 / 993632** = **6.9522724%**
+- `tools/gen_objdiff.py`: **1067 linked C TUs / 5620 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1249 decompiled function files** = **1048 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1489 / 5956**, now exceeded by **33** matched functions.
-- Next 30% milestone: **1787 / 5956**.
-- That 30% milestone is **265** additional matched functions from the current baseline.
+- 25% milestone: **1488 / 5951**, now exceeded by **39** matched functions.
+- Next 30% milestone: **1786 / 5951**.
+- That 30% milestone is **259** additional matched functions from the current baseline.
+
+### Batch 203 — accepted (table-copy and bounded-wrapper helpers)
+- Converted `func_08002FC0`, `func_08002FE8`, `func_08003028`, `func_08003040`, and `func_08003058` to standalone ordinary C. The four table-copy/scanning helpers use register-pinned pointers and explicit goto-shaped loops; `func_08003058` preserves the incoming R1–R3 values through an old-style C call to the already-converted initializer.
+- Round 55's final six-entry screen left all six candidates outside the normal exact-only path because the legacy target symbols terminate at internal labels. A direct `arm-none-eabi-objcopy -O binary -j .text` comparison then proved the five accepted candidates byte-identical, including their aligned text tails. `func_08007AD4` was withheld: its candidate differed in two real prologue bytes (`R4`/`R5` copy order), so it remains near-miss evidence rather than a force candidate.
+- The five-entry transaction used the documented narrow `--force` metadata exception only after the direct byte receipt; no instruction mismatch was waived. The clean Docker ROM/report gate passed with `wariowareinc.gba: OK`, ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`, and no instruction-bearing or volatile inline asm in the accepted sources.
+- Fresh report: **1527 / 5951**, **6.9522724%** matched code, **1067 C / 5620 asm-only** units, and **1249** decomp files (`1048 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-55-isolation-v3.json`, `.decomp-runs/20260805T-round-55-apply.json`, and `.decomp-runs/20260805T-round-55-bytecheck.json`.
 
 ### Batch 202 — accepted (graphics, scene-state, and DMA-table helpers)
 - Converted `func_080186AC`, `func_080195B8`, `func_080F154C`, `func_08002620`, and `func_0800774C` to standalone ordinary C. The graphics clear preserves the target's delayed first store; the scene helper preserves the mixed scene/graphics store order; the runtime initializer is direct C; and the DMA-table siblings preserve the post-write volatile read and register order.

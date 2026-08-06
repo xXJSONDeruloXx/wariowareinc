@@ -509,3 +509,10 @@ This period built the reusable base library of patterns:
 - Accepted functions: `func_080186AC`, `func_080195B8`, `func_080F154C`, `func_08002620`, and `func_0800774C`
 - Round 54's final five-entry screen produced **3 strict exact / 2 symbol-boundary near miss** results. The two DMA candidates matched in instruction and pool bytes; only normalized linked-ELF function-symbol coverage differed because the candidate compiler symbol extended through its literal pool. The documented narrow `--force` metadata exception accounted for the complete bytes; it did not waive an instruction mismatch.
 - The full Docker ROM/report gate passed with `wariowareinc.gba: OK` and ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. The accepted sources contain ordinary C, register-bound locals, and volatile memory pointers only—no instruction-bearing or volatile inline asm. Receipts: `.decomp-runs/20260805T-round-54-isolation.json`, `.decomp-runs/20260805T-round-54-isolation-v2.json`, and `.decomp-runs/20260805T-round-54-apply.json`.
+
+## Batch 203 — accepted (table-copy and bounded-wrapper helpers)
+- Result: match ✅
+- Report: **1527 / 5951**, **25.659552%**, **6.9522724% matched code**
+- Accepted functions: `func_08002FC0`, `func_08002FE8`, `func_08003028`, `func_08003040`, and `func_08003058`
+- Round 55's six-entry screen retained five symbol-boundary near misses and one genuine two-byte prologue-order near miss. Direct `.text` extraction proved the five accepted candidates byte-identical; the target symbols' internal local-label boundaries were the only normalized-isolation defect. `func_08007AD4` remains in `.nearmiss/` and was not force-applied.
+- The narrow metadata-only force transaction passed the full Docker ROM/report gate with `wariowareinc.gba: OK` and ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Accepted sources are ordinary C with register-bound locals and an old-style C call; no instruction-bearing or volatile inline asm was introduced. Receipts: `.decomp-runs/20260805T-round-55-isolation-v3.json`, `.decomp-runs/20260805T-round-55-apply.json`, and `.decomp-runs/20260805T-round-55-bytecheck.json`.
