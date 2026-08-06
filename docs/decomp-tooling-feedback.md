@@ -6,6 +6,17 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Tooling maintenance — named-symbol manifest addresses (2026-08-06)
+- `decomp_cycle.py` originally derived every standalone source and linker path
+  from a `func_XXXXXXXX`/`asm_XXXXXXXX` function name. That rejected valid raw
+  symbols such as `set_soundplayer_pitch` before isolation could begin.
+- Manifests now accept an explicit eight-digit `address` override, validate it,
+  and preserve the descriptive symbol for target-object entry selection. A
+  regression test covers the derived source and linker paths.
+- This is discovery plumbing only: the candidate still has to pass isolated
+  objdiff and the transactional full-ROM gate. It does not relax exact-only
+  admission.
+
 ## Round 33 — sprite, scene, music-table, and graphics fan-in (2026-08-05)
 - m2c supplied ten compact standalone skeletons. The first screen found **5 exact / 4 near miss / 1 compile error**; register-bound variants recovered the three music-table siblings and the graphics-buffer store, producing a combined **10 exact** manifest.
 - `func_0800C7A4`, `func_0800CE6C`, `func_08016688`, `func_08018534`, `func_08019644`, and `func_080C477C` matched directly through typed sprite/scene headers, explicit field offsets, or signed division. The music siblings required a base in `R4` and an offset/address accumulator in `R0`; `func_0804E290` required the same two-register accumulator to prevent folding `gGraphicsBuffer + 0x54` into the literal symbol.

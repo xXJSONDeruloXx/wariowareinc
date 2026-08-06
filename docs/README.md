@@ -37,6 +37,10 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
 - `apply-batch` performs the same guarded transaction for a small exact manifest, with one isolation pass and one full-ROM gate for the batch.
 - `verify` runs the current-worktree Docker gate for hooks or a final check.
 
+Manifests for exported symbols such as `set_soundplayer_pitch` may provide an
+explicit eight-digit `address`; this lets the cycle derive canonical paths even
+when the symbol name is not `func_XXXXXXXX`.
+
 Install the local commit/push protections with `tools/install-hooks.sh`. Near-miss
 records remain in `.nearmiss/` and `tools/attempts.tsv`; each best seed now keeps
 a bounded attempt history and the cycle receipts carry candidate/target hashes.

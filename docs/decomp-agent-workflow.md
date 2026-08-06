@@ -177,6 +177,12 @@ Generated evidence (`.decomp-runs/`, `.nearmiss/`, `.mizuchi-tmp/`, and the
 attempt ledger) may remain dirty between these two commands; unrelated source,
 linker, or tool edits still block the transaction.
 
+For legacy assembly files whose exported symbol is descriptive rather than an
+`func_XXXXXXXX` name, include an explicit eight-digit `address` in the
+manifest. The cycle then derives the canonical `src/decomp/`, converted-asm,
+and linker paths from that address while retaining the descriptive symbol for
+the object comparison.
+
 After a selected entry reports `exact`, use the transactional path with a
 manifest entry that also supplies `source`, `converted`, `linker_old`, and
 `linker_new` (the defaults cover a normal standalone TU):

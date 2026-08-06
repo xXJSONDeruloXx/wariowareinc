@@ -32,6 +32,28 @@ class DecompCycleTests(unittest.TestCase):
             self.assertEqual(entry["target_object_rel"], "build/asm/asm_08002038.s.o")
             self.assertIsNone(entry["target"])
 
+    def test_manifest_supports_named_symbol_with_explicit_address(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidate = root / "candidate.c"
+            candidate.write_text("void set_soundplayer_pitch(void) {}\n")
+            target = root / "build/asm/asm_0800204c.s.o"
+            target.parent.mkdir(parents=True)
+            target.write_bytes(b"target")
+            manifest = root / "manifest.json"
+            manifest.write_text(json.dumps({"candidates": [{
+                "function": "set_soundplayer_pitch",
+                "address": "0800204C",
+                "candidate": "candidate.c",
+                "target_object": "build/asm/asm_0800204c.s.o",
+            }]}))
+
+            entry = decomp_cycle.load_manifest(root, manifest)[0]
+
+            self.assertEqual(entry["address"], "0800204C")
+            self.assertEqual(entry["source"], (root / "src/decomp/asm_0800204c.c").resolve())
+            self.assertEqual(entry["linker_new"], "build/src/decomp/asm_0800204c.c.o")
+
     def test_parse_diff_exact_and_near_miss(self) -> None:
         exact = {"left": {"symbols": [{"name": "func_1", "match_percent": 100.0}]},
                  "right": {"symbols": [{"name": "func_1", "match_percent": 100.0}]}}

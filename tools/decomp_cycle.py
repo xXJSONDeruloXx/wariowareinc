@@ -150,10 +150,15 @@ def addr_for(function: str) -> str | None:
     return match.group(1).lower() if match else None
 
 
-def default_paths(root: Path, function: str) -> dict[str, str]:
-    address = addr_for(function)
+def default_paths(root: Path, function: str, address_override: str | None = None) -> dict[str, str]:
+    address = address_override.lower().removeprefix("0x") if address_override else addr_for(function)
     if address is None:
-        raise CycleError(f"cannot derive WarioWare paths from function name {function!r}")
+        raise CycleError(
+            f"cannot derive WarioWare paths from function name {function!r}; "
+            "provide an explicit 8-digit address for non-address symbols"
+        )
+    if not re.fullmatch(r"[0-9a-f]{8}", address):
+        raise CycleError(f"invalid WarioWare address override {address_override!r} for {function!r}")
     return {
         "source": f"src/decomp/asm_{address}.c",
         "target": f"asm/asm_{address}.s",
@@ -183,7 +188,7 @@ def load_manifest(root: Path, manifest_path: Path) -> list[dict[str, Any]]:
         if not function or not candidate_value:
             raise CycleError(f"manifest candidate {index} needs function and candidate")
         candidate = root_path(root, str(candidate_value), must_exist=True)
-        defaults = default_paths(root, function)
+        defaults = default_paths(root, function, str(raw_entry["address"]) if raw_entry.get("address") else None)
 
         target_object_value = raw_entry.get("target_object", defaults["target_object"])
         target_object = root_path(root, str(target_object_value)) if target_object_value else None
@@ -201,6 +206,7 @@ def load_manifest(root: Path, manifest_path: Path) -> list[dict[str, Any]]:
 
         entry: dict[str, Any] = {
             "function": function,
+            "address": str(raw_entry.get("address", "")),
             "candidate": candidate,
             "candidate_rel": root_relative(root, candidate),
             "target": target,
