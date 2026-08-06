@@ -581,3 +581,8 @@ This period built the reusable base library of patterns:
 - Converted `func_080B0760` and `func_080ED380` to standalone ordinary C. Both first isolated exact with symbolic `D_08xxxxxx` declarations; numeric absolute-address spellings were selected because those two symbols are not yet assigned in `undefined_syms.ld`.
 - The exact two-entry transaction passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`, and the ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Fresh report: **1560 / 5937** matched functions (**26.275898%**), **70298 / 993662** matched code (**7.074639%**), **1100 C / 5587 asm-only** units, and **1284** decomp files (`1081 standalone_tu` + `203 included_stub`).
+
+## Batch 213 — gameplay and call-wrapper siblings (2026-08-06)
+- Converted `func_0800E834`, `func_080253BC`, `func_08025514`, `func_08025530`, and `func_080DF458` to standalone ordinary C. Round 65 screened eight candidates and accepted the exact five; `func_080E1F48`/`func_08003DE0` remain near misses and `func_08023494` remains a compile-error hypothesis.
+- The exact-only transaction passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1565 / 5937** matched functions (**26.360115%**), **70450 / 993662** matched code (**7.089936%**), **1105 C / 5582 asm-only** units, and **1289** decomp files (`1086 standalone_tu` + `203 included_stub`).
