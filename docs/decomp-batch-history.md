@@ -533,3 +533,11 @@ This period built the reusable base library of patterns:
 - Round 57 screened one standalone sibling in one Docker isolation pass and found it exact. Its C body reused the `func_08030F9C` getter's scene/table locals and staged `arg1 * 0xE + arg0` arithmetic, then stored the byte; no new linker assignment or callee dependency was needed.
 - The one-function apply transaction passed the full Docker ROM/report gate with `wariowareinc.gba: OK` and ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. No instruction-bearing or volatile inline asm was introduced. Receipts: `.decomp-runs/20260805T-round-57-isolation.json` and `.decomp-runs/20260805T-round-57-apply.json`.
 - Fresh report: **1070 C / 5617 asm-only** units and **1252** decomp files (`1051 standalone_tu` + `201 included_stub`).
+
+## Batch 206 — accepted (task-pool state scan and cancel siblings)
+- Result: match ✅
+- Report: **1532 / 5949**, **25.752228%**, **6.973608% matched code**
+- Accepted functions: `func_08005920` and `func_080059E4`
+- Round 58 used m2c's task-slot skeletons and asmlift diagnostics, then iterated pure-C register/label shapes. `func_08005920` required the target's `BGE` entry and backward result block; `func_080059E4` required the raw `LSLS` before the count/global setup and a live ordinary task-ID local so agbcc saved `R7`. No instruction-bearing asm was used.
+- Normalized linked-ELF isolation classified both legacy literal-pool targets as symbol-boundary near misses. A linked-text bytecheck proved equal target/candidate SHA-256 values for **76** bytes and **56** bytes respectively; the `apply-batch --force` path waived only that documented metadata boundary, not an instruction mismatch. The one transaction passed the clean Docker ROM/report gate with `wariowareinc.gba: OK` and ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Added `D_030006A0 = 0x030006A0` to `undefined_syms.ld`. Fresh report: **1072 C / 5615 asm-only** units and **1254** decomp files (`1053 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-58-final-isolation.json`, `.decomp-runs/20260805T-round-58-bytecheck.json`, and `.decomp-runs/20260805T-round-58-apply.json`.

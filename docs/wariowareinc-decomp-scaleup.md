@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 205` — one new strict-ROM standalone scene-table setter sibling plus the hardened candidate lifecycle
-- `build/report.json`: **1530 / 5951 matched functions** = **25.709967%**
-- `matched_code`: **69160 / 993632** = **6.9603233%**
-- `tools/gen_objdiff.py`: **1070 linked C TUs / 5617 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1252 decompiled function files** = **1051 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 206` — two new strict-ROM standalone task-pool siblings plus the hardened candidate lifecycle
+- `build/report.json`: **1532 / 5949 matched functions** = **25.752228%**
+- `matched_code`: **69292 / 993632** = **6.973608%**
+- `tools/gen_objdiff.py`: **1072 linked C TUs / 5615 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1254 decompiled function files** = **1053 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1488 / 5951**, now exceeded by **42** matched functions.
-- Next 30% milestone: **1786 / 5951**.
-- That 30% milestone is **256** additional matched functions from the current baseline.
+- 25% milestone: **1488 / 5949**, now exceeded by **44** matched functions.
+- Next 30% milestone: **1785 / 5949**.
+- That 30% milestone is **253** additional matched functions from the current baseline.
+
+### Batch 206 — accepted (task-pool state scan and cancel siblings)
+- Converted `func_08005920` and `func_080059E4` to standalone ordinary C. Both walk the `D_030006A0` task slots at `0x1C`-byte stride; the first scans active slots by owner/state and the second writes the task ID and conditionally calls `task_stop`.
+- Round 58 used m2c for the task-slot semantic skeleton. asmlift declined the first overlapping-field reconstruction and could not score the second normalized candidate; manual C shaping then recovered the target branch layout, callee-saved `R7`, and exact loop register roles without instruction-bearing asm.
+- Normalized linked-ELF isolation reported a symbol-boundary near miss for both legacy literal-pool targets. A linked `.text` byte audit proved all **76** bytes of `func_08005920` and all **56** bytes of `func_080059E4` identical before the documented metadata-only `--force` transaction. The clean Docker ROM/report gate passed with `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Added the canonical `D_030006A0 = 0x030006A0` linker assignment. Accepted sources use ordinary C plus register-bound declarations only—no instruction-bearing or volatile inline asm. Fresh report: **1532 / 5949**, **6.973608%** matched code, **1072 C / 5615 asm-only** units, and **1254** decomp files (`1053 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-58-final-isolation.json`, `.decomp-runs/20260805T-round-58-bytecheck.json`, and `.decomp-runs/20260805T-round-58-apply.json`.
 
 ### Batch 205 — accepted (scene-table byte setter sibling)
 - Converted `func_08030F7C` to standalone ordinary C. It reuses the exact `gCurrentSceneVariable` base/table-pointer locals and staged `arg1 * 0xE + arg0` arithmetic proven by `func_08030F9C`, then stores the byte argument through the same indexed table.
