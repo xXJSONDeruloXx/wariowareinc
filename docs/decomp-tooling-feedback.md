@@ -43,6 +43,12 @@ Use this file to record where the current decomp tools helped, where they missed
   a relocation or integration mismatch. This remains distinct from an
   ordinary compiler near miss, which stays evidence-only.
 
+## Round 73 — exact scene-wrapper apply and literal-pool near miss (2026-08-06)
+- The live loop now cleanly separates the cheap discovery/screen phase from integration: one isolation Docker invocation screened three candidates, then the exact two-entry manifest paid for one full-context Docker build/report gate. The gate passed with the unchanged ROM SHA-1 and advanced **1610 → 1612** matched functions, **1150 → 1152** linked C units, and **1334 → 1336** decomp files.
+- The exact candidates were callers of already-converted `func_08007000`; isolation alone was not treated as sufficient. The full-context transaction confirmed that both ordinary-C scene-data wrappers remain byte-identical when linked with the converted callee.
+- `func_080047D4` is a useful negative result: the numeric absolute-address C spelling reproduced all seven instructions but omitted the target's absolute table-address literal-pool word. The recorded **28.57143** gap is therefore a real data-byte mismatch, not a target-symbol boundary artifact, and correctly stayed outside `apply-batch`.
+- The cycle automatically updated `.nearmiss/func_080047D4.json` and `tools/attempts.tsv`, while `.decomp-runs/round-73-isolation-v1.json` and `round-73-apply.json` preserve candidate hashes and the full verification command. This is the desired provenance shape for the next repair pass.
+
 ## Round 72 — gameplay/data fan-in and boundary audit (2026-08-06)
 - The five-pass screen made the current loop practical: one Docker isolation invocation per revision, immutable candidate hashes in each receipt, near-miss records retained automatically, and one fresh full-context Docker gate for the selected three-function batch. The final screen was **2 exact / 1 near miss**.
 - m2c/asmlift-style semantic skeletons were useful for discovery, but the successful spellings required project-aware repair: a numeric absolute pointer for `func_08003DE0`, a widened `u32` callee plus `R4` pin and empty compiler dependency for `func_080E1F48`, and `src/audio.h` for `func_08023494`.

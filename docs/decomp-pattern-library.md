@@ -431,6 +431,11 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Difference load order**: for a helper whose target loads the argument field first, then the global-scene field, subtracts into the result register, and compares that result with the second argument, pin the incoming values to the target ABI registers and spell the loads/subtraction as separate C statements. `func_08089648` matches with register-bound locals and no instruction asm.
 - **Asmlift exact skeletons still need project validation**: `func_0805C5D8` and `func_08088B80` were exact from the first asmlift-shaped C spelling, but Round 70 still screened all five candidates through the same Docker isolation receipt. Semantic similarity is a discovery aid; only exact isolated code followed by the full ROM gate is admissible.
 
+### Round 73 additions: scene-data callers and literal-pool accounting
+
+- **Scene-data caller pair**: when a short wrapper loads `gCurrentSceneData` or `gCurrentSceneVariable`, derives a pointer field and a signed halfword at separate offsets, then calls an already-converted helper, use a raw `u8 *` base and explicit byte offsets. `func_08016B14` and `func_080241E8` both matched with ordinary C; the full-context gate is still required because the callee is already C.
+- **Literal-pool near miss is a real mismatch**: a numeric absolute pointer can reproduce every instruction while dropping the target's absolute table-address word from the pool. `func_080047D4`'s seven instructions matched, but its candidate lacked the target pool word; this is not eligible for the metadata-only boundary exception. A symbolic linker-map definition or an otherwise ordinary-C spelling that forces the relocation must reproduce the complete `.text` bytes before admission.
+
 ### Round 72 additions: absolute indirect calls and audio/data wrappers
 
 - **Absolute indirect-call wrapper**: when the target loads an IWRAM function pointer from `D_03003FEC`, calls it with zero, and returns through `_call_via_r1`, a numeric pointer expression such as `((void (*)(u32))*(u32 *)0x03003FEC)(0);` can preserve the target literal and `u32` no-return epilogue without adding a linker-map symbol. If linked objdiff stops at the local literal-pool boundary, audit the complete linked `.text` before considering the metadata-only force path.

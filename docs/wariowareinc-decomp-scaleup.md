@@ -5,18 +5,24 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 221` — three gameplay/data wrappers admitted after a fresh fan-in screen and a complete linked-text boundary audit under the hardened candidate lifecycle
-- `build/report.json`: **1610 / 5934 matched functions** = **27.131784%**
-- `matched_code`: **71844 / 993704** = **7.229920%**
-- `tools/gen_objdiff.py`: **1150 linked C TUs / 5537 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1334 decompiled function files** = **1131 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 222` — two scene-data wrappers admitted after an exact fan-in screen and a full-context Docker gate under the hardened candidate lifecycle
+- `build/report.json`: **1612 / 5934 matched functions** = **27.165487%**
+- `matched_code`: **71908 / 993710** = **7.236317%**
+- `tools/gen_objdiff.py`: **1152 linked C TUs / 5535 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1336 decompiled function files** = **1133 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1484 / 5934**, now exceeded by **126** matched functions.
-- 26% milestone: **1543 / 5934**; current progress is **1610**, exceeding it by **67** matches.
-- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **7** matches.
-- Next 30% milestone: **1781 / 5934**; **171** additional matched functions are needed.
+- 25% milestone: **1484 / 5934**, now exceeded by **128** matched functions.
+- 26% milestone: **1543 / 5934**; current progress is **1612**, exceeding it by **69** matches.
+- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **9** matches.
+- Next 30% milestone: **1781 / 5934**; **169** additional matched functions are needed.
+
+### Batch 222 — accepted (scene-data wrappers)
+- Converted `func_08016B14` and `func_080241E8` to standalone ordinary C. Both load the current scene base, derive the target field pointer and signed halfword, and call the already-converted `func_08007000`; no instruction-bearing or volatile inline asm was added.
+- Round 73 screened three short candidates in one Docker isolation invocation: **2 exact / 1 near miss**. The exact pair passed the full-context `apply-batch` transaction, including a clean Docker rebuild/report gate, with `wariowareinc.gba: OK` and unchanged ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- `func_080047D4` remains evidence-only: all seven instructions matched, but the numeric-address spelling omitted the target's absolute table-address literal-pool word. It was not force-applied; `.nearmiss/func_080047D4.json`, the attempts ledger, and Round 73 receipts preserve the repair seed.
+- Fresh report: **1612 / 5934** matched functions (**27.165487%**), **71908 / 993710** matched code (**7.236317%**), **1152 C / 5535 asm-only** units, and **1336** decomp files (`1133 standalone_tu` + `203 included_stub`). Evidence: `.decomp-runs/round-73-isolation-v1.json` and `.decomp-runs/round-73-apply.json`.
 
 ### Batch 221 — accepted (gameplay wrappers / data lookup)
 - Converted `func_08003DE0`, `func_080E1F48`, and `func_08023494` to standalone ordinary C. The first uses a numeric absolute IWRAM pointer to preserve the indirect `_call_via_r1` wrapper; the second preserves the target `R4` table base and widened `u32` callee result; the third uses the project audio prototype and two calls through the same ROM song address.
@@ -266,10 +272,10 @@ Prefer this file + the other docs in `/docs`
 ## Goal
 Reach at least **30% matched-function progress** while preserving byte-identical ROM output at every accepted milestone. The 80% figure remains the longer-term project target after this milestone.
 
-At the current `total_functions` count (`5960`), that means:
-- immediate target: **1788 / 5960** matched functions
-- current gap to 30%: **324** more matched functions
-- longer-term target: **4768 / 5960** matched functions
+At the current `total_functions` count (`5934`), that means:
+- immediate target: **1781 / 5934** matched functions
+- current gap to 30%: **169** more matched functions
+- longer-term target: **4748 / 5934** matched functions
 
 ### Batch 180 — accepted (real-C arithmetic and packing leaves)
 - Converted `func_080F1F9C`, `func_080F28F8`, `func_080F2C50`, `func_08035ACC`, `func_08003014`, `func_0803F224`, `func_0803F26C`, and `func_0806754C` to ordinary C. The ten-candidate pure-leaf screen reached eight exact candidates after the isolation tool was corrected to append the Makefile's zero-filled aligned `.text` tail; the two held-back candidates are split by target local-label symbols.
