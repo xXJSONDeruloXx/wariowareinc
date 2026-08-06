@@ -5,18 +5,24 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 223` — nine compact wrappers admitted after a repaired two-pass isolation screen and a full-context Docker gate under the hardened candidate lifecycle
-- `build/report.json`: **1621 / 5934 matched functions** = **27.317154%**
-- `matched_code`: **72218 / 993722** = **7.267425%**
-- `tools/gen_objdiff.py`: **1161 linked C TUs / 5526 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1345 decompiled function files** = **1142 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 224` — twelve compact task/scene/sprite wrappers admitted after a repaired two-pass isolation screen and a full-context Docker gate under the hardened candidate lifecycle
+- `build/report.json`: **1633 / 5934 matched functions** = **27.519380%**
+- `matched_code`: **72674 / 993728** = **7.313269%**
+- `tools/gen_objdiff.py`: **1173 linked C TUs / 5514 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1357 decompiled function files** = **1154 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1484 / 5934**, now exceeded by **137** matched functions.
-- 26% milestone: **1543 / 5934**; current progress is **1621**, exceeding it by **78** matches.
-- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **18** matches.
-- Next 30% milestone: **1781 / 5934**; **160** additional matched functions are needed.
+- 25% milestone: **1484 / 5934**, now exceeded by **149** matched functions.
+- 26% milestone: **1543 / 5934**; current progress is **1633**, exceeding it by **90** matches.
+- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **30** matches.
+- Next 30% milestone: **1781 / 5934**; **148** additional matched functions are needed.
+
+### Batch 224 — accepted (task/scene/sprite wrapper fan-in)
+- Converted `func_08016E9C`, `func_08016EC8`, `func_080210D4`, `func_0803E9A0`, `func_0803E9C4`, `func_0803E9E8`, `func_0806A958`, `func_0806A97C`, `func_080EC55C`, `func_080EC62C`, `func_0803E244`, and `func_080EB1F4` to standalone ordinary C. The twelve functions cover task-loader callbacks, scene-table wrappers, update-call fan-in, scene-thread/sprite-visibility wrappers, and a conditional sound wrapper.
+- Round 75's first isolation pass classified **9 exact / 2 near miss / 1 compile error**. Adding the ignored middle ABI parameter to preserve the third argument in R2 fixed both sprite wrappers; adding `scenes.h` supplied the missing `gCurrentSceneData` declaration. The repaired second pass classified **12 exact / 0 rejected**.
+- The exact-only `apply-batch` transaction passed the clean full Docker ROM/report gate with `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. The new C contains no instruction-bearing or volatile inline asm.
+- Fresh report: **1633 / 5934** matched functions (**27.519380%**), **72674 / 993728** matched code (**7.313269%**), **1173 C / 5514 asm-only** units, and **1357** decomp files (`1154 standalone_tu` + `203 included_stub`). Evidence: `.decomp-runs/20260806T233701Z-full_verify.json`, `.decomp-runs/round-75-isolation-v1.json`, `round-75-isolation-v2.json`, and `round-75-apply.json`; the first-pass near misses remain in `.nearmiss/`.
 
 ### Batch 223 — accepted (wrapper and scene-state fan-in)
 - Converted `func_08022650`, `func_0803292C`, `func_08024F68`, `func_08072700`, `func_080733AC`, `func_08017238`, `func_08039A44`, `func_0801A688`, and `func_08016708` to standalone ordinary C. The batch covers a multi-call key wrapper, a four-call R4-preserving wrapper, scene-thread/data helpers, a sprite-visibility wrapper, a graphics-buffer mask/clear, a random sound-table lookup, and a graphics-task callback wrapper.
@@ -280,7 +286,7 @@ Reach at least **30% matched-function progress** while preserving byte-identical
 
 At the current `total_functions` count (`5934`), that means:
 - immediate target: **1781 / 5934** matched functions
-- current gap to 30%: **160** more matched functions
+- current gap to 30%: **148** more matched functions
 - longer-term target: **4748 / 5934** matched functions
 
 ### Batch 180 — accepted (real-C arithmetic and packing leaves)

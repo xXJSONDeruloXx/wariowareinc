@@ -431,6 +431,14 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Difference load order**: for a helper whose target loads the argument field first, then the global-scene field, subtracts into the result register, and compares that result with the second argument, pin the incoming values to the target ABI registers and spell the loads/subtraction as separate C statements. `func_08089648` matches with register-bound locals and no instruction asm.
 - **Asmlift exact skeletons still need project validation**: `func_0805C5D8` and `func_08088B80` were exact from the first asmlift-shaped C spelling, but Round 70 still screened all five candidates through the same Docker isolation receipt. Semantic similarity is a discovery aid; only exact isolated code followed by the full ROM gate is admissible.
 
+### Round 75 additions: task/scene/sprite wrappers and ABI placeholders
+
+- **Task-loader callback wrappers**: short ordinary-C wrappers can preserve the target's task setup and Thumb callback literal when the callback is explicitly cast and the existing task helper prototypes are declared. `func_08016E9C` and `func_08016EC8` use the numeric ROM table addresses and `(callback + 1)` callback expressions directly; the isolated literal-pool bytes are the authority.
+- **Scene-table wrapper fan-in**: for scene helpers that call `func_080DF224` or `func_080DF28C`, keep a local `u8 *base`, spell scaled offsets such as `(0x86 << 1)` explicitly, and pass the numeric ROM table address as an ordinary pointer. `func_0803E9A0`, `func_0803E9C4`, and `func_0803E9E8` are exact examples.
+- **Ignored middle ABI parameter**: if the target consumes its third pointer from R2 but the logical C operation only appears to have two useful inputs, retain an unused middle parameter in the function declaration. `func_0806A958` and `func_0806A97C` were near misses with two parameters and exact after adding the ignored `s32` parameter; this is ABI shaping, not an asm workaround.
+- **Scene-thread plus sprite visibility**: `scene_set_current_thread(1)` followed by `sprite_set_visible` and raw signed-halfword scene-record offsets remains a productive ordinary-C family. `func_0806A958`, `func_0806A97C`, `func_080EC55C`, `func_080EC62C`, and `func_0803E244` provide offset and handler-global variants.
+- **Conditional scene-data sound wrapper**: when a byte at `gCurrentSceneData + 0x173` controls a direct sound call, include `scenes.h` for the project global and use a byte-pointer access with an explicit `== 1` test. `func_080EB1F4` matches without inline asm.
+
 ### Round 74 additions: wrapper batches and register-role repair
 
 - **Multi-call wrapper fan-in**: a small ordinary-C batch can preserve several direct `BL` calls when each callee's ABI is declared explicitly. `func_08022650` keeps three zero-argument calls ahead of the `gCurrentKeys` byte test, while `func_0803292C` keeps the incoming argument in R4 across four calls.
