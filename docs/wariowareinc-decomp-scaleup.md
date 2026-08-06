@@ -5,17 +5,25 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 209` — four strict-ROM standalone soundplayer/bootstrap siblings plus the hardened candidate lifecycle
-- `build/report.json`: **1545 / 5937 matched functions** = **26.023245%**
-- `matched_code`: **69846 / 993640** = **7.029306%**
-- `tools/gen_objdiff.py`: **1085 linked C TUs / 5602 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1267 decompiled function files** = **1066 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 210` — six strict-ROM standalone scene/wrapper siblings plus two included bitmap wrappers and the hardened candidate lifecycle
+- `build/report.json`: **1551 / 5937 matched functions** = **26.124304%**
+- `matched_code`: **70026 / 993648** = **7.047365%**
+- `tools/gen_objdiff.py`: **1091 linked C TUs / 5596 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1275 decompiled function files** = **1072 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
-- Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1485 / 5937**, now exceeded by **60** matched functions.
-- Active 26% working goal: **1544 / 5937**; current progress is **1545**, exceeding it by **1** match.
-- Next 30% milestone: **1782 / 5937**; **237** additional matched functions are needed.
+- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
+- 25% milestone: **1485 / 5937**, now exceeded by **66** matched functions.
+- 26% milestone: **1544 / 5937**; current progress is **1551**, exceeding it by **7** matches.
+- Active 27% working goal: **1603 / 5937**; **52** additional matched functions are needed.
+- Next 30% milestone: **1782 / 5937**; **231** additional matched functions are needed.
+
+### Batch 210 — accepted (scene predicates, call wrappers, and bitmap wrappers)
+- Converted six standalone functions to ordinary C: `func_0802DA38`, `func_08033D10`, `func_08037AAC`, `func_0803CD90`, `func_080550C4`, and `func_08085E2C`. The first two are three-call wrappers; the remaining four are the repeated `gCurrentSceneData + 0x173` predicate family.
+- Converted included bitmap stubs `func_0800C2E4` and `func_0800C5A0` to ordinary C. A widened `u32` return preserves the target interwork epilogue, and local ABI-shaped function-pointer typedefs avoid conflicting host-TU prototypes without instruction-bearing asm.
+- Round 63 used m2c/asmlift semantic skeletons plus a repo-local `glabel` inventory. Six standalone candidates were exact; four additional standalone candidates remain near-miss evidence and one compile-error candidate was withheld. The two included conversions improve real-C coverage but do not change the matched-function denominator because they were already part of linked C host TUs.
+- The clean Docker ROM/report gate passed with `wariowareinc.gba: OK`, `make report`, `gen_objdiff.py`, and the no-instruction-asm policy check. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1551 / 5937** matched functions (**26.124304%**), **70026 / 993648** matched code (**7.047365%**), **1091 C / 5596 asm-only** units, and **1275** decomp files (`1072 standalone_tu` + `203 included_stub`). Evidence: `.decomp-runs/round-63-standalone-isolation-v1.json`, `.decomp-runs/round-63-standalone-apply-v1.json`, `.decomp-runs/round-63-bitmap-font-c2e4-isolation-u32.json`, `.decomp-runs/round-63-bitmap-font-c2e4-apply-u32.json`, `.decomp-runs/round-63-bitmap-font-c5a0-isolation-u32.json`, and `.decomp-runs/round-63-bitmap-font-c5a0-apply-u32.json`.
 
 ### Batch 209 — accepted (soundplayer wrappers and bootstrap record)
 - Converted `func_08002038`, `func_0800207C`, `func_080020E0`, and `func_08006148` to standalone ordinary C. m2c supplied the semantic skeletons; asmlift was useful as a diagnostic comparison but declined or failed on the project-specific wrapper contexts.

@@ -380,6 +380,12 @@ For tiny helpers that load `gCurrentSceneVariable`, then load a nested pointer a
 
 For unrolled four-byte readers/writers, use a byte pointer with sequential post-increment for stores, and explicit `LDRB`-equivalent byte loads with shifts/or operations for reads. This can produce exact Thumb without register pins.
 
+### Round 63 additions: interwork returns and scene predicates
+
+- **Interwork epilogue return width**: for an included wrapper whose target ends in `POP {R1}; BX R1`, a widened non-void return such as `u32` can preserve the target epilogue. The same body declared `void` emits `POP {R0}; BX R0` under `-mthumb-interwork`; confirm the result with the isolated object before applying it.
+- **Raw ABI call through an existing host-TU declaration**: when an included callee already has a narrower or conflicting declaration, do not redeclare it. Cast the existing symbol to a unique local function-pointer typedef with the target's widened `s32`/`u32` register ABI, and call through that pointer. This keeps the source as ordinary C and avoids a same-TU prototype conflict.
+- **Scene-data byte predicate siblings**: `if (((u8 *)gCurrentSceneData)[0x173] == 1) callee();` reproduces the compact `LDR`/`LDRB`/compare/conditional-call wrapper family. Keep the byte cast and direct equality spelling; use the sibling's callee declaration rather than introducing a struct field model.
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers
