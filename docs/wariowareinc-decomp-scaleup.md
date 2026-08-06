@@ -5,17 +5,22 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 204` — two new strict-ROM standalone global/scene helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1529 / 5951 matched functions** = **25.693161%**
-- `matched_code`: **69128 / 993632** = **6.957103%**
-- `tools/gen_objdiff.py`: **1069 linked C TUs / 5618 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1251 decompiled function files** = **1050 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 205` — one new strict-ROM standalone scene-table setter sibling plus the hardened candidate lifecycle
+- `build/report.json`: **1530 / 5951 matched functions** = **25.709967%**
+- `matched_code`: **69160 / 993632** = **6.9603233%**
+- `tools/gen_objdiff.py`: **1070 linked C TUs / 5617 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1252 decompiled function files** = **1051 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1488 / 5951**, now exceeded by **41** matched functions.
+- 25% milestone: **1488 / 5951**, now exceeded by **42** matched functions.
 - Next 30% milestone: **1786 / 5951**.
-- That 30% milestone is **257** additional matched functions from the current baseline.
+- That 30% milestone is **256** additional matched functions from the current baseline.
+
+### Batch 205 — accepted (scene-table byte setter sibling)
+- Converted `func_08030F7C` to standalone ordinary C. It reuses the exact `gCurrentSceneVariable` base/table-pointer locals and staged `arg1 * 0xE + arg0` arithmetic proven by `func_08030F9C`, then stores the byte argument through the same indexed table.
+- Round 57 screened this one standalone sibling in isolation and scored it exact. Because it has no calls or new absolute symbols, it was applied as a one-function transaction; the clean Docker ROM/report gate passed with `wariowareinc.gba: OK`, ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`, and no instruction-bearing or volatile inline asm.
+- Fresh report: **1530 / 5951**, **6.9603233%** matched code, **1070 C / 5617 asm-only** units, and **1252** decomp files (`1051 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-57-isolation.json` and `.decomp-runs/20260805T-round-57-apply.json`.
 
 ### Batch 204 — accepted (global-context setter and scene-table byte lookup)
 - Converted `func_08024E34` and `func_08030F9C` to standalone ordinary C. The first uses an explicitly typed absolute `D_083C8B64` pointer so agbcc retains the target's `R4` global-pointer load and four sequential word stores. The second loads `gCurrentSceneVariable` first, then its table pointer, and spells the `arg1 * 0xE + arg0` index so the target's `LSLS/SUBS/LSLS/ADDS` accumulator remains in R2 before the final byte load.

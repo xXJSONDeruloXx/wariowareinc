@@ -525,3 +525,11 @@ This period built the reusable base library of patterns:
 - `func_08024E34` required an explicit `extern u32 *D_083C8B64` spelling and the canonical linker assignment; `func_08030F9C` matched through separate scene-variable/table locals and staged `arg1 * 0xE + arg0` arithmetic. Both accepted files are ordinary C with no instruction-bearing or volatile inline asm.
 - The exact-only `apply-batch` transaction passed the full Docker ROM/report gate with `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Receipts: `.decomp-runs/20260805T-round-56-isolation.json` and `.decomp-runs/20260805T-round-56-apply.json`.
 - Fresh report: **1069 C / 5618 asm-only** units and **1251** decomp files (`1050 standalone_tu` + `201 included_stub`).
+
+## Batch 205 — accepted (scene-table byte setter sibling)
+- Result: match ✅
+- Report: **1530 / 5951**, **25.709967%**, **6.9603233% matched code**
+- Accepted function: `func_08030F7C`
+- Round 57 screened one standalone sibling in one Docker isolation pass and found it exact. Its C body reused the `func_08030F9C` getter's scene/table locals and staged `arg1 * 0xE + arg0` arithmetic, then stored the byte; no new linker assignment or callee dependency was needed.
+- The one-function apply transaction passed the full Docker ROM/report gate with `wariowareinc.gba: OK` and ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. No instruction-bearing or volatile inline asm was introduced. Receipts: `.decomp-runs/20260805T-round-57-isolation.json` and `.decomp-runs/20260805T-round-57-apply.json`.
+- Fresh report: **1070 C / 5617 asm-only** units and **1252** decomp files (`1051 standalone_tu` + `201 included_stub`).
