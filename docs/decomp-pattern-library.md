@@ -391,6 +391,7 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Raw scene-slot stride family**: for targets that load `*(u8 **)((u8 *)gCurrentSceneVariable + 0x10)`, write one field, add `0x20`, and loop through seven entries, use a `u8 *` pointer plus a `u32` counter initialized before a `do { ... } while (count <= 6)` loop. This preserves the target's low-register pointer, `R2` value copy, and `BLS` loop shape in ordinary C. The word-field variants at offsets `0x0C`, `0x14`, and `0x18` matched with this spelling.
 - **Post-call key-test wrapper**: after a preceding void call, `func_08009EE4(((u16)gCurrentKeys >> 8) & 1);` preserves the target's `LDRH`/`LSRS`/`MOVS`/`ANDS` tail. Keep the explicit `u16` cast when the host headers use a wider key declaration.
 - **Sprite visibility wrapper ABI**: `sprite_id_set_visible(gSpriteHandler, get_current_mem_id(), 0);` naturally preserves the handler in `R4`, copies the returned memory ID into `R1`, and materializes the zero third argument in `R2` for the short wrapper family.
+- **Numeric ROM-address fallback**: if a candidate's `D_08xxxxxx` symbol is known to the assembly include but missing from `undefined_syms.ld`, test the equivalent numeric absolute address in isolation. Round 64b proved this can produce exact linked bytes and a byte-identical ROM for `func_080B0760`/`func_080ED380`; use it only with both gates passing, because numeric constants can otherwise lose required relocation identity.
 
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers

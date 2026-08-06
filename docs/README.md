@@ -11,19 +11,19 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 211` — seven strict-ROM standalone scene-slot/sprite-wrapper siblings; known blocked families remain preserved as provenance
-- `build/report.json`: **1558 / 5937 matched functions** (**26.242208%**) · **7.069406%** matched code (**70246 / 993662**)
-- `tools/gen_objdiff.py`: **1098 linked C TUs / 5589 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1282 decompiled function files** = **1079 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 212` — two strict-ROM standalone ROM-constant leaves after the scene-slot/sprite-wrapper sweep; known blocked families remain preserved as provenance
+- `build/report.json`: **1560 / 5937 matched functions** (**26.275898%**) · **7.074639%** matched code (**70298 / 993662**)
+- `tools/gen_objdiff.py`: **1100 linked C TUs / 5587 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1284 decompiled function files** = **1081 standalone_tu** + **203 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1485 / 5937**; now exceeded by **73** matches
-- 26% milestone at the current function total: **1544 / 5937**; now exceeded by **14** matches
-- 27% active working goal at the current function total: **1603 / 5937**; **45** more matches needed
-- 30% milestone at the current function total: **1782 / 5937**; **224** more matches needed
+- 25% milestone at the current function total: **1485 / 5937**; now exceeded by **75** matches
+- 26% milestone at the current function total: **1544 / 5937**; now exceeded by **16** matches
+- 27% active working goal at the current function total: **1603 / 5937**; **43** more matches needed
+- 30% milestone at the current function total: **1782 / 5937**; **222** more matches needed
 - 80% target at the current function total: **4750 / 5937**
 - Remaining gap to 80%: **3205 matched functions**
 

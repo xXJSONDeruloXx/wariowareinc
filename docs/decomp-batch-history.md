@@ -576,3 +576,8 @@ This period built the reusable base library of patterns:
 - Round 64 screened eleven candidates. Seven were exact and entered the transaction; `func_08022070` and `func_0804F464` remain genuine near misses, while the two exact candidates using new `D_08xxxxxx` linker symbols were deferred rather than altering a dirty transaction.
 - The exact-only transaction passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`; post-apply report and objdiff refreshes passed, with ROM SHA-1 unchanged at `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Fresh report: **1558 / 5937** matched functions (**26.242208%**), **70246 / 993662** matched code (**7.069406%**), **1098 C / 5589 asm-only** units, and **1282** decomp files (`1079 standalone_tu` + `203 included_stub`).
+
+## Batch 212 — numeric-address ROM leaves (2026-08-06)
+- Converted `func_080B0760` and `func_080ED380` to standalone ordinary C. Both first isolated exact with symbolic `D_08xxxxxx` declarations; numeric absolute-address spellings were selected because those two symbols are not yet assigned in `undefined_syms.ld`.
+- The exact two-entry transaction passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`, and the ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1560 / 5937** matched functions (**26.275898%**), **70298 / 993662** matched code (**7.074639%**), **1100 C / 5587 asm-only** units, and **1284** decomp files (`1081 standalone_tu` + `203 included_stub`).
