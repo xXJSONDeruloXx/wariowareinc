@@ -5,17 +5,22 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 191` — two strict-ROM standalone C pure-leaf helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1476 / 5958 matched functions** = **24.773415%**
-- `matched_code_percent`: **6.7887807%**
-- `tools/gen_objdiff.py`: **1016 linked C TUs / 5671 non-C units**
-- `src/decomp/*.c`: **1198 decompiled function files** = **997 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 192` — three strict-ROM standalone C scene/runtime-buffer helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1479 / 5958 matched functions** = **24.823767%**
+- `matched_code_percent`: **6.797637%**
+- `tools/gen_objdiff.py`: **1019 linked C TUs / 5668 non-C units**
+- `src/decomp/*.c`: **1201 decompiled function files** = **1000 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5958**, so **14** additional matched functions are needed.
+- 25% milestone: **1490 / 5958**, so **11** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5958**.
-- That 30% milestone is **312** additional matched functions from the current baseline.
+- That 30% milestone is **309** additional matched functions from the current baseline.
+
+### Batch 192 — accepted (scene wrappers and runtime-buffer byte setter)
+- Converted `func_0801002C`, `func_08010308`, and `func_080F3C60` to ordinary C. The two scene wrappers use the direct `gCurrentSceneData + 8` load and existing scene-table declarations; the runtime helper writes four bytes through the absolute `D_030068F0` buffer symbol.
+- One eleven-entry m2c isolation screen found **3 exact / 5 near miss / 3 compile error**; only the three exact candidates entered the transaction. Added canonical `D_030068F0 = 0x030068F0` to `undefined_syms.ld` before apply.
+- The exact subset passed one transactional full Docker ROM/report gate. The C candidates contain no instruction-bearing or volatile inline asm. Fresh report: **1479 / 5958**, **6.797637%** matched code, **1019 C / 5668 asm-only** units, and **1201** decomp files (`1000 standalone_tu` + `201 included_stub`). `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Receipts: `.decomp-runs/20260805T-round-35-isolation.json` and `.decomp-runs/20260805T-round-35-apply.json`.
 
 ### Batch 191 — accepted (pure-leaf clamp and signed-absolute helpers)
 - Converted `func_080039EC` and `func_08008058` to ordinary C. The signed helper keeps the target's explicit `s16` normalization around the conditional absolute value; the clamp uses the direct lower/upper bound shape.
