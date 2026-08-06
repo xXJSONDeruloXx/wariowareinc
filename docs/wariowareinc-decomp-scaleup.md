@@ -5,17 +5,24 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 206` — two new strict-ROM standalone task-pool siblings plus the hardened candidate lifecycle
-- `build/report.json`: **1532 / 5949 matched functions** = **25.752228%**
-- `matched_code`: **69292 / 993632** = **6.973608%**
-- `tools/gen_objdiff.py`: **1072 linked C TUs / 5615 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1254 decompiled function files** = **1053 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 207` — six new strict-ROM standalone task-pool scan/mutation siblings plus the hardened candidate lifecycle
+- `build/report.json`: **1538 / 5943 matched functions** = **25.879187%**
+- `matched_code`: **69632 / 993636** = **7.0077977%**
+- `tools/gen_objdiff.py`: **1078 linked C TUs / 5609 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1260 decompiled function files** = **1059 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1488 / 5949**, now exceeded by **44** matched functions.
-- Next 30% milestone: **1785 / 5949**.
-- That 30% milestone is **253** additional matched functions from the current baseline.
+- 25% milestone: **1486 / 5943**, now exceeded by **52** matched functions.
+- Active 26% working goal: **1546 / 5943**; **8** additional matched functions are needed.
+- Next 30% milestone: **1783 / 5943**; **245** additional matched functions are needed.
+
+### Batch 207 — accepted (task-pool scan and mutation siblings)
+- Converted `func_08005834`, `func_08005870`, `func_080058AC`, `func_080058DC`, `func_080059A8`, and `func_08005A54` to standalone ordinary C. The six functions reuse the `D_030006A0` task pool and its `0x1C`-byte slot stride: owner scans, active-owner cancellation, state-mask setting, field update, and ID/state mutation.
+- Round 59 used m2c for the semantic skeletons. asmlift was not needed for this already-proven overlapping-field family; its earlier Round 58 diagnostics had already shown the struct-model limitation. Register-bound locals and goto-shaped loops supplied the exact compiler shape without instruction-bearing asm.
+- The normalized linked-ELF screen classified all six as symbol-boundary near misses (`0%` reported match) because the legacy target symbols stop before their literal-pool coverage. A separate linked `.text` byte audit, using the same zero-filled `.align 2, 0` normalization as `decomp_cycle.py`, proved target/candidate equality for **60**, **60**, **48**, **56**, **60**, and **60** bytes. Hashes are preserved in `.decomp-runs/20260805T-round-59-linked-bytecheck.json`; no instruction mismatch was waived.
+- Because `--force` cannot reuse a non-exact isolation receipt, `apply-batch` reran a fresh isolation pass and then applied all six in one rollback-capable transaction. The clean Docker ROM/report gate passed with `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Accepted sources contain ordinary C and register-bound compiler metadata only—no instruction-bearing or volatile inline asm. Fresh report: **1538 / 5943**, **7.0077977%** matched code, **1078 C / 5609 asm-only** units, and **1260** decomp files (`1059 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-59-isolation.json`, `.decomp-runs/20260805T-round-59-linked-bytecheck.json`, and `.decomp-runs/20260805T-round-59-apply.json`.
 
 ### Batch 206 — accepted (task-pool state scan and cancel siblings)
 - Converted `func_08005920` and `func_080059E4` to standalone ordinary C. Both walk the `D_030006A0` task slots at `0x1C`-byte stride; the first scans active slots by owner/state and the second writes the task ID and conditionally calls `task_stop`.
