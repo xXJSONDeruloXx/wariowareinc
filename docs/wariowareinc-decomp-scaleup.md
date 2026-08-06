@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 198` — twelve strict-ROM standalone runtime/leaf helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1505 / 5958 matched functions** = **25.260153%**
-- `matched_code`: **68274 / 993618** = **6.8712525%**
-- `tools/gen_objdiff.py`: **1045 linked C TUs / 5642 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1227 decompiled function files** = **1026 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 199` — sixteen strict-ROM standalone runtime/scene/graphics helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1509 / 5958 matched functions** = **25.327291%**
+- `matched_code`: **68394 / 993622** = **6.8833017%**
+- `tools/gen_objdiff.py`: **1049 linked C TUs / 5638 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1231 decompiled function files** = **1030 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5958**, now exceeded by **15** matched functions.
+- 25% milestone: **1490 / 5958**, now exceeded by **19** matched functions.
 - Next 30% milestone: **1788 / 5958**.
-- That 30% milestone is **283** additional matched functions from the current baseline.
+- That 30% milestone is **279** additional matched functions from the current baseline.
+
+### Batch 199 — accepted (scene, graphics, and mask helpers)
+- Converted `func_0801B174`, `func_0801C2D4`, `func_0801F698`, and `func_08062488` to standalone ordinary C. The scene setters preserve raw byte ABI width and reload order; the graphics helper uses an empty output constraint to keep the target's `R3` constant and `R3 → R0` copy; and the scene mask uses the established pinned R0/R1/R2 form.
+- Round 50's `func_080F253C`/`080F2598`/`080F25B8` screen remains blocked: all three still fold the target's `MOVS; RSBS` mask into `SUB`, even after separating the first mask expression. Round 51's `func_080047D4` remains evidence-only because its candidate changed the literal-pool symbol boundary/alignment.
+- The exact four-entry transaction reused the Round 51 isolation receipt and passed the clean full Docker ROM gate. No instruction-bearing asm was added; `func_0801B174` uses an empty memory barrier and `func_0801F698` uses an empty register output constraint for compiler shaping. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1509 / 5958**, **6.8833017%** matched code, **1049 C / 5638 asm-only** units, and **1231** decomp files (`1030 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-51-v3-isolation.json` and `.decomp-runs/20260805T-round-51-apply.json`.
 
 ### Batch 198 — accepted (scene predicate, string length, and PRNG leaf)
 - Converted `func_08016F60`, `func_080F2C68`, and `func_080F282C` to standalone ordinary C. The scene predicate uses an explicit `if (value != 0) return 1; return 0;` to preserve the target `BNE` direction; the string-length helper returns `u32` so the target's final `MOV R0,R1` is not widened into an extra byte-normalization pair; and the PRNG helper uses the target's unsigned input normalization and absolute `0x03000E78` address.

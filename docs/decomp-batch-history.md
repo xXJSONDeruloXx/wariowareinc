@@ -483,3 +483,10 @@ This period built the reusable base library of patterns:
 - Accepted functions: `func_08016F60`, `func_080F2C68`, and `func_080F282C`
 - The scene predicate required the explicit `!= 0` return ordering for `BNE`; the string-length helper required a `u32` return to avoid an extra `LSLS/LSRS` normalization at the epilogue; and the PRNG helper matched with an absolute `0x03000E78` address plus an empty compiler barrier.
 - The exact three-entry transaction passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. The earlier predicate/length spellings remain near-miss evidence; no instruction-bearing asm was added, and `func_080F282C` uses only an empty memory barrier.
+
+## Batch 199 — accepted (scene, graphics, and mask helpers)
+- Result: match ✅
+- Report: **1509 / 5958**, **25.327291%**, **6.8833017% matched code**
+- Accepted functions: `func_0801B174`, `func_0801C2D4`, `func_0801F698`, and `func_08062488`
+- The exact four-entry transaction passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. `func_0801F698` required an empty `"+r"` output constraint to retain the target constant register/copy; it emits no instructions.
+- Round 50's runtime-table RSBS family remains blocked by `SUB` constant folding, and Round 51's `func_080047D4` remains a literal-pool near miss. Both are preserved in the committed receipts/near-miss ledger.
