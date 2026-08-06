@@ -180,9 +180,10 @@ python3 tools/decomp_cycle.py verify
 ```
 
 Install the repository hooks once with `tools/install-hooks.sh`. `pre-commit`
-checks changed C policy and runs the Docker SHA gate for staged ROM-affecting
-paths; `pre-push` checks the pushed range and runs the same gate before allowing
-a push. Documentation/tooling-only commits do not pay the full build cost.
+checks changed C policy and staged/unstaged ROM scope; `pre-push` checks the
+pushed range, rejects dirty ROM-affecting paths, and runs the Docker SHA gate
+before allowing a push. This keeps the remote invariant while avoiding a
+duplicate full compile in the normal commit-then-push workflow.
 2. `recommended` includes `standalone_tu` and `included_stub` candidates that the tools can apply mechanically.
 3. In the current post-standalone phase, assume **one function per chunk is no longer always optimal**. Prefer a tiny linked batch when a caller/callee pair is obvious, when callee-first conversion reduces risk, or when a dirty-worktree false mismatch would otherwise burn repeated chunks.
 4. Call `preflight_candidate` before iteration; proceed when `safeForAutonomous=true` for each function in the proposed batch.

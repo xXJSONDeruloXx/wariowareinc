@@ -6,9 +6,9 @@ cd "$repo_root"
 
 python3 tools/check_decomp_policy.py --staged --check
 
-# A commit must be tested against exactly the staged ROM-affecting work.  An
-# unstaged source/linker edit would make a working-tree Docker build prove the
-# wrong tree, so reject that ambiguity before invoking Docker.
+# A commit must identify exactly which ROM-affecting work is staged. An
+# unstaged source/linker edit would make the later working-tree push gate prove
+# the wrong tree, so reject that ambiguity here.
 unstaged_rom="$(git diff --name-only --diff-filter=ACMRTUXB)"
 if [ -n "$unstaged_rom" ]; then
   while IFS= read -r path; do
@@ -21,8 +21,7 @@ if [ -n "$unstaged_rom" ]; then
   done <<< "$unstaged_rom"
 fi
 
-if python3 tools/check_decomp_policy.py --staged --needs-verification; then
-  receipt="$(mktemp "${TMPDIR:-/tmp}/warioware-pre-commit.XXXXXX.json")"
-  trap 'rm -f "$receipt"' EXIT
-  python3 tools/decomp_cycle.py verify --no-report --output "$receipt"
-fi
+# The full Docker ROM gate is intentionally owned by pre-push. Keeping this
+# hook fast avoids compiling the same tree twice in the normal commit-then-push
+# workflow; policy and staged/unstaged ROM-scope checks above still prevent
+# ambiguous or forbidden commits.
