@@ -5,18 +5,25 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 217` — nine strict-ROM scene-state, predicate, and update siblings and the hardened candidate lifecycle
-- `build/report.json`: **1598 / 5937 matched functions** = **26.915949%**
-- `matched_code`: **71486 / 993690** = **7.1939936%**
-- `tools/gen_objdiff.py`: **1138 linked C TUs / 5549 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1322 decompiled function files** = **1119 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 218` — five strict-ROM scene predicates, clamp/update helpers, and a byte-copy leaf under the hardened candidate lifecycle
+- `build/report.json`: **1603 / 5937 matched functions** = **27.000168%**
+- `matched_code`: **71640 / 993690** = **7.2094917%**
+- `tools/gen_objdiff.py`: **1143 linked C TUs / 5544 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1327 decompiled function files** = **1124 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1485 / 5937**, now exceeded by **95** matched functions.
-- 26% milestone: **1544 / 5937**; current progress is **1598**, exceeding it by **54** matches.
-- Active 27% working goal: **1603 / 5937**; **5** additional matched functions are needed.
-- Next 30% milestone: **1782 / 5937**; **184** additional matched functions are needed.
+- 25% milestone: **1485 / 5937**, now exceeded by **118** matched functions.
+- 26% milestone: **1544 / 5937**; current progress is **1603**, exceeding it by **59** matches.
+- Active 27% working goal: **1603 / 5937**; reached.
+- Next 30% milestone: **1782 / 5937**; **179** additional matched functions are needed.
+
+### Batch 218 — accepted (scene predicates, clamp/update helpers, and byte copy)
+- Converted `func_0805C5D8`, `func_0806EC7C`, `func_08088B80`, `func_08089648`, and `func_0809C0C0` to standalone ordinary C. The five winners cover a byte-copy loop, two scene predicates, a record clamp/changed flag, and a scene-time threshold predicate.
+- Round 70 used asmlift/m2c output to select five compact candidates. The first isolation pass found **2 exact / 3 near miss**; source-level branch polarity for the two boolean leaves and register-bound load sequencing for `08089648` produced **5 exact / 0 rejected** on v2.
+- The accepted sources contain ordinary C and register-bound compiler metadata only; there is no volatile or instruction-bearing inline asm. The three repaired first-pass candidates remain recorded in `.nearmiss/` with both isolation receipts.
+- The exact-only transaction passed the explicit clean Docker rebuild with `wariowareinc.gba: OK`; report, objdiff, policy, and SHA-1 checks passed. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1603 / 5937** matched functions (**27.000168%**), **71640 / 993690** matched code (**7.2094917%**), **1143 C / 5544 asm-only** units, and **1327** decomp files (`1124 standalone_tu` + `203 included_stub`). Evidence: `.decomp-runs/round-70-isolation-v1.json`, `round-70-isolation-v2.json`, and `round-70-apply-v1.json`.
 
 ### Batch 217 — accepted (scene-state, predicate, and update siblings)
 - Converted `func_080A7A74`, `func_0809E804`, `func_080526D0`, `func_08072DD4`, `func_0805F08C`, `func_080855D8`, `func_0808EA3C`, `func_080D25C4`, and `func_0806F0A0` to standalone ordinary C. The batch covers scene predicates, a scaled scene-data store, a conditional record update, an indexed byte fallback, a conditional halfword store, and two accumulator/clamp helpers.

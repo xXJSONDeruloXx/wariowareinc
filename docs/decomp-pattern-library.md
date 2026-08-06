@@ -421,6 +421,13 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Post-compare indexed byte fallback**: if the target branches to a constant fallback before loading the global base, write `if (arg > limit) return fallback;` and assign the base pointer only in the remaining path. Declaring the pointer at function scope but initializing it before the test hoists its literal load and reverses the branch layout; `func_0805F08C` is the exact example.
 - **R1 indexed-halfword reuse trap**: a target that uses one register for the global-pointer literal, indexed `LDRSH` offset, and later accumulator may remain a near miss even with hard-register locals and empty constraints. Keep `func_080DD8A4` as evidence until the source reproduces `LDRSH [R2,R1]`; do not accept the R0-indexed variant merely because all stores and semantics are correct.
 
+### Round 70 additions: threshold branches and difference ordering
+
+- **Equality-return branch layout**: when the target compares two bytes and branches with `BEQ` to a later `MOVS #1`, write the equality case as the early return (`if (a == b) return 1; return 0;`). The inverted `!=` spelling is semantically identical but makes agbcc emit `BNE` with the return blocks reversed; `func_0806EC7C` is the exact proof.
+- **Unsigned threshold fall-through**: when the target uses `CMP; BLS` to a later constant return, write the less-than-or-equal case as the early return (`if (value <= limit) return constant; return fallback;`). Writing `if (value > limit) return fallback;` produces `BHI` to the other block and is a near miss even when the predicate is equivalent; `func_0809C0C0` demonstrates the repair.
+- **Difference load order**: for a helper whose target loads the argument field first, then the global-scene field, subtracts into the result register, and compares that result with the second argument, pin the incoming values to the target ABI registers and spell the loads/subtraction as separate C statements. `func_08089648` matches with register-bound locals and no instruction asm.
+- **Asmlift exact skeletons still need project validation**: `func_0805C5D8` and `func_08088B80` were exact from the first asmlift-shaped C spelling, but Round 70 still screened all five candidates through the same Docker isolation receipt. Semantic similarity is a discovery aid; only exact isolated code followed by the full ROM gate is admissible.
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers
