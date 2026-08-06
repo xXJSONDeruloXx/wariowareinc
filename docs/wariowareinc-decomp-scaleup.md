@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 190` — ten strict-ROM standalone C sprite/scene/audio helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1474 / 5960 matched functions** = **24.731544%**
-- `matched_code_percent`: **6.7847543%**
-- `tools/gen_objdiff.py`: **1014 linked C TUs / 5673 non-C units**
-- `src/decomp/*.c`: **1196 decompiled function files** = **995 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 191` — two strict-ROM standalone C pure-leaf helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1476 / 5958 matched functions** = **24.773415%**
+- `matched_code_percent`: **6.7887807%**
+- `tools/gen_objdiff.py`: **1016 linked C TUs / 5671 non-C units**
+- `src/decomp/*.c`: **1198 decompiled function files** = **997 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5960**, so **16** additional matched functions are needed.
-- Next 30% milestone: **1788 / 5960**.
-- That 30% milestone is **314** additional matched functions from the current baseline.
+- 25% milestone: **1490 / 5958**, so **14** additional matched functions are needed.
+- Next 30% milestone: **1788 / 5958**.
+- That 30% milestone is **312** additional matched functions from the current baseline.
+
+### Batch 191 — accepted (pure-leaf clamp and signed-absolute helpers)
+- Converted `func_080039EC` and `func_08008058` to ordinary C. The signed helper keeps the target's explicit `s16` normalization around the conditional absolute value; the clamp uses the direct lower/upper bound shape.
+- Both legacy target objects contain internal local labels that make normalized linked-ELF objdiff infer a truncated function symbol. The candidate instructions were byte-consistent through the inferred boundary, and the rollback-capable `apply-batch --force` path admitted them only after the clean full Docker ROM gate passed.
+- The two C candidates contain no instruction-bearing or volatile inline asm. The final gate reported `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1476 / 5958**, **6.7887807%** matched code, **1016 C / 5671 asm-only** units, and **1198** decomp files (`997 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-34-isolation.json` and `.decomp-runs/20260805T-round-34-apply.json`.
 
 ### Batch 190 — accepted (sprite, scene, music-table, and graphics helpers)
 - Converted ten standalone functions to ordinary C: `func_0800C7A4`, `func_0800CE6C`, `func_08016688`, `func_08018534`, `func_0801911C`, `func_0801913C`, `func_0801915C`, `func_08019644`, `func_0804E290`, and `func_080C477C`.

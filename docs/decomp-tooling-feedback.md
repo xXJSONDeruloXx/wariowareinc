@@ -12,6 +12,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - The rejected first spellings remain in `.nearmiss/` and `tools/attempts.tsv`; the best near misses show only the three-operand add or literal-folding differences. No instruction-bearing or volatile inline asm was added.
 - The combined exact-only screen and one transactional full-ROM gate passed. Report progress is **1464 → 1474** matched functions, **1004 → 1014 C TUs**, and ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 
+## Round 34 — local-label pure leaves (2026-08-05)
+- The existing m2c/probe ledger supplied readable C for `func_080039EC` and `func_08008058`. A fresh one-container isolation pass reproduced their instruction streams, but linked-ELF objdiff inferred each target symbol only through its first internal local label, reporting **33.333332%** and **0.0%** symbol matches despite the candidate epilogues being present in the full object.
+- This is distinct from an ordinary compiler near miss: the target assembly has `glabel` followed by local branch labels, so the comparison symbol size is truncated. The evidence is preserved in `.decomp-runs/20260805T-round-34-isolation.json`, `.nearmiss/`, and `tools/attempts.tsv`; no instruction-bearing or volatile inline asm was introduced.
+- The rollback-capable `apply-batch --force` path was used as a narrow metadata exception, and the full-context gate—not the misleading inferred symbol score—decided acceptance. It passed `wariowareinc.gba: OK` with unchanged SHA-1 and moved the report **1474 → 1476** matched functions and **1014 → 1016** linked C TUs.
+- Durable rule: keep normal standalone admission exact-only; only use the force path when the receipt identifies a known target-symbol-boundary defect, the full object bytes are explained, and the transactional full-ROM gate passes. Do not use it to waive a compiler-generated instruction difference.
+
 ## Round 32 — scene-table and audio wrapper fan-in (2026-08-05)
 - m2c supplied seven compact standalone skeletons. One Docker isolation invocation classified **6 exact / 1 near miss**; the exact subset was selected by candidate hash and reused for one transactional full-ROM gate.
 - The three scene-table siblings matched as ordinary C when the candidates used `scenes.h`, raw `*(u32 *)((u8 *)gCurrentSceneData + 8)`, and `u8 D_083A98xx[]` table addresses. The audio siblings matched with an explicit non-void return for `func_0800C7FC`, a declared `u16` key read in `func_0801E918`, and a typed data-symbol pointer for `func_08024494`.
