@@ -5,18 +5,25 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 214` — eight strict-ROM standalone scene-variable, sound/RNG, and indexed-state siblings and the hardened candidate lifecycle
-- `build/report.json`: **1573 / 5937 matched functions** = **26.494864%**
-- `matched_code`: **70690 / 993666** = **7.1140604%**
-- `tools/gen_objdiff.py`: **1113 linked C TUs / 5574 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1297 decompiled function files** = **1094 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 215` — seven strict-ROM standalone beatscript, scene-data, save, and key-wrapper siblings and the hardened candidate lifecycle
+- `build/report.json`: **1580 / 5937 matched functions** = **26.612768%**
+- `matched_code`: **70918 / 993672** = **7.1369624%**
+- `tools/gen_objdiff.py`: **1120 linked C TUs / 5567 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1304 decompiled function files** = **1101 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1485 / 5937**, now exceeded by **88** matched functions.
-- 26% milestone: **1544 / 5937**; current progress is **1573**, exceeding it by **29** matches.
-- Active 27% working goal: **1603 / 5937**; **30** additional matched functions are needed.
-- Next 30% milestone: **1782 / 5937**; **209** additional matched functions are needed.
+- 25% milestone: **1485 / 5937**, now exceeded by **95** matched functions.
+- 26% milestone: **1544 / 5937**; current progress is **1580**, exceeding it by **36** matches.
+- Active 27% working goal: **1603 / 5937**; **23** additional matched functions are needed.
+- Next 30% milestone: **1782 / 5937**; **202** additional matched functions are needed.
+
+### Batch 215 — accepted (beatscript, scene-data, save, and key wrappers)
+- Converted `func_0800CDB0`, `func_080166E4`, `func_08075E34`, `func_080B2704`, `func_08015E24`, `func_0801E4EC`, and `func_08020FB0` to standalone ordinary C. The batch covers a beatscript bit-field setter, a texture-loader/task-finalizer wrapper, two ROM-sound scene-data wrappers, a save-unlock decision, and two multi-call key-test wrappers.
+- Round 67 screened seven candidates through four isolated C-shape revisions: the initial pass found **3 exact / 3 near miss / 1 compile error**, and the final v4 pass found **7 exact / 0 rejected**. The repairs were a compiler-only mask dependency, branch fall-through reshaping, the `scenes.h` global declaration, and an explicit `+1` Thumb callback pointer.
+- The accepted `func_0800CDB0` source uses one empty nonvolatile `"+r"` compiler constraint to preserve the target's separate `MOVS #3; RSBS` mask sequence; it emits no instruction text and contains no volatile or instruction-bearing asm.
+- The exact-only transaction passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`; `make report`, `gen_objdiff.py`, and policy checks passed. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1580 / 5937** matched functions (**26.612768%**), **70918 / 993672** matched code (**7.1369624%**), **1120 C / 5567 asm-only** units, and **1304** decomp files (`1101 standalone_tu` + `203 included_stub`). Evidence: `.decomp-runs/round-67-isolation-v1.json`, `round-67-isolation-v2.json`, `round-67-isolation-v3.json`, `round-67-isolation-v4.json`, and `.decomp-runs/round-67-apply-v1.json`.
 
 ### Batch 214 — accepted (scene-variable leaves and indexed state wrappers)
 - Converted `func_080CAAEC`, `func_080B29C8`, `func_0806F0D4`, `func_080AA3DC`, `func_080D2450`, `func_080C691C`, `func_080A99D0`, and `func_08046518` to standalone ordinary C. The batch covers a hardware-register/random-number wrapper, two sound/state wrappers, byte/bit scene leaves, an indexed scene-state store, a ROM-table call wrapper, and a signed scene-byte forwarding wrapper.

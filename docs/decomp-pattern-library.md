@@ -400,6 +400,12 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Hardware register read as ordinary C**: a `volatile` typed pointer to `0x04000100` is a normal memory access and can match a hardware-register load; it is distinct from volatile inline asm and passes the no-instruction-asm policy.
 - **Post-call offset store trap**: the natural `func(); *(u16 *)(base + (0xDF << 2)) = 1;` spelling for `func_080D3A60` remains a near miss. Keep the candidate and its receipt as evidence until an isolated permutation reproduces the target `MOVS`/shift/address ordering; do not waive it merely because the semantics are obvious.
 
+### Round 67 additions: wrapper branch and literal shaping
+
+- **Mask-negation folding repair**: when a target requires `MOVS #3; RSBS` rather than agbcc's folded `SUB #4`, keep the mask in a named local, insert an empty nonvolatile `"+r"` compiler constraint, then negate it in the next statement. This emits no asm instructions; `func_0800CDB0` is the new standalone proof point.
+- **Fall-through branch spelling**: if the target branches directly to the false return and places the mutating path in fall-through order, write `if (predicate != 0) return 0; mutate(); return 1;` rather than the semantically equivalent `if (predicate == 0) { mutate(); return 1; }`. `func_08015E24` changed from `BEQ` to the target `BNE` layout this way.
+- **Thumb callback addend**: a callback passed as data may require the function address's Thumb `+1` addend in the literal pool. An explicit ordinary-C cast such as `(void (*)(u32))(set_pause_beatscript_scene + 1)` preserves that relocation/addend; omitting it can leave all instructions equal while changing a pool byte, as Round 67's `func_080166E4` screen demonstrated.
+
 ## Families still worth mining heavily
 - conditional byte-check + BL wrappers
 - shift-offset store wrappers
