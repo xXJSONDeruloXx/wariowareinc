@@ -476,3 +476,10 @@ This period built the reusable base library of patterns:
 - Accepted functions: `func_080F1B5C` and `func_080F1FB4`
 - m2c supplied the semantic skeletons. The arithmetic leaf matched with explicit unsigned shift pairs and register-bound temporaries; the clamp's first spelling reversed the target branch layout, while `if (temp <= 0x3F) return 0x7F;` reproduced the target `BLS`/fall-through shape.
 - The same five-entry exploratory screen kept `func_08003FB8`, `func_08006CC8`, and `func_08006EE0` as literal-pool near misses. The exact pair reused one combined isolation receipt and passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`; no inline asm was added.
+
+## Batch 198 — accepted (scene predicate, string length, and PRNG leaf)
+- Result: match ✅
+- Report: **1505 / 5958**, **25.260153%**, **6.8712525% matched code**
+- Accepted functions: `func_08016F60`, `func_080F2C68`, and `func_080F282C`
+- The scene predicate required the explicit `!= 0` return ordering for `BNE`; the string-length helper required a `u32` return to avoid an extra `LSLS/LSRS` normalization at the epilogue; and the PRNG helper matched with an absolute `0x03000E78` address plus an empty compiler barrier.
+- The exact three-entry transaction passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. The earlier predicate/length spellings remain near-miss evidence; no instruction-bearing asm was added, and `func_080F282C` uses only an empty memory barrier.

@@ -5,17 +5,22 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 197` — nine strict-ROM standalone runtime-table/leaf helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1502 / 5958 matched functions** = **25.209803%**
-- `matched_code`: **68180 / 993616** = **6.861806%**
-- `tools/gen_objdiff.py`: **1042 linked C TUs / 5645 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1224 decompiled function files** = **1023 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 198` — twelve strict-ROM standalone runtime/leaf helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1505 / 5958 matched functions** = **25.260153%**
+- `matched_code`: **68274 / 993618** = **6.8712525%**
+- `tools/gen_objdiff.py`: **1045 linked C TUs / 5642 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1227 decompiled function files** = **1026 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5958**, now exceeded by **12** matched functions.
+- 25% milestone: **1490 / 5958**, now exceeded by **15** matched functions.
 - Next 30% milestone: **1788 / 5958**.
-- That 30% milestone is **286** additional matched functions from the current baseline.
+- That 30% milestone is **283** additional matched functions from the current baseline.
+
+### Batch 198 — accepted (scene predicate, string length, and PRNG leaf)
+- Converted `func_08016F60`, `func_080F2C68`, and `func_080F282C` to standalone ordinary C. The scene predicate uses an explicit `if (value != 0) return 1; return 0;` to preserve the target `BNE` direction; the string-length helper returns `u32` so the target's final `MOV R0,R1` is not widened into an extra byte-normalization pair; and the PRNG helper uses the target's unsigned input normalization and absolute `0x03000E78` address.
+- The Round 49 screen used m2c/asmlift skeletons plus two focused C-shape revisions. The initial predicate and `u8` length return were recorded as near misses; the final three-entry exact receipt passed the transactional full Docker ROM gate. No instruction-bearing asm was added; `func_080F282C` uses only an empty memory barrier for ordering. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1505 / 5958**, **6.8712525%** matched code, **1045 C / 5642 asm-only** units, and **1227** decomp files (`1026 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-49-final-isolation.json` and `.decomp-runs/20260805T-round-49-apply.json`.
 
 ### Batch 197 — accepted (runtime arithmetic and clamp leaves)
 - Converted `func_080F1B5C` and `func_080F1FB4` to standalone ordinary C. The arithmetic leaf preserves the target's unsigned shift-pair extraction and three-register multiply sequence; the clamp uses the target-shaped `if (temp <= 0x3F) return 0x7F;` layout so `BLS` lands on the constant-return block.
