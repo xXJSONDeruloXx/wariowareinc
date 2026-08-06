@@ -1,14 +1,14 @@
 #include "global.h"
+#include "graphics.h"
 
-extern u8 D_03000528;
-
-void func_08003FB8(void) {
-    register u8 *base asm("r2") = &D_03000528;
-    register u32 mask asm("r0");
+void func_08006CC8(void) {
+    register u8 *base asm("r2") = (u8 *)&gGraphicsBuffer;
+    register u32 mask asm("r0") = 0x854;
     register u32 value asm("r1");
 
+    base += mask;
     value = *base;
-    mask = 2;
+    mask = 3;
     mask = -mask;
     mask &= value;
     value = 9;

@@ -469,3 +469,10 @@ This period built the reusable base library of patterns:
 - Accepted functions: `func_080F2374`, `func_080F24A0`, `func_080F24C0`, `func_080F2558`, and `func_080F2578`
 - An empty memory barrier after the argument's `LSLS/LSRS #24` pair restored the target base-load order for five siblings. `func_080F2558` also needed R0/R3 result/mask reuse. The exact-only transaction passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - `func_080F253C` remains an isolated near miss (`SUB #3` versus target `MOVS #2; RSBS`); it was not applied. The accepted sources use no instruction-bearing asm, and the empty barriers emit no instructions.
+
+## Batch 197 — accepted (runtime arithmetic and clamp leaves)
+- Result: match ✅
+- Report: **1502 / 5958**, **25.209803%**, **6.861806% matched code**
+- Accepted functions: `func_080F1B5C` and `func_080F1FB4`
+- m2c supplied the semantic skeletons. The arithmetic leaf matched with explicit unsigned shift pairs and register-bound temporaries; the clamp's first spelling reversed the target branch layout, while `if (temp <= 0x3F) return 0x7F;` reproduced the target `BLS`/fall-through shape.
+- The same five-entry exploratory screen kept `func_08003FB8`, `func_08006CC8`, and `func_08006EE0` as literal-pool near misses. The exact pair reused one combined isolation receipt and passed one clean Docker ROM gate with SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`; no inline asm was added.
