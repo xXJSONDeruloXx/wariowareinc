@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 201` — twenty-four strict-ROM standalone runtime/scene/graphics helpers across the current sweep plus the hardened candidate lifecycle
-- `build/report.json`: **1517 / 5958 matched functions** = **25.461563%**
-- `matched_code`: **68694 / 993630** = **6.9134383%**
-- `tools/gen_objdiff.py`: **1057 linked C TUs / 5630 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1239 decompiled function files** = **1038 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 202` — five new strict-ROM standalone graphics, scene-state, and DMA-table helpers, bringing the current sweep to twenty-nine accepted helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1522 / 5956 matched functions** = **25.554064%**
+- `matched_code`: **68922 / 993632** = **6.9363704%**
+- `tools/gen_objdiff.py`: **1062 linked C TUs / 5625 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1244 decompiled function files** = **1043 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5958**, now exceeded by **27** matched functions.
-- Next 30% milestone: **1788 / 5958**.
-- That 30% milestone is **271** additional matched functions from the current baseline.
+- 25% milestone: **1489 / 5956**, now exceeded by **33** matched functions.
+- Next 30% milestone: **1787 / 5956**.
+- That 30% milestone is **265** additional matched functions from the current baseline.
+
+### Batch 202 — accepted (graphics, scene-state, and DMA-table helpers)
+- Converted `func_080186AC`, `func_080195B8`, `func_080F154C`, `func_08002620`, and `func_0800774C` to standalone ordinary C. The graphics clear preserves the target's delayed first store; the scene helper preserves the mixed scene/graphics store order; the runtime initializer is direct C; and the DMA-table siblings preserve the post-write volatile read and register order.
+- Round 54's final five-entry screen produced **3 strict exact / 2 symbol-boundary near miss** results. The two DMA-table functions had matching instruction bodies, but normalized linked-ELF symbol inference included the compiler's literal pool in the candidate symbol. Because the complete code/pool bytes were accounted for, the documented narrow `--force` metadata exception was used; no instruction mismatch was waived.
+- The five-entry transaction passed one clean full Docker ROM/report gate with `wariowareinc.gba: OK`; canonical `D_030001C0`, `D_03000C18`, `D_03003FE4`, `D_03003FF0`, `D_03006580`, `D_03006588`, `D_030068A4`, and `D_03007204` linker assignments were added. No instruction-bearing or volatile inline asm was introduced: the sources use ordinary C, register-bound locals, and volatile memory pointers only. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1522 / 5956**, **6.9363704%** matched code, **1062 C / 5625 asm-only** units, and **1244** decomp files (`1043 standalone_tu` + `201 included_stub`). Receipts: `.decomp-runs/20260805T-round-54-isolation.json`, `.decomp-runs/20260805T-round-54-isolation-v2.json`, and `.decomp-runs/20260805T-round-54-apply.json`.
 
 ### Batch 201 — accepted (beatscript and runtime-table helpers)
 - Converted `func_0800C9C0`, `func_0800CA5C`, and `func_080F2894` to standalone ordinary C. The beatscript setters preserve the target's two distinct base-plus-literal destinations; `func_0800CA5C` uses an empty register-output constraint to prevent agbcc from folding the required `MOVS #0x21; RSBS` mask into `SUB`; and `func_080F2894` uses canonical absolute runtime symbols plus explicit `r0 + r1` operand order.
