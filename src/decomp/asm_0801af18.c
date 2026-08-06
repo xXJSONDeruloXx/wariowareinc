@@ -6,6 +6,7 @@ void func_0801AF18(void) {
     register u32 mask asm("r0") = 0x3D;
     value = data[0x18];
     mask = -mask;
-    value = (value & mask) | 8;
-    data[0x18] = value;
+    mask &= value;
+    mask |= 8;
+    data[0x18] = mask;
 }

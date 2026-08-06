@@ -6,5 +6,6 @@ void func_0801B3E4(void) {
     register u32 mask asm("r0") = 2;
     value = data[0xF4];
     mask = -mask;
-    data[0xF4] = value & mask;
+    mask &= value;
+    data[0xF4] = mask;
 }

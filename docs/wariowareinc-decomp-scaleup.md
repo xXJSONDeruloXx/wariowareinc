@@ -5,17 +5,23 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 192` — three strict-ROM standalone C scene/runtime-buffer helpers plus the hardened candidate lifecycle
-- `build/report.json`: **1479 / 5958 matched functions** = **24.823767%**
-- `matched_code_percent`: **6.797637%**
-- `tools/gen_objdiff.py`: **1019 linked C TUs / 5668 non-C units**
-- `src/decomp/*.c`: **1201 decompiled function files** = **1000 standalone_tu** + **201 included_stub**
+- Verified working tree: `batch 193` — six strict-ROM standalone C scene/graphics/runtime helpers plus the hardened candidate lifecycle
+- `build/report.json`: **1485 / 5958 matched functions** = **24.924473%**
+- `matched_code_percent`: **6.8121023%**
+- `tools/gen_objdiff.py`: **1025 linked C TUs / 5662 non-C units**
+- `src/decomp/*.c`: **1207 decompiled function files** = **1006 standalone_tu** + **201 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **30 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1490 / 5958**, so **11** additional matched functions are needed.
+- 25% milestone: **1490 / 5958**, so **5** additional matched functions are needed.
 - Next 30% milestone: **1788 / 5958**.
-- That 30% milestone is **309** additional matched functions from the current baseline.
+- That 30% milestone is **303** additional matched functions from the current baseline.
+
+### Batch 193 — accepted (scene, graphics, and runtime helpers)
+- Converted six standalone functions to ordinary C: `func_080DA0B0`, `func_08082934`, `func_0801BEA8`, `func_0801AF18`, `func_0801B3E4`, and `func_080F1574`.
+- The scene accumulator preserves the target's global-load order; the graphics transfer pins the `R0` offset and `R1` graphics base and assigns the base between shifts; the three scene-variable masks use a register-bound mask/result so `mask &= value` retains the target `AND R0,R2`/`AND R0,R1` orientation; and the runtime table lookup pins the base to `R1` and uses the target two-operand add.
+- A multi-round m2c/variant screen kept the unresolved `func_08016A60`/`func_08016A7C` bit setters as near misses: every ordinary-C mask materialization after the argument's `#1` mask was canonicalized to `SUB #3/#4` rather than the target `MOVS #2/#3; RSBS`. No instruction-bearing asm was used to force it. The accepted six-entry exact receipt passed one transactional full Docker ROM/report gate after adding canonical `D_030068E8`.
+- Fresh report: **1485 / 5958**, **6.8121023%** matched code, **1025 C / 5662 asm-only** units, and **1207** decomp files (`1006 standalone_tu` + `201 included_stub`). `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`. Receipts: `.decomp-runs/20260805T-round-44-isolation.json` and `.decomp-runs/20260805T-round-44-apply.json`.
 
 ### Batch 192 — accepted (scene wrappers and runtime-buffer byte setter)
 - Converted `func_0801002C`, `func_08010308`, and `func_080F3C60` to ordinary C. The two scene wrappers use the direct `gCurrentSceneData + 8` load and existing scene-table declarations; the runtime helper writes four bytes through the absolute `D_030068F0` buffer symbol.
