@@ -5,20 +5,26 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 232` — four scene/main-menu helpers admitted after strict ordinary-C isolation and a full-context Docker gate under the hardened candidate lifecycle
-- `build/report.json`: **1674 / 5934 matched functions** = **28.210312%**
-- `matched_code`: **75056 / 993772** = **7.552638%**
-- `tools/gen_objdiff.py`: **1214 linked C TUs / 5473 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1398 decompiled function files** = **1195 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 233` — two scene/graphics helpers admitted after strict ordinary-C/layout-quality isolation and a full-context Docker gate under the hardened candidate lifecycle
+- `build/report.json`: **1676 / 5934 matched functions** = **28.244019%**
+- `matched_code`: **75264 / 993780** = **7.573507%**
+- `tools/gen_objdiff.py`: **1216 linked C TUs / 5471 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1400 decompiled function files** = **1197 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, and compiler register pins are rejected by the source audit, cycle, and Git hooks. Raw pointer casts/offsets are reported as evidence rather than banned.
+- New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, and named overlays are preferred for multi-field records.
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1484 / 5934**, now exceeded by **178** matched functions.
-- 26% milestone: **1543 / 5934**; current progress is **1674**, exceeding it by **131** matches.
-- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **71** matches.
-- Next 30% milestone: **1781 / 5934**; **107** additional matched functions are needed.
+- 26% milestone: **1543 / 5934**; current progress is **1676**, exceeding it by **133** matches.
+- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **73** matches.
+- Next 30% milestone: **1781 / 5934**; **105** additional matched functions are needed.
+
+### Batch 233 — accepted (named scene/graphics overlays)
+- Converted `func_080165D4` and `func_08016BF0` to standalone ordinary C. The first is the title-scene state dispatcher with a named packed `SceneState` overlay; the second initializes the main-menu graphics register fields through a named `GraphicsMenuRegisters` overlay.
+- Round 84's broad screen began with **2 exact / 3 near miss** after compile-context repairs. The exact-only manifest was re-screened after the new layout policy and reached **2 exact / 0 rejected**. `func_080165D4`'s initial exact raw-byte-pointer spelling was deliberately reshaped to the named overlay and remained exact; asmlift's BF0 generic pointer output was not admitted.
+- The exact-only transaction passed the clean Docker ROM gate with `wariowareinc.gba: OK`; post-apply report/objdiff refreshed **1676 / 5934** matched functions, **75264 / 993780** matched code, and **1216 C / 5471 asm-only** units. ROM SHA-1 remains **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+- The strict source/layout audit reports zero instruction asm, barriers, register pins, raw pointer accesses, and numeric pointer offsets in both accepted files. Evidence: `.decomp-runs/round-84-manifest.json`, `round-84-isolation-v1.json` through `round-84-isolation-v5.json`, `round-84-source-audit.json`, and `round-84-apply.json`; rejected candidates remain in `.nearmiss/` and `tools/attempts.tsv`.
 
 ### Batch 232 — accepted (scene/main-menu helpers)
 - Converted `func_080167D4`, `func_08016CBC`, `func_08016808`, and `func_08016C60` to standalone ordinary C. The group covers the sound-stop/scene-thread flag leaf, beatscript scene bootstrap, main-menu state dispatch, and graphics-buffer scene update.

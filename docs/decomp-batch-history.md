@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 233 — named scene/graphics overlays (2026-08-07)
+- Converted `func_080165D4` and `func_08016BF0` to standalone ordinary C. The first uses a named packed `SceneState` overlay for the title-scene dispatcher; the second uses a named `GraphicsMenuRegisters` overlay for the graphics register setup.
+- Round 84's broad screen produced **2 exact / 3 near miss** candidates. The exact-only manifest was re-screened after the new opaque-layout policy and reached **2 exact / 0 rejected**. The first exact `func_080165D4` raw-byte-pointer spelling was reshaped to the named overlay and stayed exact; asmlift's generic BF0 pointer skeleton was rejected as a candidate.
+- The exact-only apply passed `wariowareinc.gba: OK`, advancing **1674 → 1676** matched functions, **1214 → 1216** linked C TUs, and **1398 → 1400** decomp files. Fresh report is **1676 / 5934** (**28.244019%**), **75264 / 993780** matched code (**7.573507%**), with **1197 standalone_tu / 203 included_stub**. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- The accepted sources have zero instruction asm, barriers, register pins, raw pointer accesses, and numeric pointer offsets under `round-84-source-audit.json`. Evidence includes `.decomp-runs/round-84-manifest.json`, `round-84-isolation-v1.json` through `round-84-isolation-v5.json`, and `round-84-apply.json`; the three rejected candidates remain in `.nearmiss/` and `tools/attempts.tsv`.
+
 ## Batch 232 — scene/main-menu helpers (2026-08-07)
 - Converted `func_080167D4`, `func_08016CBC`, `func_08016808`, and `func_08016C60` to standalone ordinary C. The four helpers cover the sound-stop/scene-thread flag leaf, beatscript scene bootstrap, main-menu state dispatch, and graphics-buffer scene update.
 - m2c supplied the semantic skeletons. asmlift was used diagnostically but stopped at the project-header boundary; no generated lift was admitted. Round 83 v1 recorded two header-context compile errors, v2 repaired those to three exact plus one stack-size near miss, and v3 reached **4 exact / 0 rejected** by modeling the bootstrap's four-pointer local array in ordinary C.

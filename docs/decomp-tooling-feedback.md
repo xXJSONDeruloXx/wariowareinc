@@ -25,6 +25,25 @@ Use this file to record where the current decomp tools helped, where they missed
   register overlay. m2c/asmlift remain candidate aids only: asmlift's BF0
   output was a generic pointer skeleton and was not admitted.
 
+## Round 84 — overlay-only exact batch (2026-08-07)
+- The five-candidate title/main-menu screen initially had **2 exact / 2
+  compile errors / 1 near miss**. After header/prototype repairs it had **2
+  exact / 3 near miss**. The exact subset was then re-screened after the
+  layout-quality policy commit and remained **2 exact / 0 rejected**.
+- `func_080165D4` first matched with four explicit scene offsets. Replacing
+  that opaque byte-pointer view with a named `SceneState` overlay preserved the
+  exact object bytes, proving the stricter source shape did not cost progress.
+  `func_08016BF0` was exact through a named register overlay from the start.
+- The transactional apply passed the full Docker gate from **11:49:15 to
+  11:50:29 UTC**, with `wariowareinc.gba: OK` and unchanged SHA-1
+  `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh metrics advanced **1674
+  → 1676** functions, **1214 → 1216** linked C units, **1398 → 1400** decomp
+  files, and **75056 / 993772 → 75264 / 993780** matched code.
+- m2c supplied usable dispatcher/register skeletons. asmlift declined the
+  loop-heavy dispatcher and generated a generic pointer BF0 skeleton; neither
+  generated output was accepted. The final sources are pure named-field C with
+  no asm, pins, barriers, or raw pointer-offset evidence.
+
 ## Round 83 — strict ordinary-C scene/main-menu fan-in (2026-08-07)
 - One shared isolation container screened four m2c/manual candidates. v1 found **1 exact / 2 compile errors / 1 exact**; adding `graphics.h` for the transitive `struct Animation` declaration produced v2 with **3 exact / 1 near miss**. The remaining `func_08016CBC` miss differed only in its ordinary-C stack frame (`SUB/ADD SP,#8` versus the target's `#0x10`); modeling the local subscene pointer array as four entries repaired the frame without asm, barriers, or register pins. v3 reached **4 exact / 0 rejected**.
 - m2c was useful for recovering the beatscript bootstrap's argument/stack shape and the state-dispatch skeletons. asmlift again served as a project-context diagnostic and did not produce an admitted source. The compiler isolation receipt, not decompiler output, selected the final spellings.

@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 232` — four scene/main-menu helpers admitted after strict ordinary-C isolation and one complete full-context Docker gate
-- `build/report.json`: **1674 / 5934 matched functions** (**28.210312%**) · **7.552638%** matched code (**75056 / 993772**)
-- `tools/gen_objdiff.py`: **1214 linked C TUs / 5473 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1398 decompiled function files** = **1195 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 233` — two scene/graphics helpers admitted after strict ordinary-C/layout-quality isolation and one complete full-context Docker gate
+- `build/report.json`: **1676 / 5934 matched functions** (**28.244019%**) · **7.573507%** matched code (**75264 / 993780**)
+- `tools/gen_objdiff.py`: **1216 linked C TUs / 5471 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1400 decompiled function files** = **1197 standalone_tu** + **203 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
@@ -22,8 +22,8 @@ If an agent resumes cold, read these first:
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **178** matches
 - 26% milestone at the current function total: **1543 / 5934**; now exceeded by **131** matches
-- 27% active working goal at the current function total: **1603 / 5934**; exceeded by **71** matches
-- 30% milestone at the current function total: **1781 / 5934**; **107** more matches needed
+- 27% active working goal at the current function total: **1603 / 5934**; exceeded by **73** matches
+- 30% milestone at the current function total: **1781 / 5934**; **105** more matches needed
 - 80% target at the current function total: **4748 / 5934**
 - Remaining gap to 80%: **3086 matched functions**
 
@@ -65,6 +65,9 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   `func_08016BF0` pass with no opaque pointer-offset blob. New offset-heavy
   candidates are policy-rejected before byte comparison; the old raw-layout
   matches remain documented evidence until their structs are recovered.
+- Batch 233 accepted those two exact overlay candidates. The full gate advanced
+  **1674 → 1676** matched functions and **1214 → 1216** linked C units without
+  changing the ROM SHA-1.
 
 Manifests for exported symbols such as `set_soundplayer_pitch` may provide an
 explicit eight-digit `address`; this lets the cycle derive canonical paths even
