@@ -11,21 +11,21 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 240` — four standalone ordinary-C functions admitted after a strict 13-entry screen and one complete full-context Docker gate
-- `build/report.json`: **1695 / 5934 matched functions** (**28.564205%**) · **7.6565175%** matched code (**76092 / 993820**)
-- `tools/gen_objdiff.py`: **1235 linked C TUs / 5452 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1422 decompiled function files** = **1216 standalone_tu** + **206 included_stub**
+- Verified working tree: `batch 241` — three standalone ordinary-C functions admitted after a strict 9-entry screen and one complete full-context Docker gate
+- `build/report.json`: **1698 / 5934 matched functions** (**28.614763%**) · **7.6665797%** matched code (**76192 / 993820**)
+- `tools/gen_objdiff.py`: **1238 linked C TUs / 5449 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1425 decompiled function files** = **1219 standalone_tu** + **206 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1484 / 5934**; now exceeded by **207** matches
-- 26% milestone at the current function total: **1543 / 5934**; now exceeded by **148** matches
-- 27% active working goal at the current function total: **1603 / 5934**; exceeded by **88** matches
-- 30% milestone at the current function total: **1781 / 5934**; **90** more matches needed
+- 25% milestone at the current function total: **1484 / 5934**; now exceeded by **214** matches
+- 26% milestone at the current function total: **1543 / 5934**; now exceeded by **155** matches
+- 27% active working goal at the current function total: **1603 / 5934**; exceeded by **95** matches
+- 30% milestone at the current function total: **1781 / 5934**; **83** more matches needed
 - 80% target at the current function total: **4748 / 5934**
-- Remaining gap to 80%: **3065 matched functions**
+- Remaining gap to 80%: **3050 matched functions**
 
 ## Automated matching loop
 
@@ -134,6 +134,18 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   and **1418 → 1422** decomp files (**1212 → 1216 standalone_tu**), with
   ROM SHA-1 unchanged. The `08016A60`/`08016A7C` bitfield spellings and
   `08003FB8` mask spelling remain near-miss evidence.
+- Batch 241 accepted `func_080194D8`, `func_08022070`, and `func_080DF224` as
+  standalone ordinary C. Round 92 screened **9** spellings and classified
+  **3 exact / 6 near miss**. The scene-table helper uses a named 0x20-byte
+  entry overlay and `entry++`, preserving the target stride without a raw
+  byte-pointer increment; the other two are ordinary call/ABI wrappers. m2c
+  supplied useful skeletons. asmlift remained diagnostic only: it failed
+  project-context scoring for two wrappers, declined the stack-forwarder, and
+  emitted non-admitted candidates for the table/fixed-point cases. The strict
+  audit found no asm, pins, barriers, non-mapped volatile, or opaque offset
+  blob in the accepted sources. The full gate advanced **1695 → 1698** matched
+  functions, **1235 → 1238** linked C TUs, and **1422 → 1425** decomp files
+  (**1216 → 1219 standalone_tu**), with unchanged ROM SHA-1.
 - The Conker-style provenance follow-up tightened source admission without
   changing ROM output: the audit now records/rejects codegen-forcing volatile
   accesses except direct GBA I/O registers, and catches offset-heavy aliases

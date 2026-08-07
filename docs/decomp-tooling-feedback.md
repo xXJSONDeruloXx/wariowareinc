@@ -74,6 +74,13 @@ Use this file to record where the current decomp tools helped, where they missed
   and clean Docker ROM gate. This moved **1691 → 1695** matched functions and
   **1231 → 1235** linked C units with unchanged ROM SHA-1.
 
+## Round 92 — named table/ABI wrapper screen (2026-08-07)
+- The short asm-only queue produced a useful **9-candidate / 3-exact / 6-near-miss** screen. m2c recovered the call/key, byte-table, sound/store, stack-forwarding, and fixed-point shapes quickly; the isolated compiler pass was enough to select exact ordinary-C spellings without paying a full ROM build for each permutation.
+- The `func_08022070` m2c-style raw pointer loop was not accepted as-is. A named root overlay plus a padded 0x20-byte entry record and `entry++` preserved the byte stride while making the recovered layout explicit. The `s8` source parameter caused the first named spelling to miss; the `s32` parameter with an explicit byte store matched exactly.
+- The `func_080DF224` wrapper demonstrates that the declared C ABI remains part of the evidence: `u16 arg2` reproduced the target's explicit halfword normalization, while a widened `u32` parameter with a call-site cast did not. The accepted form contains no asm or pointer-layout trick.
+- asmlift again helped define boundaries rather than supply admitted code. It failed project-header scoring for the call/key and sound wrappers, declined the stack-forwarder because local stack address-taking is unsupported, and emitted diagnostic table/fixed-point forms that did not match. None of those generated forms entered the repository.
+- The six near misses remain in `.nearmiss/`, `.decomp-runs/round-92-isolation.json`, and `tools/attempts.tsv`; no barrier, volatile, register pin, inline asm, or offset-heavy substitute was added to close them. The exact-only transaction passed the strict source audit, report/objdiff refresh, and clean Docker ROM gate, moving **1695 → 1698** matched functions and **1235 → 1238** linked C units with unchanged ROM SHA-1.
+
 ## Round 88 — included-stub host-TU lifecycle (2026-08-07)
 - The next queue was predominantly included stubs, so the lifecycle was
   exercised against full host objects rather than treating a standalone
