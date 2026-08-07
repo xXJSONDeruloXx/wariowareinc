@@ -431,6 +431,12 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Difference load order**: for a helper whose target loads the argument field first, then the global-scene field, subtracts into the result register, and compares that result with the second argument, pin the incoming values to the target ABI registers and spell the loads/subtraction as separate C statements. `func_08089648` matches with register-bound locals and no instruction asm.
 - **Asmlift exact skeletons still need project validation**: `func_0805C5D8` and `func_08088B80` were exact from the first asmlift-shaped C spelling, but Round 70 still screened all five candidates through the same Docker isolation receipt. Semantic similarity is a discovery aid; only exact isolated code followed by the full ROM gate is admissible.
 
+### Round 77 additions: richer save-unlock predicates
+
+- **Nonzero-to-one prerequisite count**: when the target turns a helper result into a boolean with `RSBS`/`ORRS`/shift, preserve `u32 count = (u32)((0 - temp) | temp) >> 31;` rather than using a direct C comparison. This retains the target's normalization before later count increments.
+- **Count thresholds**: for sibling unlocks that require more than one completed prerequisite, keep `u32 count` and write `if (count > 1)`; the direct boolean spelling can change the compare/branch shape.
+- **Threshold-ready temporary**: when a helper threshold feeds a later unlock branch, use `s32 ready = 0; if (func_08008AA4(stage) > 0xE) ready = 1; if (ready != 0) ...;` to preserve the target's temporary and branch placement. Round 77 matched this shape in the stage-C/D predicates.
+
 ### Round 76 additions: save-unlock predicate wrappers
 
 - **Nested save-unlock predicates**: for wrappers that test `save_is_stage_unlocked(id) == 0`, perform a second progress test inside a nested C `if`, then call the unlock helper and return the target flag. This preserves the target's `BNE`/`BEQ` failure layout across the fifteen Batch 225 siblings.
