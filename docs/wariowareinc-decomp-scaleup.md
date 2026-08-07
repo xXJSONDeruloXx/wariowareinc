@@ -5,19 +5,26 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 228` — two scene animation helpers admitted after a six-pass exact isolation convergence and a full-context Docker gate under the hardened candidate lifecycle
-- `build/report.json`: **1662 / 5934 matched functions** = **28.008090%**
-- `matched_code`: **74346 / 993742** = **7.481419%**
-- `tools/gen_objdiff.py`: **1202 linked C TUs / 5485 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1386 decompiled function files** = **1183 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 229` — four main-menu update/input helpers admitted after strict ordinary-C isolation and a full-context Docker gate under the hardened candidate lifecycle
+- `build/report.json`: **1666 / 5934 matched functions** = **28.075499%**
+- `matched_code`: **74556 / 993756** = **7.502446%**
+- `tools/gen_objdiff.py`: **1206 linked C TUs / 5481 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1390 decompiled function files** = **1187 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, and compiler register pins are rejected by the source audit, cycle, and Git hooks. Raw pointer casts/offsets are reported as evidence rather than banned.
+- Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1484 / 5934**, now exceeded by **178** matched functions.
 - 26% milestone: **1543 / 5934**; current progress is **1662**, exceeding it by **119** matches.
 - Active 27% working goal: **1603 / 5934**; current progress exceeds it by **59** matches.
 - Next 30% milestone: **1781 / 5934**; **119** additional matched functions are needed.
+
+### Batch 229 — accepted (main-menu update/input helpers)
+- Converted `func_08016D00`, `func_08016DB8`, `func_08016798`, and `func_08016850` to standalone ordinary C. The group covers the main-menu update fan-in, soft-reset cleanup, input-triggered sound/state transition, and the paired scene/graphics readiness predicate.
+- m2c supplied the semantic skeletons. asmlift was run as a comparison path but reached its project-header compile boundary for this Splat-shaped main-menu neighborhood; no asmlift output was admitted. A first isolation pass had three compile errors from missing header context and then three exact candidates; adding the canonical header order/prototypes recovered the build, and the only remaining miss was repaired with an ordinary C branch layout matching the target's `BNE` fall-through.
+- The final v3/v4/v5 isolation receipts classified **4 exact / 0 rejected**. The transactional apply passed the clean Docker ROM gate with `wariowareinc.gba: OK`; the post-apply report and objdiff refresh report **1666 / 5934** matched functions, **74556 / 993756** matched code, and **1206 C / 5481 asm-only** units. ROM SHA-1 remains **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+- `tools/audit_decomp_source.py --strict` reports zero instruction asm, empty barriers, and register pins in all four accepted files. The linker preflight found `D_083FBB44` missing from `undefined_syms.ld`; commit `fc3419a6` added the canonical symbol assignment and passed its own byte-identical Docker gate before the batch transaction. Evidence: `.decomp-runs/round-80-isolation-v1.json` through `round-80-isolation-v5.json`, `round-80-linker-verify.json`, and `round-80-apply.json`; the branch is pushed at the follow-up batch commit.
 
 ### Batch 228 — accepted (scene animation helpers)
 - Converted `func_0801646C` and `func_080164CC` to standalone C. The pair initializes/decrements the main-menu scene animation state, scans the scene's enabled-sprite bitmask, and updates sprite visibility/animation cels.

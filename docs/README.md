@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 228` — two scene animation helpers admitted after a six-pass exact isolation convergence and one complete full-context Docker gate
-- `build/report.json`: **1662 / 5934 matched functions** (**28.008090%**) · **7.481419%** matched code (**74346 / 993742**)
-- `tools/gen_objdiff.py`: **1202 linked C TUs / 5485 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1386 decompiled function files** = **1183 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 229` — four main-menu update/input helpers admitted after strict ordinary-C isolation and one complete full-context Docker gate
+- `build/report.json`: **1666 / 5934 matched functions** (**28.075499%**) · **7.502446%** matched code (**74556 / 993756**)
+- `tools/gen_objdiff.py`: **1206 linked C TUs / 5481 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1390 decompiled function files** = **1187 standalone_tu** + **203 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
@@ -41,6 +41,11 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   instruction asm, empty asm barriers, and compiler register pins. The audit
   reports raw pointer casts and numeric offsets as provenance evidence instead
   of banning legitimate packed-memory C.
+- Batch 229 confirms the strict audit on four newly accepted standalone files:
+  zero instruction asm, barriers, and register pins in every candidate. The
+  linker preflight also caught and then fixed the missing canonical
+  `D_083FBB44` assignment; known symbols are mapped in `undefined_syms.ld`
+  rather than replaced with magic numeric literals.
 
 Manifests for exported symbols such as `set_soundplayer_pitch` may provide an
 explicit eight-digit `address`; this lets the cycle derive canonical paths even

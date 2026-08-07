@@ -3,6 +3,13 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 229 — main-menu update/input helpers (2026-08-07)
+- Converted `func_08016D00`, `func_08016DB8`, `func_08016798`, and `func_08016850` to standalone ordinary C. The four-function group covers the main-menu update fan-in, soft-reset cleanup, input-triggered sound/state transition, and the paired scene/graphics readiness predicate.
+- m2c supplied the semantic skeletons. asmlift was run as a comparison path but reached its project-header compile boundary for this Splat-shaped neighborhood; no asmlift output was admitted. The first screen recorded three header-related compile errors and then three exact candidates; the repaired screen reached **4 exact / 0 rejected** after an ordinary-C `BNE` fall-through rewrite for `func_08016D00`.
+- The strict source audit reports zero instruction asm, empty barriers, and compiler register pins in every accepted source. Raw scene memory accesses are explicit audit evidence (`+8`, `+0x3A`, and the current-scene byte), not inline assembly or register-pinned code.
+- The standalone linker preflight caught that canonical `D_083FBB44` was present in `include/undefined_syms.inc` but absent from `undefined_syms.ld`; `fc3419a6` added that one symbol assignment and passed its own full Docker SHA gate. The exact-only batch transaction then passed the same gate with `wariowareinc.gba: OK`, advancing **1662 → 1666** matched functions, **1202 → 1206** linked C TUs, and **1386 → 1390** decomp files. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Durable evidence is in `.decomp-runs/round-80-isolation-v1.json` through `round-80-isolation-v5.json`, `round-80-linker-verify.json`, and `round-80-apply.json`; the first `func_08016D00` near miss remains in `.nearmiss/` and `tools/attempts.tsv`.
+
 ## Workflow engineering pass — 2026-08-05
 
 Paused the 30% expansion target to re-engineer the candidate lifecycle around
