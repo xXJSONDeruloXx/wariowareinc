@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 239` — one included-stub main-menu wrapper admitted after a strict source audit, host-TU screen, and a full-context Docker gate
-- `build/report.json`: **1691 / 5934 matched functions** = **28.4968%**
-- `matched_code`: **75984 / 993820** = **7.6456504%**
-- `tools/gen_objdiff.py`: **1231 linked C TUs / 5456 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1418 decompiled function files** = **1212 standalone_tu** + **206 included_stub**
+- Verified working tree: `batch 240` — four standalone ordinary-C functions admitted after a strict 13-entry screen and a full-context Docker gate
+- `build/report.json`: **1695 / 5934 matched functions** = **28.564205%**
+- `matched_code`: **76092 / 993820** = **7.6565175%**
+- `tools/gen_objdiff.py`: **1235 linked C TUs / 5452 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1422 decompiled function files** = **1216 standalone_tu** + **206 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -54,6 +54,12 @@ Prefer this file + the other docs in `/docs`
 - Converted `func_080147B0` from the main-menu host TU's asm include to guarded ordinary C. The accepted source uses the existing typed `gMainMenu` fields and typed helper calls; it contains no wrapped or instruction asm, compiler register pin, barrier, non-mapped volatile, or opaque offset-heavy pointer stand-in.
 - Round 90 screened seven readable real-C spellings. The selected direct-field form reached a **99.85%** isolated result; its instruction sequence was identical and the residual was candidate-origin relocation metadata. Because that result was not an ordinary exact receipt, the full-context transaction was run under the guarded research path. Its first attempt rolled back cleanly when a locally declared `s32 func_08011698()` conflicted with the host TU's existing `u32` declaration. After correcting the declaration to the host ABI, the complete Docker gate accepted the conversion with `wariowareinc.gba: OK`, `rom_exact: true`, and ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - The strict source audit reports zero instruction asm, barriers, compiler register pins, non-mapped volatile accesses, raw pointer accesses, and numeric pointer-offset lines. Report metrics remain **1691 / 5934** matched functions and **75984 / 993820** matched code because this included stub was already byte-matching within its host object; decomp files advance **1417 → 1418**, from **1212 standalone_tu / 205 included_stub** to **1212 / 206**. The six rejected readable spellings remain near-miss evidence.
+
+### Batch 240 — accepted (strict standalone wrapper/leaf batch)
+- Converted `func_0800C704`, `func_0800C720`, `func_080D6D28`, and `func_08064D10` to standalone ordinary C. The two bitmap helpers walk typed sentinel-terminated `u32` tables, the D6D28 leaf preserves the signed threshold/fall-through layout, and D64D10 uses a small named record overlay for fields at `0x30` and `0x34`.
+- Round 91 screened **13** spellings in two isolation passes: **4 exact / 9 near miss**. m2c supplied the semantic skeletons. asmlift declined the `LDM R4!` walkers as an unsupported effect and failed to score the project-context candidates for the remaining leaves; no asmlift-generated source was admitted. The m2c walker spelling was manually corrected from its erroneous `s32 * += 4` output to the semantically correct `cursor++` stride.
+- The strict audit reports zero instruction asm, barriers, compiler register pins, non-mapped volatile accesses, and numeric pointer-offset lines in all four accepted files. The only raw-pointer evidence is the typed `const u32 *` cast used to traverse each sentinel table; D64D10 uses a named overlay rather than an offset blob. The full Docker gate passed `wariowareinc.gba: OK`, `rom_exact: true`, and ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Report metrics advance **1691 → 1695** matched functions, **75984 → 76092** matched code, and **1231 → 1235** linked C TUs. Decompiled-file coverage advances **1418 → 1422**, from **1212 standalone_tu / 206 included_stub** to **1216 / 206**. The `func_08016A60`/`08016A7C` bitfield variants and `func_08003FB8` mask variant remain near-miss evidence.
 
 ### Batch 234 — accepted (strict ordinary-C scene/graphics wrappers)
 - Converted `func_08017054`, `func_0801709C`, `func_0801720C`, `func_0801743C`, `func_080179A8`, and `func_080179E4` to standalone ordinary C. The sources use the existing sprite/gameplay types plus two small named overlays for the previously unnamed graphics register at `0x48` and the scene-variable root at offset zero; no opaque offset blob was admitted.

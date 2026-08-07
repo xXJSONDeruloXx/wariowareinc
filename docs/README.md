@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 239` — one included-stub main-menu wrapper admitted after a strict source audit, host-TU screen, and one complete full-context Docker gate
-- `build/report.json`: **1691 / 5934 matched functions** (**28.4968%**) · **7.6456504%** matched code (**75984 / 993820**)
-- `tools/gen_objdiff.py`: **1231 linked C TUs / 5456 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1418 decompiled function files** = **1212 standalone_tu** + **206 included_stub**
+- Verified working tree: `batch 240` — four standalone ordinary-C functions admitted after a strict 13-entry screen and one complete full-context Docker gate
+- `build/report.json`: **1695 / 5934 matched functions** (**28.564205%**) · **7.6565175%** matched code (**76092 / 993820**)
+- `tools/gen_objdiff.py`: **1235 linked C TUs / 5452 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1422 decompiled function files** = **1216 standalone_tu** + **206 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
@@ -120,6 +120,20 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   (**205 → 206 included_stub**). The v1–v6 readable near misses and both
   rollback/accept receipts remain recorded under `.decomp-runs/` and
   `.nearmiss/`.
+- Batch 240 accepted `func_0800C704`, `func_0800C720`, `func_080D6D28`, and
+  `func_08064D10` as standalone ordinary C. Round 91's 13-entry screen found
+  **4 exact / 9 near miss** results; m2c supplied the useful skeletons, while
+  asmlift declined the `LDM` walkers or failed at project-context compilation.
+  The walkers use a typed sentinel-array cursor (m2c's `s32 * += 4` was
+  corrected to a C `cursor++` after checking the target `LDM R4!`), the D6D28
+  leaf uses the target fall-through branch shape, and D64D10 uses a named
+  record overlay. The accepted sources have zero instruction asm, barriers,
+  register pins, non-mapped volatile accesses, and numeric pointer offsets;
+  the two walkers expose only one typed pointer cast each. The full gate
+  advanced **1691 → 1695** matched functions, **1231 → 1235** linked C TUs,
+  and **1418 → 1422** decomp files (**1212 → 1216 standalone_tu**), with
+  ROM SHA-1 unchanged. The `08016A60`/`08016A7C` bitfield spellings and
+  `08003FB8` mask spelling remain near-miss evidence.
 - The Conker-style provenance follow-up tightened source admission without
   changing ROM output: the audit now records/rejects codegen-forcing volatile
   accesses except direct GBA I/O registers, and catches offset-heavy aliases

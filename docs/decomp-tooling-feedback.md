@@ -48,6 +48,32 @@ Use this file to record where the current decomp tools helped, where they missed
   offsets. The six readable near misses remain in the receipts rather than
   being forced.
 
+## Round 91 — standalone exact screen with decompiler cross-checks (2026-08-07)
+- The queue audit separated source-coverage work from report progress: after
+  Round 90 all linked C functions were exact, so the next useful candidates
+  had to come from the remaining asm-only units. One 13-entry manifest kept
+  discovery cheap and left the full Docker cost for the four exact winners.
+- m2c produced usable skeletons for all six families probed. For the two
+  `LDM R4!` bitmap walkers it emitted `s32 *var_r4` with `var_r4 += 4`; that
+  expression would advance 16 bytes in C, not the target's 4-byte post-increment.
+  Reading the instruction and changing the source to a typed `const u32 *`
+  with `cursor++` produced exact ordinary C. This is a durable reminder that
+  decompiler output is a hypothesis, not a semantic or byte-match authority.
+- asmlift was useful as a diagnostic boundary: it explicitly declined both
+  walkers because `ldm` has an unmodelled multi-register effect, and its
+  project-header scoring failed for the scene/leaf candidates. None of its
+  output was admitted. The isolation receipt selected four m2c/manual C forms:
+  two typed sentinel walkers, one inverted threshold branch, and one named
+  record overlay.
+- The `func_08016A60`/`08016A7C` named-field variants remained at **5.5** and
+  **6.23077** isolated gaps, while `func_08003FB8` remained at **40.5**. Their
+  readable C sources and best receipts are retained as evidence; no barrier,
+  volatile, register pin, raw numeric offset, or asm escape was added to close
+  any of them.
+- The exact-only batch passed the strict source audit, report/objdiff refresh,
+  and clean Docker ROM gate. This moved **1691 → 1695** matched functions and
+  **1231 → 1235** linked C units with unchanged ROM SHA-1.
+
 ## Round 88 — included-stub host-TU lifecycle (2026-08-07)
 - The next queue was predominantly included stubs, so the lifecycle was
   exercised against full host objects rather than treating a standalone
