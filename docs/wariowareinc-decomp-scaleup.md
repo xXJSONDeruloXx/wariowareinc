@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 229` — four main-menu update/input helpers admitted after strict ordinary-C isolation and a full-context Docker gate under the hardened candidate lifecycle
-- `build/report.json`: **1666 / 5934 matched functions** = **28.075499%**
-- `matched_code`: **74556 / 993756** = **7.502446%**
-- `tools/gen_objdiff.py`: **1206 linked C TUs / 5481 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1390 decompiled function files** = **1187 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 230` — three main-menu callback/sound wrappers admitted after strict ordinary-C isolation and a full-context Docker gate under the hardened candidate lifecycle
+- `build/report.json`: **1669 / 5934 matched functions** = **28.126053%**
+- `matched_code`: **74720 / 993762** = **7.518903%**
+- `tools/gen_objdiff.py`: **1209 linked C TUs / 5478 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1393 decompiled function files** = **1190 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -18,7 +18,13 @@ Prefer this file + the other docs in `/docs`
 - 25% milestone: **1484 / 5934**, now exceeded by **178** matched functions.
 - 26% milestone: **1543 / 5934**; current progress is **1662**, exceeding it by **119** matches.
 - Active 27% working goal: **1603 / 5934**; current progress exceeds it by **59** matches.
-- Next 30% milestone: **1781 / 5934**; **119** additional matched functions are needed.
+- Next 30% milestone: **1781 / 5934**; **112** additional matched functions are needed.
+
+### Batch 230 — accepted (main-menu callback/sound wrappers)
+- Converted `func_08016B4C`, `func_08016B88`, and `func_08016BC4` to standalone ordinary C. The sibling trio plays the callback sound, normalizes the sprite ID from the callback ABI, sets callback cels 7/0x11/-1, and installs the next callback/data pair for the first two wrappers.
+- m2c recovered the essential three-argument callback shape. asmlift was run as a comparison path but reached its project-header compile boundary; no generated lift was admitted. The first C screen had one warning-only compile failure per callback-data wrapper, fixed by matching the project prototype's integer callback-data argument with `(u32)&D_083FF654/67C`. The final isolation classified **3 exact / 0 rejected**.
+- The exact-only transaction passed the clean Docker ROM gate with `wariowareinc.gba: OK`; post-apply report/objdiff refreshed **1669 / 5934** matched functions, **74720 / 993762** matched code, and **1209 C / 5478 asm-only** units. ROM SHA-1 remains **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+- `tools/audit_decomp_source.py --strict` reports zero instruction asm, empty barriers, and register pins in all three accepted files. Callback data required two canonical linker assignments (`D_083FF654`, `D_083FF67C`) in `75c4148d`; that prerequisite commit and its Docker gate were completed before the exact batch transaction. Evidence: `.decomp-runs/round-81-isolation-v1.json` through `round-81-isolation-v3.json`, `round-81-linker-verify.json`, and `round-81-apply.json`.
 
 ### Batch 229 — accepted (main-menu update/input helpers)
 - Converted `func_08016D00`, `func_08016DB8`, `func_08016798`, and `func_08016850` to standalone ordinary C. The group covers the main-menu update fan-in, soft-reset cleanup, input-triggered sound/state transition, and the paired scene/graphics readiness predicate.

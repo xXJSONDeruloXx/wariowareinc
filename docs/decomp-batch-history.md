@@ -10,6 +10,13 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 - The standalone linker preflight caught that canonical `D_083FBB44` was present in `include/undefined_syms.inc` but absent from `undefined_syms.ld`; `fc3419a6` added that one symbol assignment and passed its own full Docker SHA gate. The exact-only batch transaction then passed the same gate with `wariowareinc.gba: OK`, advancing **1662 → 1666** matched functions, **1202 → 1206** linked C TUs, and **1386 → 1390** decomp files. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Durable evidence is in `.decomp-runs/round-80-isolation-v1.json` through `round-80-isolation-v5.json`, `round-80-linker-verify.json`, and `round-80-apply.json`; the first `func_08016D00` near miss remains in `.nearmiss/` and `tools/attempts.tsv`.
 
+## Batch 230 — main-menu callback/sound wrappers (2026-08-07)
+- Converted `func_08016B4C`, `func_08016B88`, and `func_08016BC4` to standalone ordinary C. The sibling trio plays callback sounds, normalizes the sprite ID from the three-argument callback ABI, sets callback cels 7/0x11/-1, and installs the next callback/data pair for the first two wrappers.
+- m2c recovered the three-argument callback shape. asmlift was run as a comparison path but stopped at its project-header compile boundary; no generated lift was admitted. One warning-only compile failure in each callback-data candidate was fixed by matching `sprite_set_callback`'s integer data argument with `(u32)&D_083FF654/67C`, yielding **3 exact / 0 rejected**.
+- The strict source audit reports zero instruction asm, empty barriers, and compiler register pins in all three accepted sources. The callback data appears as named symbols, not magic numeric ROM addresses or function-body asm.
+- The canonical linker map needed `D_083FF654` and `D_083FF67C`; `75c4148d` added both and passed a separate full Docker SHA gate before the batch transaction. The exact-only apply passed `wariowareinc.gba: OK`, advancing **1666 → 1669** matched functions, **1206 → 1209** linked C TUs, and **1390 → 1393** decomp files. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence is in `.decomp-runs/round-81-isolation-v1.json` through `round-81-isolation-v3.json`, `round-81-linker-verify.json`, and `round-81-apply.json`.
+
 ## Workflow engineering pass — 2026-08-05
 
 Paused the 30% expansion target to re-engineer the candidate lifecycle around

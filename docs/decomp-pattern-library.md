@@ -65,6 +65,7 @@
 - const-arg BL wrappers once literal-pool behavior is known-good
 - two-pointer wrappers passing `p + off1`, `p + off2`
 - **Callback/VRAM wrapper spellings**: `func_0800D23C` matches with a typed `void *` callback argument `(void *)((u32)func_0800CFFC + 1)` and a `u32` constant; `func_08019A8C` matches with a typed `void *` `VRAMBase + 0x8000` argument followed by `func_0800BF0C(0)`. Keep the callback and absolute-address constants as ordinary C expressions and verify the literal-pool shape in isolation.
+- **Three-argument sprite callback wrappers**: for callback entries that ignore R0 but consume the sprite ID in R1 and sound/data in R2, retain an unused first parameter, use a widened `u32 id` plus `s16 sprite_id = (s16)(u16)id`, and call `play_sound(sound)` before the sprite callback setters. When `sprite_set_callback`'s fourth parameter is an integer ABI slot, `(u32)&D_083FF654`/`(u32)&D_083FF67C` preserves the named literal-pool word without inline asm. This matched the `08016B4C`/`08016B88`/`08016BC4` sibling trio with ordinary C only.
 
 ### Data-structure / arithmetic families
 - raw-pointer struct-entry setters

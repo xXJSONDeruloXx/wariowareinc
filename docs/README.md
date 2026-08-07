@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 229` — four main-menu update/input helpers admitted after strict ordinary-C isolation and one complete full-context Docker gate
-- `build/report.json`: **1666 / 5934 matched functions** (**28.075499%**) · **7.502446%** matched code (**74556 / 993756**)
-- `tools/gen_objdiff.py`: **1206 linked C TUs / 5481 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1390 decompiled function files** = **1187 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 230` — three main-menu callback/sound wrappers admitted after strict ordinary-C isolation and one complete full-context Docker gate
+- `build/report.json`: **1669 / 5934 matched functions** (**28.126053%**) · **7.518903%** matched code (**74720 / 993762**)
+- `tools/gen_objdiff.py`: **1209 linked C TUs / 5478 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1393 decompiled function files** = **1190 standalone_tu** + **203 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
@@ -23,7 +23,7 @@ If an agent resumes cold, read these first:
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **178** matches
 - 26% milestone at the current function total: **1543 / 5934**; now exceeded by **119** matches
 - 27% active working goal at the current function total: **1603 / 5934**; exceeded by **59** matches
-- 30% milestone at the current function total: **1781 / 5934**; **119** more matches needed
+- 30% milestone at the current function total: **1781 / 5934**; **112** more matches needed
 - 80% target at the current function total: **4748 / 5934**
 - Remaining gap to 80%: **3086 matched functions**
 
@@ -46,6 +46,11 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   linker preflight also caught and then fixed the missing canonical
   `D_083FBB44` assignment; known symbols are mapped in `undefined_syms.ld`
   rather than replaced with magic numeric literals.
+- Batch 230 applies the same audit to three callback/sound wrappers: every
+  accepted file is ordinary C with zero instruction asm, barriers, or register
+  pins. The callbacks use the existing three-argument ABI and named callback
+  data symbols; no function-body asm or numeric ROM-address substitute was
+  needed.
 
 Manifests for exported symbols such as `set_soundplayer_pitch` may provide an
 explicit eight-digit `address`; this lets the cycle derive canonical paths even
