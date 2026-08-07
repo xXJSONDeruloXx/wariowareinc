@@ -431,6 +431,12 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Difference load order**: for a helper whose target loads the argument field first, then the global-scene field, subtracts into the result register, and compares that result with the second argument, pin the incoming values to the target ABI registers and spell the loads/subtraction as separate C statements. `func_08089648` matches with register-bound locals and no instruction asm.
 - **Asmlift exact skeletons still need project validation**: `func_0805C5D8` and `func_08088B80` were exact from the first asmlift-shaped C spelling, but Round 70 still screened all five candidates through the same Docker isolation receipt. Semantic similarity is a discovery aid; only exact isolated code followed by the full ROM gate is admissible.
 
+### Round 79 additions: scene animation helpers
+
+- **Scene-state store/load register roles**: when the target keeps the scene pointer in R3, the global-pointer address in R2, and uses R0/R1 for the shifted field offset and destination, compiler-only hard-register locals plus small inner C blocks preserve the exact `MOVS/LSLS/ADDS` forms without instruction asm.
+- **Widened countdown zero test**: load a halfword into `u32`, decrement it, store the widened value through the halfword lvalue, then test `if ((value << 16) == 0)`. This preserves the target's `STRH` followed by `LSLS #16` rather than inserting a pre-store `LSRS` for a `u16` temporary.
+- **Sprite call load order**: assign `handler = gSpriteHandler` before deriving the scene-data sprite ID, then call `sprite_set_visible`/`sprite_set_anim_cel` through that local. This keeps the handler literal load before the scene-pool load.
+
 ### Round 78 additions: counted save-unlock loops and aggregates
 
 - **Save-buffer microgame count loop**: use `u8 *flags = gSaveBuffer->microgameFlags`, initialize a `u32` count and index, then use a `do { if ((flags[i] & mask) != 0) count++; i++; } while (i <= 0xE1);`. This preserves the target's `BLS` loop condition, byte indexing, and callee-save register allocation for the 0x100-byte flag range.
