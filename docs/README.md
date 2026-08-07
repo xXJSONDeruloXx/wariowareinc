@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 236` — eight standalone ordinary-C leaf/wrapper conversions admitted after a 12-candidate strict screen and one complete full-context Docker gate
+- Verified working tree: `batch 237` — one included-stub bitmap-font wrapper admitted after a host-TU exact screen and one complete full-context Docker gate
 - `build/report.json`: **1691 / 5934 matched functions** (**28.4968%**) · **7.6456504%** matched code (**75984 / 993820**)
 - `tools/gen_objdiff.py`: **1231 linked C TUs / 5456 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1415 decompiled function files** = **1212 standalone_tu** + **203 included_stub**
+- `src/decomp/*.c`: **1416 decompiled function files** = **1212 standalone_tu** + **204 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
@@ -88,6 +88,14 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   1691** matched functions, **1223 → 1231** linked C units, and **1407 →
   1415** decomp files. The four near misses remain in `.nearmiss/` with their
   full candidate sources and scores.
+- Batch 237 accepted `func_0800C4E0` as an included-stub ordinary-C wrapper.
+  Its exact candidate was selected from a two-spelling screen, then refined to
+  a semantically honest `void *` return of the task helper; the clean host-TU
+  Docker gate remained byte-identical. Report metrics stayed at **1691 / 5934**
+  and **75984 / 993820** because included-stub conversions do not add linked
+  C units; decomp files advanced **1415 → 1416** (**203 → 204 included_stub**).
+  `func_08011864` remains evidence-only after five real-C spellings reached a
+  best **0.74074** isolated gap and hit the documented `CMP #1; BLO` trap.
 - The Conker-style provenance follow-up tightened source admission without
   changing ROM output: the audit now records/rejects codegen-forcing volatile
   accesses except direct GBA I/O registers, and catches offset-heavy aliases

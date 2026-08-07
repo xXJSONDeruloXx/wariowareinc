@@ -1,0 +1,145 @@
+{
+  "schema": 1,
+  "kind": "isolation",
+  "started": "2026-08-07T13:14:30+00:00",
+  "finished": "2026-08-07T13:14:30+00:00",
+  "branch": "docs/macabeus-tooling-assessment",
+  "commit": "b0197ad53152e8031b362ae1abda12444de9d96f",
+  "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /var/folders/cq/tj_dgq0d4qsfs1xyx0jx2cp40000gn/T/warioware-cycle-1id9n25a:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-88-candidates/func_0800C4E0-v2.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/target-0.o /run/target-0.status /run/target-0.stderr /run/target-0.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/.mizuchi-asm/asm/bitmap_font/asm_0800c4e0.s -o /run/target-0.s.preprocessed >/run/target-0.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-0.o /run/target-0.s.preprocessed >>/run/target-0.stderr 2>&1; then\n    echo ok > /run/target-0.status\n  else\n    echo assemble_error > /run/target-0.status\n  fi\nelse\n  echo preprocess_error > /run/target-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /run/target-0.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-0.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-0.o | awk -v entry=func_0800C4E0 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0800C4E0 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-0.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0800C4E0 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-1.o /run/candidate-1.status /run/candidate-1.stderr /run/candidate-1.i /run/candidate-1.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-88-candidates/func_0800C4E0-v3.c -o /run/candidate-1.i >/run/candidate-1.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-1.i -o /run/candidate-1.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-1.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-1.s > /run/candidate-1.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-1.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-1.s.stripped && mv /run/candidate-1.s.stripped /run/candidate-1.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-1.o /run/candidate-1.s >>/run/candidate-1.stderr 2>&1; then\n      echo ok > /run/candidate-1.status\n    else\n      echo compile_error > /run/candidate-1.status\n    fi\n  else\n    echo compile_error > /run/candidate-1.status\n  fi\nelse\n  echo compile_error > /run/candidate-1.status\nfi\nrm -f /run/target-1.o /run/target-1.status /run/target-1.stderr /run/target-1.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/.mizuchi-asm/asm/bitmap_font/asm_0800c4e0.s -o /run/target-1.s.preprocessed >/run/target-1.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-1.o /run/target-1.s.preprocessed >>/run/target-1.stderr 2>&1; then\n    echo ok > /run/target-1.status\n  else\n    echo assemble_error > /run/target-1.status\n  fi\nelse\n  echo preprocess_error > /run/target-1.status\nfi\nrm -f /run/candidate-1.elf /run/target-1.elf /run/link-1.stderr /run/target-1.defsym /run/target-1.unit-defsym\nif [ -f /run/candidate-1.o ] && [ -f /run/target-1.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-1.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-1.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-1.o | awk -v entry=func_0800C4E0 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-1.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-1.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-1.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0800C4E0 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-1.o -o /run/target-1.elf >>/run/link-1.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0800C4E0 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-1.o -o /run/candidate-1.elf >>/run/link-1.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+  "docker_image": "devkitpro/devkitarm:latest",
+  "docker_invocations": 1,
+  "candidate_count": 2,
+  "results": [
+    {
+      "function": "func_0800C4E0",
+      "file": ".mizuchi-asm/asm/bitmap_font/asm_0800c4e0.s",
+      "candidate": ".mizuchi-tmp/round-88-candidates/func_0800C4E0-v2.c",
+      "target": ".mizuchi-asm/asm/bitmap_font/asm_0800c4e0.s",
+      "target_object": null,
+      "status": "target_error",
+      "score": null,
+      "stderr": "/run/target-0.s.preprocessed: Assembler messages:\n/run/target-0.s.preprocessed:2: Error: bad instruction `thumb_func_start func_0800C4E0'\n",
+      "mode": "included_stub",
+      "candidate_sha256": "b1c6fc0c394148a6303ae67772e084fbda55ed192c41e1cdbd76c504aca27c7b",
+      "target_sha256": "0ed65eec03fdf0c8c7ac7f81c1209ca0e156ab523eaa497a75e1fdbec36ff716",
+      "target_object_sha256": null,
+      "host_source": "src/bitmap_font.c",
+      "include_line": "#include \"asm/bitmap_font/asm_0800c4e0.s\"",
+      "decomp_include_line": "#include \"decomp/asm_0800c4e0.c\"",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_0800C4E0"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [],
+        "numeric_pointer_offsets": [],
+        "raw_pointer_aliases": [
+          "x",
+          "y"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "typed_or_direct",
+          "layout_quality_ok": true,
+          "raw_access_count": 0,
+          "numeric_offset_count": 0,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": true,
+        "layout_quality_ok": true
+      }
+    },
+    {
+      "function": "func_0800C4E0",
+      "file": ".mizuchi-asm/asm/bitmap_font/asm_0800c4e0.s",
+      "candidate": ".mizuchi-tmp/round-88-candidates/func_0800C4E0-v3.c",
+      "target": ".mizuchi-asm/asm/bitmap_font/asm_0800c4e0.s",
+      "target_object": null,
+      "status": "target_error",
+      "score": null,
+      "stderr": "/run/target-1.s.preprocessed: Assembler messages:\n/run/target-1.s.preprocessed:2: Error: bad instruction `thumb_func_start func_0800C4E0'\n",
+      "mode": "included_stub",
+      "candidate_sha256": "bb971fac3de049ad2b34b63463674c96ef0b69d4463ec88cb7220f026a4b3ebd",
+      "target_sha256": "0ed65eec03fdf0c8c7ac7f81c1209ca0e156ab523eaa497a75e1fdbec36ff716",
+      "target_object_sha256": null,
+      "host_source": "src/bitmap_font.c",
+      "include_line": "#include \"asm/bitmap_font/asm_0800c4e0.s\"",
+      "decomp_include_line": "#include \"decomp/asm_0800c4e0.c\"",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_0800C4E0"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [],
+        "numeric_pointer_offsets": [],
+        "raw_pointer_aliases": [
+          "x",
+          "y"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "typed_or_direct",
+          "layout_quality_ok": true,
+          "raw_access_count": 0,
+          "numeric_offset_count": 0,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": true,
+        "layout_quality_ok": true
+      }
+    }
+  ],
+  "ok": false,
+  "manifest": ".decomp-runs/round-88-c4e0-typed-manifest.json",
+  "manifest_sha256": "9ebea281e2f3930bcc8bf9d45897a12207465476d1bf15a88e72f5f5fc3fe7a7",
+  "candidate_identities": [
+    {
+      "mode": "included_stub",
+      "candidate": ".mizuchi-tmp/round-88-candidates/func_0800C4E0-v2.c",
+      "candidate_sha256": "b1c6fc0c394148a6303ae67772e084fbda55ed192c41e1cdbd76c504aca27c7b",
+      "target": ".mizuchi-asm/asm/bitmap_font/asm_0800c4e0.s",
+      "target_sha256": "0ed65eec03fdf0c8c7ac7f81c1209ca0e156ab523eaa497a75e1fdbec36ff716",
+      "target_object": null,
+      "target_object_sha256": null,
+      "host_source": "src/bitmap_font.c",
+      "include_line": "#include \"asm/bitmap_font/asm_0800c4e0.s\"",
+      "decomp_include_line": "#include \"decomp/asm_0800c4e0.c\""
+    },
+    {
+      "mode": "included_stub",
+      "candidate": ".mizuchi-tmp/round-88-candidates/func_0800C4E0-v3.c",
+      "candidate_sha256": "bb971fac3de049ad2b34b63463674c96ef0b69d4463ec88cb7220f026a4b3ebd",
+      "target": ".mizuchi-asm/asm/bitmap_font/asm_0800c4e0.s",
+      "target_sha256": "0ed65eec03fdf0c8c7ac7f81c1209ca0e156ab523eaa497a75e1fdbec36ff716",
+      "target_object": null,
+      "target_object_sha256": null,
+      "host_source": "src/bitmap_font.c",
+      "include_line": "#include \"asm/bitmap_font/asm_0800c4e0.s\"",
+      "decomp_include_line": "#include \"decomp/asm_0800c4e0.c\""
+    }
+  ]
+}

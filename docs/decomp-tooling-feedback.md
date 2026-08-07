@@ -25,6 +25,33 @@ Use this file to record where the current decomp tools helped, where they missed
   register overlay. m2c/asmlift remain candidate aids only: asmlift's BF0
   output was a generic pointer skeleton and was not admitted.
 
+## Round 88 — included-stub host-TU lifecycle (2026-08-07)
+- The next queue was predominantly included stubs, so the lifecycle was
+  exercised against full host objects rather than treating a standalone
+  isolated object as sufficient. `decomp_cycle.py` imported the host object's
+  section-relative symbols for comparison, then `apply-batch` replaced the
+  host asm include with a guarded `src/decomp` C include and paid one clean
+  full-ROM gate. This path accepted `func_0800C4E0` with `wariowareinc.gba: OK`
+  and unchanged SHA-1.
+- `func_0800C4E0`'s first real-C spelling scored **91.7%** because the fifth
+  stack argument's `u16` truncation happened too late. Moving that conversion
+  into an explicit local before the coordinate call produced an exact
+  ordinary-C candidate. The final source was then made semantically honest by
+  returning the typed `void *` result from `func_0800C430`; a fresh comparison
+  against the exact current host object and a clean full build both passed.
+- `func_08011864` was a useful negative test. Five named-overlay/switch/goto
+  variants were compiled, and the best reached only a **0.74074** isolated
+  gap. The residual `CMP #1; BLO` versus `CMP #0; BEQ` difference is the
+  documented compiler optimization trap, so the candidate stayed in the
+  near-miss ledger. No register pin, barrier, volatile, or asm escape was
+  introduced to close it.
+- The generic target assembler cannot consume the raw `.mizuchi-asm` copy of
+  an embedded stub without the host's `gba.inc` macro context. The host-object
+  comparison plus the final ROM gate is therefore the correct evidence path
+  for included stubs; the receipts record both the host source and include
+  replacement. The 33-test suite, strict audit, policy scan, report, and
+  objdiff refresh passed.
+
 ## Round 87 — named-overlay standalone screen (2026-08-07)
 - The screen evaluated **12** fresh standalone candidates in one isolation
   container and classified **8 exact / 4 near miss**. Only the eight exact

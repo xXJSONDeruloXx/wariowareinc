@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 236` — eight standalone ordinary-C leaf/wrapper conversions admitted after a 12-candidate strict screen and a full-context Docker gate
+- Verified working tree: `batch 237` — one included-stub bitmap-font wrapper admitted after a host-TU exact screen and a full-context Docker gate
 - `build/report.json`: **1691 / 5934 matched functions** = **28.4968%**
 - `matched_code`: **75984 / 993820** = **7.6456504%**
 - `tools/gen_objdiff.py`: **1231 linked C TUs / 5456 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1415 decompiled function files** = **1212 standalone_tu** + **203 included_stub**
+- `src/decomp/*.c`: **1416 decompiled function files** = **1212 standalone_tu** + **204 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -37,6 +37,12 @@ Prefer this file + the other docs in `/docs`
 - Round 87 screened **12** fresh candidates in one isolation pass: **8 exact / 4 near miss**. m2c supplied the initial semantic skeletons; manual source shaping selected the readable named-field forms, and no asmlift-generated spelling was admitted. The exact-only transaction passed the clean Docker gate with `wariowareinc.gba: OK`, advancing **1683 → 1691** matched functions, **1223 → 1231** linked C units, and **1407 → 1415** decomp files.
 - The four rejected candidates remain evidence-only: `func_080D906C` (**39.9375**), `func_08040AAC` (**8.066666**), `func_080B2450` (**7.117645**), and `func_08082BB0` (**0.125**). Their full C seeds, normalized results, and attempt-ledger rows are retained under `.nearmiss/`, `.decomp-runs/round-87-isolation-v1.json`, and `tools/attempts.tsv`.
 - `round-87-source-audit.json` reports zero instruction asm, barriers, register pins, volatile accesses, raw pointer accesses, and numeric pointer-offset lines in all eight accepted files; `func_080D70EC`'s single handler alias is an API parameter, not a layout blob. The ROM SHA-1 remains **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+
+### Batch 237 — accepted (strict included-stub bitmap wrapper)
+- Converted `func_0800C4E0` from the bitmap-font host TU's asm include to guarded ordinary C. The source uses typed helper prototypes, an explicit `u16` temporary for the fifth argument's ABI truncation, and a real `void *` return of `func_0800C430`; it contains no wrapped asm, instruction asm, register pin, barrier, non-mapped volatile, or opaque pointer-offset layout.
+- Round 88 exercised the included-stub host-object normalization path. The first spelling was a **91.7%** near miss; the second spelling was exact in the original host object, and the final return-type refinement was rechecked against that exact current object before the clean full-ROM gate. `wariowareinc.gba: OK` and the ROM SHA-1 remained **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+- Because this is an included-stub conversion, report metrics remain **1691 / 5934** matched functions, **75984 / 993820** matched code, and **1231 C / 5456 asm-only** linked units. Decompiled-file coverage advances **1415 → 1416**, from **1212 standalone_tu / 203 included_stub** to **1212 / 204**.
+- `func_08011864` was deliberately not forced: five readable real-C variants were screened, with the best **0.74074** isolated gap. The remaining difference is the documented `CMP R0,#1; BLO` versus `CMP R0,#0; BEQ` compiler lowering, retained in `.nearmiss/func_08011864.*` and the Round 88 receipts.
 
 ### Batch 234 — accepted (strict ordinary-C scene/graphics wrappers)
 - Converted `func_08017054`, `func_0801709C`, `func_0801720C`, `func_0801743C`, `func_080179A8`, and `func_080179E4` to standalone ordinary C. The sources use the existing sprite/gameplay types plus two small named overlays for the previously unnamed graphics register at `0x48` and the scene-variable root at offset zero; no opaque offset blob was admitted.
