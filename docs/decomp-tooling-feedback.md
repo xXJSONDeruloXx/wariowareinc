@@ -6,6 +6,25 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Tooling hardening — no cheap-shot layout matches (2026-08-07)
+- The sister Conker workflow confirmed the right separation: provenance records
+  the candidate, hashes, diff, compiler run, and branch, while the compiler and
+  final ROM identity decide acceptance. WarioWare already had the no-asm audit;
+  it now also classifies layout access.
+- `tools/check_decomp_policy.py` and `tools/audit_decomp_source.py` retain raw
+  pointer/offset lines as evidence, but reject new offset-heavy scalar-cast
+  blobs unless the source exposes a named struct/field model. Bounded accesses
+  and typed overlays remain available for partially recovered GBA records.
+- `decomp_cycle.py isolate/apply-batch` and the Git hooks enforce the same
+  layout-quality result, so a candidate cannot pass the cheap isolated path and
+  later bypass the source-quality check at apply or push. The test suite grew
+  from 27 to 29 cases and covers both the rejection and named-overlay paths.
+- Round 84's `func_080165D4` was rewritten from an exact raw-byte-pointer
+  spelling to a named `SceneState` overlay; it remained **100% exact** in a
+  fresh isolated compile. `func_08016BF0` already used a named graphics
+  register overlay. m2c/asmlift remain candidate aids only: asmlift's BF0
+  output was a generic pointer skeleton and was not admitted.
+
 ## Round 83 — strict ordinary-C scene/main-menu fan-in (2026-08-07)
 - One shared isolation container screened four m2c/manual candidates. v1 found **1 exact / 2 compile errors / 1 exact**; adding `graphics.h` for the transitive `struct Animation` declaration produced v2 with **3 exact / 1 near miss**. The remaining `func_08016CBC` miss differed only in its ordinary-C stack frame (`SUB/ADD SP,#8` versus the target's `#0x10`); modeling the local subscene pointer array as four entries repaired the frame without asm, barriers, or register pins. v3 reached **4 exact / 0 rejected**.
 - m2c was useful for recovering the beatscript bootstrap's argument/stack shape and the state-dispatch skeletons. asmlift again served as a project-context diagnostic and did not produce an admitted source. The compiler isolation receipt, not decompiler output, selected the final spellings.

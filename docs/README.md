@@ -38,9 +38,9 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
 - `verify` runs the current-worktree Docker gate for hooks or a final check.
 - New candidates also pass `python3 tools/audit_decomp_source.py ... --strict`.
   The Git hooks and transactional cycle reject original-asm wrappers, inline
-  instruction asm, empty asm barriers, and compiler register pins. The audit
-  reports raw pointer casts and numeric offsets as provenance evidence instead
-  of banning legitimate packed-memory C.
+  instruction asm, empty asm barriers, compiler register pins, and opaque
+  offset-heavy byte-pointer stand-ins. Bounded raw layout evidence remains
+  visible in the receipt, as does a named overlay when the layout is modeled.
 - Batch 229 confirms the strict audit on four newly accepted standalone files:
   zero instruction asm, barriers, and register pins in every candidate. The
   linker preflight also caught and then fixed the missing canonical
@@ -60,6 +60,11 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   found zero instruction asm, barriers, or register pins. Two candidates use
   explicit current-scene layout offsets, which remain visible audit evidence,
   not compiler-only shaping.
+- Round 84 added the companion layout-quality gate: the typed `SceneState`
+  overlay for `func_080165D4` and named graphics-register overlay for
+  `func_08016BF0` pass with no opaque pointer-offset blob. New offset-heavy
+  candidates are policy-rejected before byte comparison; the old raw-layout
+  matches remain documented evidence until their structs are recovered.
 
 Manifests for exported symbols such as `set_soundplayer_pitch` may provide an
 explicit eight-digit `address`; this lets the cycle derive canonical paths even

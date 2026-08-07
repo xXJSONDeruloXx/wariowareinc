@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Audit decomp C for asm escapes and low-level memory access.
 
-The audit has one hard quality rule: a newly accepted decomp function must be
-ordinary C, without original-asm wrappers, instruction-bearing inline asm,
-empty asm barriers, or compiler register pins.  Raw pointer casts and numeric
-offsets are emitted as evidence rather than rejected because partially-known
-GBA layouts genuinely require them during the struct-recovery phase.
+The audit has two quality rules for newly accepted decomp functions: ordinary
+C with no asm escape, and no opaque offset-heavy byte-pointer stand-in.  A
+small amount of raw layout evidence remains valid, as does a named struct
+overlay, because partially-known GBA layouts genuinely need an intermediate
+representation during struct recovery.
 """
 
 from __future__ import annotations
@@ -55,6 +55,7 @@ def build_record(root: Path, paths: list[Path]) -> dict[str, Any]:
         "commit": git(root, "rev-parse", "HEAD"),
         "files": files,
         "ok": all(file["strict_real_c"] for file in files),
+        "layout_ok": all(file["layout_quality_ok"] for file in files),
     }
 
 
@@ -63,6 +64,11 @@ def main() -> int:
     parser.add_argument("paths", nargs="*", help="src/decomp/*.c files to inspect")
     parser.add_argument("--all", action="store_true", help="audit every standalone decomp C file")
     parser.add_argument("--strict", action="store_true", help="fail if any asm or wrapper is found")
+    parser.add_argument(
+        "--strict-layout",
+        action="store_true",
+        help="fail if any source has an opaque offset-heavy byte-pointer layout",
+    )
     parser.add_argument("--output", type=Path, help="write JSON receipt to this path")
     args = parser.parse_args()
 
@@ -77,7 +83,9 @@ def main() -> int:
         print(json.dumps({"ok": record["ok"], "receipt": output.relative_to(root).as_posix()}))
     else:
         print(encoded, end="")
-    return 0 if (record["ok"] or not args.strict) else 1
+    failed_asm = args.strict and not record["ok"]
+    failed_layout = args.strict_layout and not record["layout_ok"]
+    return 0 if not (failed_asm or failed_layout) else 1
 
 
 if __name__ == "__main__":

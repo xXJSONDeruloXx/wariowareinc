@@ -4,8 +4,8 @@
 This is intentionally independent of the Pi extension.  It gives Git hooks a
 small, stable check for the rules that must hold even when no agent runtime is
 present: new ``src/decomp`` files may not smuggle in instruction asm, register
-pins, or asm barriers, and the ROM verification gate may not be weakened in a
-normal commit.
+pins, asm barriers, or an opaque offset-heavy byte-pointer stand-in, and the
+ROM verification gate may not be weakened in a normal commit.
 """
 
 from __future__ import annotations
@@ -49,6 +49,53 @@ NUMERIC_ASSIGN_OFFSET_RE = re.compile(
     r"\b(?:offset|base|scene|ptr|data)\s*(?:\+=|=)\s*(0x[0-9A-Fa-f]+|[0-9]+)"
 )
 POINTER_OFFSET_CONTEXT_RE = re.compile(r"\b(?:offset|base|store|scene|ptr|data)\b")
+STRUCT_DECL_RE = re.compile(r"\bstruct\s+([A-Za-z_]\w*)\s*\{")
+STRUCT_FIELD_ACCESS_RE = re.compile(r"\b([A-Za-z_]\w*)\s*->\s*([A-Za-z_]\w*)")
+
+
+def layout_quality(
+    text: str,
+    pointer_lines: list[dict[str, Any]],
+    numeric_offsets: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Classify low-level layout access without confusing it with inline asm.
+
+    GBA globals are often only partially typed.  A small number of explicit
+    offsets is useful evidence during struct recovery, and a named overlay is
+    a stronger semantic model.  A large cluster of scalar casts through one
+    byte pointer is different: it can match bytes while hiding an otherwise
+    unreviewed layout blob.  New candidates must either stay bounded or expose
+    a named struct/field model before they can enter the exact-only cycle.
+    """
+
+    declarations = sorted(set(STRUCT_DECL_RE.findall(text)))
+    field_accesses = [
+        {"base": base, "field": field}
+        for base, field in STRUCT_FIELD_ACCESS_RE.findall(text)
+    ]
+    raw_count = len(pointer_lines)
+    offset_count = len(numeric_offsets)
+    if raw_count == 0:
+        classification = "typed_or_direct"
+        accepted = True
+    elif declarations and field_accesses:
+        classification = "named_overlay_with_raw_evidence"
+        accepted = True
+    elif raw_count <= 2 and offset_count <= 2:
+        classification = "bounded_layout_evidence"
+        accepted = True
+    else:
+        classification = "opaque_offset_heavy"
+        accepted = False
+    return {
+        "classification": classification,
+        "layout_quality_ok": accepted,
+        "raw_access_count": raw_count,
+        "numeric_offset_count": offset_count,
+        "named_structs": declarations,
+        "named_field_accesses": field_accesses,
+        "threshold": {"max_bounded_raw_accesses": 2, "max_bounded_numeric_lines": 2},
+    }
 
 
 def git(root: Path, args: list[str]) -> str:
@@ -182,13 +229,13 @@ def has_inline_asm(text: str) -> bool:
 
 
 def source_audit(text: str) -> dict[str, Any]:
-    """Return an auditable quality summary without judging valid low-level C.
+    """Return an auditable quality summary for a candidate or decomp source.
 
-    Raw pointer casts and numeric offsets are reported, not rejected: GBA
-    decompilation often has to express packed/partially-known layouts this way.
-    The hard admission rule is that the function must not use asm or include an
-    original asm wrapper; the byte-match and full-ROM gates remain the semantic
-    proof.
+    Raw pointer casts and numeric offsets are reported as evidence.  Bounded
+    layout evidence remains valid, while offset-heavy opaque casts fail the
+    separate layout-quality gate.  The hard source rule is still that the
+    function must not use asm or include an original asm wrapper; byte matching
+    and the full-ROM gate remain the semantic proof.
     """
 
     findings = asm_findings(text)
@@ -206,6 +253,7 @@ def source_audit(text: str) -> dict[str, Any]:
             numeric_offsets.append({"line": line_number, "values": values, "text": line.strip()})
 
     functions = re.findall(r"\b(func_[A-Za-z0-9_]+|asm_[A-Za-z0-9_]+)\s*\([^;{}]*\)\s*\{", text)
+    layout = layout_quality(text, pointer_lines, numeric_offsets)
     return {
         "function_count": len(functions),
         "functions": functions,
@@ -216,7 +264,9 @@ def source_audit(text: str) -> dict[str, Any]:
         },
         "raw_pointer_accesses": pointer_lines,
         "numeric_pointer_offsets": numeric_offsets,
+        "layout": layout,
         "strict_real_c": not bool(NAKED_RE.search(text) or findings),
+        "layout_quality_ok": layout["layout_quality_ok"],
     }
 
 
@@ -228,10 +278,15 @@ def policy_violations(root: Path, files: list[str], *, staged: bool) -> list[str
             if not path.is_file():
                 continue
             text = path.read_text(errors="replace")
+            audit = source_audit(text)
             if has_nonempty_asm(text):
                 violations.append(f"{rel}: src/decomp content contains naked/original/instruction-bearing asm")
             elif has_inline_asm(text):
                 violations.append(f"{rel}: src/decomp content contains an asm barrier or register pin")
+            if not audit["layout_quality_ok"]:
+                violations.append(
+                    f"{rel}: opaque offset-heavy byte-pointer layout; use a named overlay or keep the evidence bounded"
+                )
 
     if staged:
         patch = git(root, ["diff", "--cached", "--", "Makefile", "wariowareinc.ld", "wariowareinc_modern.ld", "undefined_syms.ld"])
@@ -250,6 +305,11 @@ def main(argv: list[str] | None = None) -> int:
     source.add_argument("--worktree", action="store_true")
     source.add_argument("--range", nargs=2, metavar=("BASE", "HEAD"))
     parser.add_argument("--check", action="store_true", help="fail on policy violations")
+    parser.add_argument(
+        "--strict-layout",
+        action="store_true",
+        help="fail when a source uses an opaque offset-heavy byte-pointer layout",
+    )
     parser.add_argument("--needs-verification", action="store_true", help="exit 0 when changed paths affect ROM output")
     parser.add_argument("--dirty-rom-paths", action="store_true", help="fail when unstaged ROM-affecting paths exist")
     args = parser.parse_args(argv)
@@ -273,6 +333,18 @@ def main(argv: list[str] | None = None) -> int:
         print("decomp policy blocked:", file=sys.stderr)
         print("\n".join(f"- {violation}" for violation in violations), file=sys.stderr)
         return 1
+    if args.strict_layout:
+        bad_layout = []
+        for rel in files:
+            if not rel.startswith("src/decomp/") or not rel.endswith(".c"):
+                continue
+            path = root / rel
+            if path.is_file() and not source_audit(path.read_text(errors="replace"))["layout_quality_ok"]:
+                bad_layout.append(rel)
+        if bad_layout:
+            print("layout policy blocked:", file=sys.stderr)
+            print("\n".join(f"- {path}" for path in bad_layout), file=sys.stderr)
+            return 1
     if args.check:
         print(f"decomp policy OK ({len(files)} changed path(s))")
     return 0

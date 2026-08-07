@@ -28,8 +28,34 @@ class DecompSourceAuditTests(unittest.TestCase):
             'void func_08000000(void) { u8 *p = (u8 *)gCurrentSceneData; *(u16 *)(p + 0x1BA) = 1; }'
         )
         self.assertTrue(report["strict_real_c"])
+        self.assertTrue(report["layout_quality_ok"])
+        self.assertEqual(report["layout"]["classification"], "bounded_layout_evidence")
         self.assertGreaterEqual(len(report["raw_pointer_accesses"]), 1)
         self.assertGreaterEqual(len(report["numeric_pointer_offsets"]), 1)
+
+    def test_offset_heavy_opaque_layout_is_not_admitted(self) -> None:
+        report = source_audit(
+            "void func_08000000(void) {\n"
+            " u8 *p = (u8 *)gCurrentSceneData;\n"
+            " *(u16 *)(p + 0x10) = 1;\n"
+            " *(u16 *)(p + 0x12) = 2;\n"
+            " *(u16 *)(p + 0x14) = 3;\n"
+            "}\n"
+        )
+        self.assertTrue(report["strict_real_c"])
+        self.assertFalse(report["layout_quality_ok"])
+        self.assertEqual(report["layout"]["classification"], "opaque_offset_heavy")
+
+    def test_named_overlay_is_preferred_to_opaque_offsets(self) -> None:
+        report = source_audit(
+            "struct Scene { unsigned short state; };"
+            "void func_08000000(void) {"
+            " struct Scene *scene = (struct Scene *)gCurrentSceneData;"
+            " scene->state = 1;"
+            "}"
+        )
+        self.assertTrue(report["layout_quality_ok"])
+        self.assertEqual(report["layout"]["classification"], "typed_or_direct")
 
     def test_current_scene_helpers_pass_strict_audit(self) -> None:
         root = Path(__file__).resolve().parents[1]

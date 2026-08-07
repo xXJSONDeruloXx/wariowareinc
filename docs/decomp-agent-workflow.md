@@ -45,10 +45,12 @@ Notes:
 13. Commit code + docs together.
 14. Push immediately after verified progress.
 15. New candidates must pass the strict real-C audit: no original-asm
-    wrappers, inline instruction asm, empty asm barriers, or compiler register
-    pins. Use `python3 tools/audit_decomp_source.py CANDIDATE.c --strict`;
-    raw pointer casts/offsets are reported for review, not treated as an
-    automatic failure.
+    wrappers, inline instruction asm, empty asm barriers, compiler register
+    pins, or opaque offset-heavy byte-pointer stand-ins. Use
+    `python3 tools/audit_decomp_source.py CANDIDATE.c --strict --strict-layout`.
+    A bounded raw layout access is still recorded as evidence, and a named
+    struct overlay is preferred when several fields from one packed record are
+    involved.
 
 ## Required verification commands
 ### Clean Docker build
