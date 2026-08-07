@@ -25,6 +25,36 @@ Use this file to record where the current decomp tools helped, where they missed
   register overlay. m2c/asmlift remain candidate aids only: asmlift's BF0
   output was a generic pointer skeleton and was not admitted.
 
+## Round 87 — named-overlay standalone screen (2026-08-07)
+- The screen evaluated **12** fresh standalone candidates in one isolation
+  container and classified **8 exact / 4 near miss**. Only the eight exact
+  inputs entered `apply-batch`; the full-context Docker transaction ran once
+  for that exact subset and passed `wariowareinc.gba: OK` with unchanged ROM
+  SHA-1. The report advanced **1683 → 1691** functions, **1223 → 1231** linked
+  C TUs, and **1407 → 1415** decomp files.
+- m2c supplied useful semantic skeletons. The accepted forms were then
+  manually reshaped into named input/output, scene, scene-data, table, and
+  sprite-record fields with explicit padding. asmlift was not needed for this
+  screen, and no generated decompiler output was admitted as source without
+  the compiler comparison.
+- The strict source/layout receipt reports zero instruction asm, empty
+  barriers, compiler register pins, non-mapped volatile accesses, raw pointer
+  accesses, and numeric pointer-offset lines in all eight accepted files.
+  The one `func_080D70EC` handler alias is an API parameter; it is not used as
+  a scalar pointer to reach hidden record fields. This is the intended
+  boundary for partially recovered records: named fields and visible gaps are
+  acceptable evidence, while an offset-heavy `u8 *` blob is not.
+- The four rejected seeds were retained rather than padded or forced:
+  `func_080D906C` (**39.9375**), `func_08040AAC` (**8.066666**),
+  `func_080B2450` (**7.117645**), and `func_08082BB0` (**0.125**). Their
+  candidate sources, normalized comparison results, and attempt rows remain
+  available in `.nearmiss/`, `.decomp-runs/round-87-isolation-v1.json`, and
+  `tools/attempts.tsv`.
+- The single exact-only full gate was the useful cost improvement: discovery
+  and near-miss recording stayed in the shared screen, while only the
+  accepted batch paid the clean full-ROM build/report cost. The 33-test tools
+  suite, strict audit, policy scan, report, and objdiff refresh all passed.
+
 ## Round 85 — six-function strict-C screen (2026-08-07)
 - The shared screen covered **15** candidate entries and classified **6 exact / 9 near miss**. Only the six exact entries entered `apply-batch`, so the expensive full-context Docker build ran once for the accepted subset rather than once per spelling. The gate passed `wariowareinc.gba: OK`, preserving SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3` and advancing **1676 → 1682** functions, **1216 → 1222** linked C TUs, and **1400 → 1406** decomp files.
 - m2c was the fastest semantic source for the sprite/gameplay/scene wrappers. asmlift was still useful as a diagnostic boundary, but it declined stack-pointer/data shapes or hit project-compile failures; no asmlift-generated C was admitted. The compiler isolation receipt remained the authority for exactness.

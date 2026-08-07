@@ -5,20 +5,20 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 235` — one title-scene initializer admitted after the hardened strict ordinary-C/layout-quality cycle and a full-context Docker gate
-- `build/report.json`: **1683 / 5934 matched functions** = **28.361982%**
-- `matched_code`: **75710 / 993802** = **7.618218%**
-- `tools/gen_objdiff.py`: **1223 linked C TUs / 5464 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1407 decompiled function files** = **1204 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 236` — eight standalone ordinary-C leaf/wrapper conversions admitted after a 12-candidate strict screen and a full-context Docker gate
+- `build/report.json`: **1691 / 5934 matched functions** = **28.4968%**
+- `matched_code`: **75984 / 993820** = **7.6456504%**
+- `tools/gen_objdiff.py`: **1231 linked C TUs / 5456 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1415 decompiled function files** = **1212 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, scalar-pointer aliases are counted across later lines, and named overlays are preferred for multi-field records.
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
-- 25% milestone: **1484 / 5934**, now exceeded by **199** matched functions.
-- 26% milestone: **1543 / 5934**; current progress is **1683**, exceeding it by **140** matches.
-- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **80** matches.
-- Next 30% milestone: **1781 / 5934**; **98** additional matched functions are needed.
+- 25% milestone: **1484 / 5934**, now exceeded by **207** matched functions.
+- 26% milestone: **1543 / 5934**; current progress is **1691**, exceeding it by **148** matches.
+- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **88** matches.
+- Next 30% milestone: **1781 / 5934**; **90** additional matched functions are needed.
 
 ### Tooling hardening follow-up — Conker provenance and source quality (2026-08-07)
 - The Conker comparison confirmed that its durable strengths are hash-identified candidate receipts, retained near misses, and a full-ROM pre-commit gate; its legacy MIPS source model does not itself prohibit inline ASM or volatile codegen shaping. WarioWare keeps the provenance model and enforces the stricter source rule before isolation/apply.
@@ -31,6 +31,12 @@ Prefer this file + the other docs in `/docs`
 - Round 86's hardened isolation screen remained **1 exact / 2 near miss** after the tooling commit. The exact candidate passed the strict source audit and the rollback-capable full Docker transaction; the report advanced **1682 → 1683**, linked C units **1222 → 1223**, and decomp files **1406 → 1407**.
 - `func_08017930` remains evidence-only because ordinary C reserves `SP,#8` while the target reserves `SP,#0x54`; no dummy stack array was added to fake that frame. `func_0801776C` remains a real table-base/register-order near miss. Evidence: `.decomp-runs/round-86-manifest.json`, `round-86-isolation-v1.json` through `round-86-isolation-v7.json`, `round-86-source-audit.json`, `round-86-accepted-source-audit.json`, `round-86-apply.json`, `.nearmiss/func_08017930.*`, `.nearmiss/func_0801776C.*`, and `tools/attempts.tsv`.
 - ROM SHA-1 remains **`3f556448d290fa5406d6ed367fee16cc02387ad3`** and the final accepted source passes the 31 focused / 33 total tooling tests.
+
+### Batch 236 — accepted (strict named-overlay leaf/wrapper batch)
+- Converted `func_0807DC6C`, `func_0808EF04`, `func_080D6C30`, `func_080526EC`, `func_08086970`, `func_08025174`, `func_080D70EC`, and `func_0808828C` to standalone ordinary C. The candidates use named input/output, scene, scene-data, table, and sprite-record overlays with explicit preserved gaps; they do not use a wrapped asm body, inline instruction asm, compiler register pin, empty barrier, non-mapped volatile, or opaque scalar-pointer offset blob.
+- Round 87 screened **12** fresh candidates in one isolation pass: **8 exact / 4 near miss**. m2c supplied the initial semantic skeletons; manual source shaping selected the readable named-field forms, and no asmlift-generated spelling was admitted. The exact-only transaction passed the clean Docker gate with `wariowareinc.gba: OK`, advancing **1683 → 1691** matched functions, **1223 → 1231** linked C units, and **1407 → 1415** decomp files.
+- The four rejected candidates remain evidence-only: `func_080D906C` (**39.9375**), `func_08040AAC` (**8.066666**), `func_080B2450` (**7.117645**), and `func_08082BB0` (**0.125**). Their full C seeds, normalized results, and attempt-ledger rows are retained under `.nearmiss/`, `.decomp-runs/round-87-isolation-v1.json`, and `tools/attempts.tsv`.
+- `round-87-source-audit.json` reports zero instruction asm, barriers, register pins, volatile accesses, raw pointer accesses, and numeric pointer-offset lines in all eight accepted files; `func_080D70EC`'s single handler alias is an API parameter, not a layout blob. The ROM SHA-1 remains **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
 
 ### Batch 234 — accepted (strict ordinary-C scene/graphics wrappers)
 - Converted `func_08017054`, `func_0801709C`, `func_0801720C`, `func_0801743C`, `func_080179A8`, and `func_080179E4` to standalone ordinary C. The sources use the existing sprite/gameplay types plus two small named overlays for the previously unnamed graphics register at `0x48` and the scene-variable root at offset zero; no opaque offset blob was admitted.
