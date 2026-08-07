@@ -6,6 +6,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 83 — strict ordinary-C scene/main-menu fan-in (2026-08-07)
+- One shared isolation container screened four m2c/manual candidates. v1 found **1 exact / 2 compile errors / 1 exact**; adding `graphics.h` for the transitive `struct Animation` declaration produced v2 with **3 exact / 1 near miss**. The remaining `func_08016CBC` miss differed only in its ordinary-C stack frame (`SUB/ADD SP,#8` versus the target's `#0x10`); modeling the local subscene pointer array as four entries repaired the frame without asm, barriers, or register pins. v3 reached **4 exact / 0 rejected**.
+- m2c was useful for recovering the beatscript bootstrap's argument/stack shape and the state-dispatch skeletons. asmlift again served as a project-context diagnostic and did not produce an admitted source. The compiler isolation receipt, not decompiler output, selected the final spellings.
+- The full-context exact-only transaction passed the Docker ROM gate and advanced **1670 → 1674** matched functions, **1210 → 1214** linked C TUs, and **1394 → 1398** decomp files. `make report`, `gen_objdiff.py`, strict source audit, policy checks, and the 27-tool-test suite remain required post-apply checks; ROM SHA-1 stayed `3f556448d290fa5406d6ed367fee16cc02387ad3` with `wariowareinc.gba: OK`.
+- The strict audit recorded no asm, barriers, or register pins. Two accepted bodies use explicit packed scene offsets, and the audit preserves those accesses as reviewable provenance. This is the desired boundary: the C is readable and compiler-independent, while unresolved struct layout remains visible instead of being hidden in a wrapper.
+
 ## Tooling maintenance — named-symbol manifest addresses (2026-08-06)
 - `decomp_cycle.py` originally derived every standalone source and linker path
   from a `func_XXXXXXXX`/`asm_XXXXXXXX` function name. That rejected valid raw

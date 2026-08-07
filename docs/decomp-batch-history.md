@@ -3,6 +3,13 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 232 — scene/main-menu helpers (2026-08-07)
+- Converted `func_080167D4`, `func_08016CBC`, `func_08016808`, and `func_08016C60` to standalone ordinary C. The four helpers cover the sound-stop/scene-thread flag leaf, beatscript scene bootstrap, main-menu state dispatch, and graphics-buffer scene update.
+- m2c supplied the semantic skeletons. asmlift was used diagnostically but stopped at the project-header boundary; no generated lift was admitted. Round 83 v1 recorded two header-context compile errors, v2 repaired those to three exact plus one stack-size near miss, and v3 reached **4 exact / 0 rejected** by modeling the bootstrap's four-pointer local array in ordinary C.
+- The strict source audit reports zero instruction asm, empty barriers, and compiler register pins in all four accepted sources. Only `func_08016808`'s current-scene `+0x3A` read and `func_08016C60`'s five packed scene-field reads are reported as raw-layout evidence; neither uses inline asm or a register pin.
+- The exact-only apply passed `wariowareinc.gba: OK`, advancing **1670 → 1674** matched functions, **1210 → 1214** linked C TUs, and **1394 → 1398** decomp files. Fresh report is **1674 / 5934** (**28.210312%**), **75056 / 993772** matched code (**7.552638%**), and **1195 standalone_tu / 203 included_stub**. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence is in `.decomp-runs/round-83-manifest.json`, `round-83-isolation-v1.json` through `round-83-isolation-v3.json`, `round-83-source-audit.json`, and `round-83-apply.json`; the v2 stack-size near miss remains in `.nearmiss/func_08016CBC.*` and `tools/attempts.tsv`.
+
 ## Batch 229 — main-menu update/input helpers (2026-08-07)
 - Converted `func_08016D00`, `func_08016DB8`, `func_08016798`, and `func_08016850` to standalone ordinary C. The four-function group covers the main-menu update fan-in, soft-reset cleanup, input-triggered sound/state transition, and the paired scene/graphics readiness predicate.
 - m2c supplied the semantic skeletons. asmlift was run as a comparison path but reached its project-header compile boundary for this Splat-shaped neighborhood; no asmlift output was admitted. The first screen recorded three header-related compile errors and then three exact candidates; the repaired screen reached **4 exact / 0 rejected** after an ordinary-C `BNE` fall-through rewrite for `func_08016D00`.
