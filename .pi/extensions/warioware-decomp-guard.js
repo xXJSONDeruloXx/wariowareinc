@@ -7,8 +7,8 @@
  *
  * Policy:
  * - new naked asm / whole-function inline asm in src/decomp/*.c is banned
- * - new non-empty inline asm statements in src/decomp/*.c are banned
- * - empty asm barriers/clobbers are still allowed as C-shaping tools
+ * - all inline asm in new src/decomp/*.c candidates is banned, including
+ *   empty barriers/clobbers and compiler register pins
  * - existing legacy asm files may remain only while untouched
  * - editing a legacy asm file is allowed only if the result removes the asm
  * - asm/ and build/ remain generated/protected paths
@@ -63,20 +63,27 @@ function firstNonEmptyAsmLiteral(regex, text, literalGroup) {
   return "";
 }
 
-function nonEmptyInlineAsmReason(text, context = "code") {
+function inlineAsmReason(text, context = "code") {
+  // Match Conker's no-asm-pin guideline: compiler register pins and empty
+  // barriers are source-quality violations even when they emit no bytes.
+  const registerPinRe = /\bregister\b[^;{}\n]*?(?:__asm__|asm)\s*\(\s*"r(?:1[0-5]|[0-9])"\s*\)/gms;
+  if (registerPinRe.test(text)) {
+    return `${context} contains a compiler register asm pin; use ordinary C`;
+  }
+
   // `asm volatile(...)` is never used for register-pinning declarations, so it
   // can be detected anywhere, including after unbraced if/else statements.
   const volatileAsmRe = /(?:__asm__|asm)\s+volatile\s*\(\s*((?:"(?:\\.|[^"\\])*"\s*)+)/gms;
   if (firstNonEmptyAsmLiteral(volatileAsmRe, text, 1)) {
-    return `${context} contains non-empty inline asm; only empty asm barriers/clobbers are allowed`;
+    return `${context} contains inline asm; use ordinary C`;
   }
 
   // Bare `asm(...)` can be a register-pinning declaration:
   //   register u32 r0 asm("r0");
-  // Only scan statement-form bare asm so register pins stay allowed.
+  // Scan statement-form bare asm, including an empty barrier.
   const bareAsmStmtRe = /(^|[;{}]\s*)(?:__asm__|asm)\s*\(\s*((?:"(?:\\.|[^"\\])*"\s*)+)/gms;
-  if (firstNonEmptyAsmLiteral(bareAsmStmtRe, text, 2)) {
-    return `${context} contains non-empty inline asm; only empty asm barriers/clobbers are allowed`;
+  if (bareAsmStmtRe.test(text)) {
+    return `${context} contains inline asm; use ordinary C`;
   }
 
   return "";
@@ -95,7 +102,7 @@ function nakedAsmReason(text, context = "code") {
     return `${context} contains thumb_func_start/original asm stub text`;
   }
 
-  const inlineAsm = nonEmptyInlineAsmReason(text, context);
+  const inlineAsm = inlineAsmReason(text, context);
   if (inlineAsm) return inlineAsm;
 
   return "";
@@ -220,9 +227,9 @@ function inspectBash(event, repoRoot, ctx) {
   }
 
   const writesDecomp = /src\/decomp\/[^\s'";]+\.c/.test(command);
-  const suspicious = /__attribute__\s*\(\s*\(\s*naked\s*\)\s*\)|thumb_func_start\b|#\s*include\s+["<][^"<]*asm\/[^"<]*\.s[">]|(?:__asm__|asm)\s*(?:volatile\s*)?\(\s*"(?!")/.test(command);
+  const suspicious = /__attribute__\s*\(\s*\(\s*naked\s*\)\s*\)|thumb_func_start\b|#\s*include\s+["<][^"<]*asm\/[^"<]*\.s[">]|\bregister\b[^;{}\n]*?(?:__asm__|asm)\s*\(|(?:__asm__|asm)\s*(?:volatile\s*)?\(\s*"/.test(command);
   if (writesDecomp && suspicious) {
-    return guardBlock("bash command appears to write naked/original/non-empty inline asm into src/decomp. Use real C instead.", ctx);
+    return guardBlock("bash command appears to write banned asm, a barrier, or a register pin into src/decomp. Use real C instead.", ctx);
   }
 
   return undefined;
@@ -251,14 +258,14 @@ export default function (pi) {
 
   pi.on("before_agent_start", async (event) => {
     return {
-      systemPrompt: `${event.systemPrompt}\n\n## WarioWare Decomp Guard (tool-enforced)\n- New naked asm / whole-function inline asm wrappers in src/decomp/*.c are blocked by the project extension.\n- New non-empty inline asm statements in src/decomp/*.c are blocked; only empty asm barriers/clobbers are allowed.\n- Existing legacy asm files may be left untouched or converted to real C; editing them while they still contain banned asm is blocked at commit time.\n- If a function does not match, keep iterating in real C or select another real-C candidate. Do not pivot to asm.\n- Use decomp_guard_check before committing chunks that touched src/decomp.`,
+      systemPrompt: `${event.systemPrompt}\n\n## WarioWare Decomp Guard (tool-enforced)\n- New naked asm / whole-function inline asm wrappers in src/decomp/*.c are blocked by the project extension.\n- All inline asm in new src/decomp/*.c candidates is blocked, including empty barriers and compiler register pins.\n- Existing legacy asm files may be left untouched or converted to real C; editing them while they still contain banned asm is blocked at commit time.\n- If a function does not match, keep iterating in real C or select another real-C candidate. Do not pivot to asm.\n- Use decomp_guard_check before committing chunks that touched src/decomp.`,
     };
   });
 
   pi.registerTool({
     name: "decomp_guard_check",
     label: "Decomp Guard Check",
-    description: "Scan WarioWare decomp changes for banned naked/original/non-empty inline asm wrappers.",
+    description: "Scan WarioWare decomp changes for banned asm wrappers, barriers, and register pins.",
     parameters: Type.Object({
       stagedOnly: Type.Optional(Type.Boolean({ description: "Only scan staged files" })),
       includeLegacy: Type.Optional(Type.Boolean({ description: "Include pre-existing legacy banned-asm files in the report" })),

@@ -44,6 +44,11 @@ Notes:
 12. Rerun report + objdiff after accepted progress.
 13. Commit code + docs together.
 14. Push immediately after verified progress.
+15. New candidates must pass the strict real-C audit: no original-asm
+    wrappers, inline instruction asm, empty asm barriers, or compiler register
+    pins. Use `python3 tools/audit_decomp_source.py CANDIDATE.c --strict`;
+    raw pointer casts/offsets are reported for review, not treated as an
+    automatic failure.
 
 ## Required verification commands
 ### Clean Docker build

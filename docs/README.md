@@ -36,6 +36,11 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
 - `apply` requires an isolated exact match, applies the mechanical conversion, runs the strict ROM/report gate, and restores the candidate transaction plus a clean baseline on failure. A fresh screen receipt is reused when its commit and input hashes still match, avoiding a redundant isolation container.
 - `apply-batch` performs the same guarded transaction for a small exact manifest, with one isolation pass and one full-ROM gate for the batch.
 - `verify` runs the current-worktree Docker gate for hooks or a final check.
+- New candidates also pass `python3 tools/audit_decomp_source.py ... --strict`.
+  The Git hooks and transactional cycle reject original-asm wrappers, inline
+  instruction asm, empty asm barriers, and compiler register pins. The audit
+  reports raw pointer casts and numeric offsets as provenance evidence instead
+  of banning legitimate packed-memory C.
 
 Manifests for exported symbols such as `set_soundplayer_pitch` may provide an
 explicit eight-digit `address`; this lets the cycle derive canonical paths even

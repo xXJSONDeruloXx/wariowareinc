@@ -10,14 +10,14 @@ void func_0801646C(void) {
     u8 *base;
     s16 id;
     struct SpriteHandler *handler;
-    register u32 *scene_ref asm("r2");
-    register u8 *scene asm("r3");
+    u32 *scene_ref;
+    u8 *scene;
 
     scene_ref = (u32 *)&gCurrentSceneData;
     scene = (u8 *)*scene_ref;
     {
-        register u32 offset asm("r0");
-        register u8 *store asm("r1");
+        u32 offset;
+        u8 *store;
 
         store = scene;
         offset = 0xDD;
@@ -26,8 +26,8 @@ void func_0801646C(void) {
         *(u16 *)store = 0x3C;
     }
     {
-        register u32 offset asm("r0");
-        register u8 *store asm("r1");
+        u32 offset;
+        u8 *store;
 
         store = scene;
         offset = 0xDC;
@@ -36,8 +36,8 @@ void func_0801646C(void) {
         *store = 1;
     }
     {
-        register u32 base asm("r0");
-        register u32 offset asm("r1");
+        u32 base;
+        u32 offset;
 
         base = *scene_ref;
         offset = 0xDA;

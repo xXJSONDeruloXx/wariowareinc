@@ -21,6 +21,10 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   else
     base="$remote_sha"
   fi
+  # Re-run the source-quality policy over the exact range being published.
+  # This catches asm wrappers, barriers, and register pins even when a commit
+  # was created outside the normal local hook path.
+  python3 tools/check_decomp_policy.py --range "$base" "$local_sha" --check
   if python3 tools/check_decomp_policy.py --range "$base" "$local_sha" --needs-verification; then
     needs_verify=1
   fi

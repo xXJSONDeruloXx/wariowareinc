@@ -13,6 +13,7 @@ Prefer this file + the other docs in `/docs`
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
+- New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, and compiler register pins are rejected by the source audit, cycle, and Git hooks. Raw pointer casts/offsets are reported as evidence rather than banned.
 - 25% milestone: **1484 / 5934**, now exceeded by **178** matched functions.
 - 26% milestone: **1543 / 5934**; current progress is **1662**, exceeding it by **119** matches.
 - Active 27% working goal: **1603 / 5934**; current progress exceeds it by **59** matches.
@@ -20,7 +21,7 @@ Prefer this file + the other docs in `/docs`
 
 ### Batch 228 — accepted (scene animation helpers)
 - Converted `func_0801646C` and `func_080164CC` to standalone C. The pair initializes/decrements the main-menu scene animation state, scans the scene's enabled-sprite bitmask, and updates sprite visibility/animation cels.
-- m2c supplied the semantic loop and scene-field skeletons. asmlift hit project-context compile errors for both candidates; the final spellings used ordinary C plus compiler-only register declarations to preserve the target's R0/R1/R2/R3 ordering, with no instruction-bearing or volatile inline asm.
+- m2c supplied the semantic loop and scene-field skeletons. asmlift hit project-context compile errors for both candidates. The initial byte-exact `func_0801646C` spelling used compiler-only register declarations, but the strict real-C follow-up removed all six pins and retained the exact ROM bytes; the final accepted source uses ordinary C only.
 - Six isolated revisions preserved the convergence: v1 **0 exact / 2 near miss**, v2 **1 exact / 1 near miss**, v3 **1 exact / 1 compile error**, v4 **1 exact / 1 near miss**, v5 **1 exact / 1 near miss**, and v6 **2 exact / 0 rejected**. The exact-only apply passed the clean full Docker ROM/report gate with `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Fresh report: **1662 / 5934 matched functions** (**28.008090%**), **74346 / 993742** matched code (**7.481419%**), **1202 C / 5485 asm-only** units, and **1386** decomp files (`1183 standalone_tu` + `203 included_stub`). Evidence: `.decomp-runs/round-79-isolation-v1.json` through `round-79-isolation-v6.json` and `.decomp-runs/round-79-apply.json`; near-miss seeds remain in `.nearmiss/`.
 

@@ -1,7 +1,7 @@
 # Decomp pattern library
 
 ## Build / verification rule (critical)
-- As of the strengthened decomp guard, new `src/decomp/*.c` progress may not use non-empty inline asm. Historical notes below mention prior `asm volatile("bl ...")`, `ldrsh`, `svc`, `add`, or `stm` shims; treat those as legacy context, not allowed techniques for new conversions. Empty asm barriers/clobbers remain allowed for C shaping.
+- As of the strict real-C decomp guard, new `src/decomp/*.c` progress may not use original-asm wrappers, instruction-bearing inline asm, empty asm barriers, or compiler register pins. Historical notes below mention those legacy techniques; do not use them for new conversions. Raw pointer casts and numeric offsets remain allowed but are recorded by `tools/audit_decomp_source.py` for review.
 - Always verify with Docker before committing: `docker run --rm -v $(pwd):/workspace devkitpro/devkitarm:latest /bin/bash -c "cd /workspace && make -j4"`
 - The local `tools/agbcc/bin/agbcc` is not a reliable macOS host-native path; Docker is the only supported local verification path for this repo
 - A chunk is not done until `wariowareinc.gba: OK` is confirmed in the Docker build output
@@ -433,9 +433,10 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 
 ### Round 79 additions: scene animation helpers
 
-- **Scene-state store/load register roles**: when the target keeps the scene pointer in R3, the global-pointer address in R2, and uses R0/R1 for the shifted field offset and destination, compiler-only hard-register locals plus small inner C blocks preserve the exact `MOVS/LSLS/ADDS` forms without instruction asm.
+- **Scene-state store/load register roles**: the final `func_0801646C` spelling uses ordinary locals plus small inner C blocks and still reproduces the target `MOVS/LSLS/ADDS` forms without any asm pins. The earlier pin-assisted spelling was byte-exact but is retained only as historical evidence; the no-pin candidate is the accepted source-quality form.
 - **Widened countdown zero test**: load a halfword into `u32`, decrement it, store the widened value through the halfword lvalue, then test `if ((value << 16) == 0)`. This preserves the target's `STRH` followed by `LSLS #16` rather than inserting a pre-store `LSRS` for a `u16` temporary.
 - **Sprite call load order**: assign `handler = gSpriteHandler` before deriving the scene-data sprite ID, then call `sprite_set_visible`/`sprite_set_anim_cel` through that local. This keeps the handler literal load before the scene-pool load.
+- **Packed scene offsets need evidence, not denial**: the typed `MainMenuSceneData` experiment changed the generated field width/indexing and remained a real near miss. Keep the byte-accurate raw view when the layout is not yet modeled, and let the strict source audit expose each cast/offset for later struct recovery.
 
 ### Round 78 additions: counted save-unlock loops and aggregates
 

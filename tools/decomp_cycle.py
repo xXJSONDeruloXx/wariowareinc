@@ -32,7 +32,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from check_decomp_policy import has_nonempty_asm
+from check_decomp_policy import has_inline_asm, source_audit
 
 
 IMAGE = "devkitpro/devkitarm:latest"
@@ -496,6 +496,17 @@ def run_isolation(root: Path, entries: list[dict[str, Any]], *, record: bool = T
 
         results: list[dict[str, Any]] = []
         for index, entry in enumerate(entries):
+            candidate_text = entry["candidate"].read_text(errors="replace")
+            audit = source_audit(candidate_text)
+            if not audit["strict_real_c"]:
+                results.append({
+                    "function": entry["function"], "file": entry["file"],
+                    "candidate": entry["candidate_rel"], "target": entry["target_rel"],
+                    "target_object": entry["target_object_rel"], "status": "policy_rejected",
+                    "score": None, "reason": "candidate is not strict ordinary C",
+                    "source_audit": audit,
+                })
+                continue
             candidate_obj = run_dir / f"candidate-{index}.o"
             candidate_status = run_dir / f"candidate-{index}.status"
             candidate_error = run_dir / f"candidate-{index}.stderr"
@@ -591,6 +602,7 @@ def run_isolation(root: Path, entries: list[dict[str, Any]], *, record: bool = T
 
         for result, entry in zip(results, entries):
             result.update(entry_identity(root, entry))
+            result.setdefault("source_audit", source_audit(entry["candidate"].read_text(errors="replace")))
 
         return {
             "schema": 1,
@@ -907,8 +919,8 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
     if dirty and os.environ.get("WARIOWARE_ALLOW_DIRTY") != "1":
         raise CycleError("refusing apply with unrelated dirty paths: " + ", ".join(dirty) +
                          "; generated evidence paths are allowed, source/tool edits are not")
-    if has_nonempty_asm(entry["candidate"].read_text(errors="replace")):
-        raise CycleError("refusing apply: candidate contains naked/original/instruction-bearing asm")
+    if has_inline_asm(entry["candidate"].read_text(errors="replace")):
+        raise CycleError("refusing apply: candidate must be ordinary C with no asm wrappers, barriers, or register pins")
     validate_candidate_linker_symbols(root, entry)
     _, source_transform = source_for_apply(entry, entry["candidate"].read_text())
 
@@ -1000,8 +1012,8 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
         raise CycleError("refusing apply-batch with unrelated dirty paths: " + ", ".join(dirty) +
                          "; generated evidence paths are allowed, source/tool edits are not")
     for entry in entries:
-        if has_nonempty_asm(entry["candidate"].read_text(errors="replace")):
-            raise CycleError(f"{entry['function']}: refusing apply: candidate contains naked/original/instruction-bearing asm")
+        if has_inline_asm(entry["candidate"].read_text(errors="replace")):
+            raise CycleError(f"{entry['function']}: refusing apply: candidate must be ordinary C with no asm wrappers, barriers, or register pins")
         validate_candidate_linker_symbols(root, entry)
     source_transforms = {
         entry["function"]: source_for_apply(entry, entry["candidate"].read_text())[1]
