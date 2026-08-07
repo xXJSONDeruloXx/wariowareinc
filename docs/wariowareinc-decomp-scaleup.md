@@ -13,12 +13,18 @@ Prefer this file + the other docs in `/docs`
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, and named overlays are preferred for multi-field records.
+- New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, scalar-pointer aliases are counted across later lines, and named overlays are preferred for multi-field records.
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1484 / 5934**, now exceeded by **178** matched functions.
 - 26% milestone: **1543 / 5934**; current progress is **1682**, exceeding it by **139** matches.
 - Active 27% working goal: **1603 / 5934**; current progress exceeds it by **79** matches.
 - Next 30% milestone: **1781 / 5934**; **99** additional matched functions are needed.
+
+### Tooling hardening follow-up — Conker provenance and source quality (2026-08-07)
+- The Conker comparison confirmed that its durable strengths are hash-identified candidate receipts, retained near misses, and a full-ROM pre-commit gate; its legacy MIPS source model does not itself prohibit inline ASM or volatile codegen shaping. WarioWare keeps the provenance model and enforces the stricter source rule before isolation/apply.
+- `tools/check_decomp_policy.py` now follows scalar-pointer aliases across later lines, so a cast on `u8 *p = ...` cannot hide a multi-offset blob. It also classifies ordinary `volatile` and allows only direct fixed GBA mapped-memory addresses.
+- `tools/decomp_cycle.py` and `tools/audit_decomp_source.py` use that same semantic-quality result. A deliberately cheap candidate is rejected before compilation; the Round 86 `func_080178C4` candidate remains exact under the stricter check, while the `08017930` and `0801776C` spellings remain evidence-only near misses.
+- This is ROM-neutral tooling work. The verified baseline remains **1682 / 5934**, **75634 / 993802** matched code, **1222 / 5465** linked units, and ROM SHA-1 **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
 
 ### Batch 234 — accepted (strict ordinary-C scene/graphics wrappers)
 - Converted `func_08017054`, `func_0801709C`, `func_0801720C`, `func_0801743C`, `func_080179A8`, and `func_080179E4` to standalone ordinary C. The sources use the existing sprite/gameplay types plus two small named overlays for the previously unnamed graphics register at `0x48` and the scene-variable root at offset zero; no opaque offset blob was admitted.

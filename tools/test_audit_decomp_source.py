@@ -46,6 +46,36 @@ class DecompSourceAuditTests(unittest.TestCase):
         self.assertFalse(report["layout_quality_ok"])
         self.assertEqual(report["layout"]["classification"], "opaque_offset_heavy")
 
+    def test_raw_pointer_alias_offsets_are_counted_after_the_cast_line(self) -> None:
+        report = source_audit(
+            "void func_08000000(void) {\n"
+            " u8 *p = (u8 *)gCurrentSceneData;\n"
+            " p[0x10] = 1;\n"
+            " p[0x12] = 2;\n"
+            " p[0x14] = 3;\n"
+            "}\n"
+        )
+        self.assertEqual(report["raw_pointer_aliases"], ["p"])
+        self.assertFalse(report["layout_quality_ok"])
+        self.assertEqual(report["layout"]["classification"], "opaque_offset_heavy")
+
+    def test_non_mmio_volatile_is_not_a_clean_source_candidate(self) -> None:
+        report = source_audit(
+            "void func_08000000(void) {\n"
+            " volatile u32 value = 1;\n"
+            " value += 2;\n"
+            "}\n"
+        )
+        self.assertFalse(report["semantic_quality_ok"])
+        self.assertEqual(len(report["volatile_accesses"]), 1)
+
+    def test_direct_gba_io_volatile_is_allowed(self) -> None:
+        report = source_audit(
+            "void func_08000000(void) { *(volatile u16 *)0x04000000 = 0; }"
+        )
+        self.assertTrue(report["semantic_quality_ok"])
+        self.assertEqual(report["volatile_accesses"], [])
+
     def test_named_overlay_is_preferred_to_opaque_offsets(self) -> None:
         report = source_audit(
             "struct Scene { unsigned short state; };"
@@ -56,6 +86,21 @@ class DecompSourceAuditTests(unittest.TestCase):
         )
         self.assertTrue(report["layout_quality_ok"])
         self.assertEqual(report["layout"]["classification"], "typed_or_direct")
+
+    def test_unrelated_named_overlay_does_not_excuse_an_opaque_blob(self) -> None:
+        report = source_audit(
+            "struct Scene { unsigned short state; };\n"
+            "void func_08000000(void) {\n"
+            " u8 *p = (u8 *)gCurrentSceneData;\n"
+            " struct Scene *scene = (struct Scene *)gCurrentSceneData;\n"
+            " scene->state = 1;\n"
+            " p[0x10] = 1;\n"
+            " p[0x12] = 2;\n"
+            " p[0x14] = 3;\n"
+            "}\n"
+        )
+        self.assertFalse(report["layout_quality_ok"])
+        self.assertEqual(report["layout"]["classification"], "named_overlay_with_opaque_raw_evidence")
 
     def test_current_scene_helpers_pass_strict_audit(self) -> None:
         root = Path(__file__).resolve().parents[1]

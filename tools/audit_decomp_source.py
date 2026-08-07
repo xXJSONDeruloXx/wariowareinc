@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Audit decomp C for asm escapes and low-level memory access.
 
-The audit has two quality rules for newly accepted decomp functions: ordinary
-C with no asm escape, and no opaque offset-heavy byte-pointer stand-in.  A
-small amount of raw layout evidence remains valid, as does a named struct
-overlay, because partially-known GBA layouts genuinely need an intermediate
-representation during struct recovery.
+The audit has three quality rules for newly accepted decomp functions:
+ordinary C with no asm escape, no non-mapped volatile codegen shim, and no opaque
+offset-heavy byte-pointer stand-in.  A small amount of raw layout evidence
+remains valid, as does a named struct overlay, because partially-known GBA
+layouts genuinely need an intermediate representation during struct recovery.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ def git(root: Path, *args: str) -> str:
         return ""
 
 
-def resolve_paths(root: Path, values: list[str], include_all: bool) -> list[Path]:
+def resolve_paths(root: Path, values: list[str], include_all: bool, allow_candidates: bool) -> list[Path]:
     paths = [root / value for value in values]
     if include_all:
         paths.extend(sorted((root / "src/decomp").glob("*.c")))
@@ -38,7 +38,10 @@ def resolve_paths(root: Path, values: list[str], include_all: bool) -> list[Path
         if not path.is_file() or path.suffix != ".c":
             raise SystemExit(f"source file not found or not C: {path}")
         if not path.is_relative_to(root / "src/decomp"):
-            raise SystemExit(f"audit path must be under src/decomp: {path}")
+            if not allow_candidates:
+                raise SystemExit(f"audit path must be under src/decomp: {path}")
+            if not path.is_relative_to(root):
+                raise SystemExit(f"candidate audit path must be inside the repository: {path}")
     return unique
 
 
@@ -54,7 +57,8 @@ def build_record(root: Path, paths: list[Path]) -> dict[str, Any]:
         "branch": git(root, "branch", "--show-current"),
         "commit": git(root, "rev-parse", "HEAD"),
         "files": files,
-        "ok": all(file["strict_real_c"] for file in files),
+        "ok": all(file["source_quality_ok"] for file in files),
+        "strict_real_c": all(file["strict_real_c"] for file in files),
         "layout_ok": all(file["layout_quality_ok"] for file in files),
     }
 
@@ -63,6 +67,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("paths", nargs="*", help="src/decomp/*.c files to inspect")
     parser.add_argument("--all", action="store_true", help="audit every standalone decomp C file")
+    parser.add_argument(
+        "--candidate",
+        action="store_true",
+        help="also allow explicitly named candidate files elsewhere inside the repository",
+    )
     parser.add_argument("--strict", action="store_true", help="fail if any asm or wrapper is found")
     parser.add_argument(
         "--strict-layout",
@@ -73,7 +82,7 @@ def main() -> int:
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
-    paths = resolve_paths(root, args.paths, args.all)
+    paths = resolve_paths(root, args.paths, args.all, args.candidate)
     record = build_record(root, paths)
     encoded = json.dumps(record, indent=2) + "\n"
     if args.output:

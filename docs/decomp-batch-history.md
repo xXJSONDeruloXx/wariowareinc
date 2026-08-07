@@ -3,6 +3,11 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Tooling hardening follow-up — Conker provenance and source quality (2026-08-07)
+- Compared the sister Conker workflow and retained the useful parts: hash-identified candidate inputs, durable near-miss receipts, and an uncompromised whole-ROM gate. Conker's legacy source model still permits inline ASM and volatile shaping, so those are not copied into WarioWare's admission policy.
+- Tightened WarioWare's source audit and transactional cycle to reject non-mapped `volatile` and to count numeric accesses made through a scalar-pointer alias after its declaration. Named overlays and small explicit layout evidence remain allowed and visible.
+- The 31-test source-quality/cycle suite passes (**33** tests across the tools suite). This pass changes no ROM bytes or progress metrics; Round 86's exact `func_080178C4` screen result remains eligible, while `func_08017930` and `func_0801776C` stay in the near-miss ledger.
+
 ## Batch 234 — strict ordinary-C scene/graphics wrappers (2026-08-07)
 - Converted `func_08017054`, `func_0801709C`, `func_0801720C`, `func_0801743C`, `func_080179A8`, and `func_080179E4` to standalone ordinary C. The graphics initializer and scene-variable store use named local overlays; no opaque offset-heavy pointer blob, instruction asm, barrier, or register pin was admitted.
 - Round 85's final screen classified **6 exact / 9 near miss**. m2c supplied the useful semantic skeletons. asmlift was used diagnostically, but its stack/prototype/project-compile failures produced no admitted source. The DMA flag siblings remain near-miss evidence because agbcc chooses a signed branch and different register/literal layout; `func_080174A4` remains the MOVS+RSBS mask-folding near miss.

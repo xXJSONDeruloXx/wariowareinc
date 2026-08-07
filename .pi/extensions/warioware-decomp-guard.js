@@ -9,6 +9,7 @@
  * - new naked asm / whole-function inline asm in src/decomp/*.c is banned
  * - all inline asm in new src/decomp/*.c candidates is banned, including
  *   empty barriers/clobbers and compiler register pins
+ * - non-mapped volatile C is banned as a codegen-forcing substitute
  * - existing legacy asm files may remain only while untouched
  * - editing a legacy asm file is allowed only if the result removes the asm
  * - asm/ and build/ remain generated/protected paths
@@ -89,6 +90,28 @@ function inlineAsmReason(text, context = "code") {
   return "";
 }
 
+function isDirectGbaAddress(raw) {
+  const address = Number.parseInt(raw, 0);
+  return (address >= 0x02000000 && address <= 0x07ffffff)
+    || (address >= 0x0e000000 && address <= 0x0e00ffff);
+}
+
+function nonMmioVolatileReason(text, context = "code") {
+  const volatileMmioRe = /\*\s*\(\s*volatile\s+(?:u8|u16|u32|s8|s16|s32)\s*\*\s*\)\s*(0x[0-9a-f]+|[0-9]+)/ig;
+  for (const line of String(text).split(/\r?\n/)) {
+    if (!/\bvolatile\b/.test(line)) continue;
+    const values = [...line.matchAll(volatileMmioRe)].map((match) => match[1]);
+    if (!values.length || !values.every(isDirectGbaAddress)) {
+      return `${context} contains non-mapped volatile C; recover the source operation instead of forcing code generation`;
+    }
+  }
+  return "";
+}
+
+function sourceQualityReason(text, context = "code") {
+  return inlineAsmReason(text, context) || nonMmioVolatileReason(text, context);
+}
+
 function nakedAsmReason(text, context = "code") {
   if (!text) return "";
 
@@ -102,8 +125,8 @@ function nakedAsmReason(text, context = "code") {
     return `${context} contains thumb_func_start/original asm stub text`;
   }
 
-  const inlineAsm = inlineAsmReason(text, context);
-  if (inlineAsm) return inlineAsm;
+  const sourceQuality = sourceQualityReason(text, context);
+  if (sourceQuality) return sourceQuality;
 
   return "";
 }
@@ -258,7 +281,7 @@ export default function (pi) {
 
   pi.on("before_agent_start", async (event) => {
     return {
-      systemPrompt: `${event.systemPrompt}\n\n## WarioWare Decomp Guard (tool-enforced)\n- New naked asm / whole-function inline asm wrappers in src/decomp/*.c are blocked by the project extension.\n- All inline asm in new src/decomp/*.c candidates is blocked, including empty barriers and compiler register pins.\n- Existing legacy asm files may be left untouched or converted to real C; editing them while they still contain banned asm is blocked at commit time.\n- If a function does not match, keep iterating in real C or select another real-C candidate. Do not pivot to asm.\n- Use decomp_guard_check before committing chunks that touched src/decomp.`,
+      systemPrompt: `${event.systemPrompt}\n\n## WarioWare Decomp Guard (tool-enforced)\n- New naked asm / whole-function inline asm wrappers in src/decomp/*.c are blocked by the project extension.\n- All inline asm in new src/decomp/*.c candidates is blocked, including empty barriers and compiler register pins.\n- Non-mapped volatile C is blocked as a codegen-forcing substitute; direct GBA mapped-memory access remains allowed.\n- Existing legacy asm files may be left untouched or converted to real C; editing them while they still contain banned asm is blocked at commit time.\n- If a function does not match, keep iterating in real C or select another real-C candidate. Do not pivot to asm.\n- Use decomp_guard_check before committing chunks that touched src/decomp.`,
     };
   });
 

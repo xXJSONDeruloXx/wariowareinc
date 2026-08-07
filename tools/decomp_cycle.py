@@ -498,9 +498,11 @@ def run_isolation(root: Path, entries: list[dict[str, Any]], *, record: bool = T
         for index, entry in enumerate(entries):
             candidate_text = entry["candidate"].read_text(errors="replace")
             audit = source_audit(candidate_text)
-            if not audit["strict_real_c"] or not audit["layout_quality_ok"]:
+            if not audit["semantic_quality_ok"]:
                 if not audit["strict_real_c"]:
                     reason = "candidate is not strict ordinary C"
+                elif audit["volatile_accesses"]:
+                    reason = "candidate uses non-mapped volatile to force code generation"
                 else:
                     reason = "candidate uses an opaque offset-heavy byte-pointer layout"
                 results.append({
@@ -924,9 +926,11 @@ def apply_command(root: Path, manifest: Path, function: str, output: Path | None
         raise CycleError("refusing apply with unrelated dirty paths: " + ", ".join(dirty) +
                          "; generated evidence paths are allowed, source/tool edits are not")
     candidate_audit = source_audit(entry["candidate"].read_text(errors="replace"))
-    if not candidate_audit["strict_real_c"]:
-        raise CycleError("refusing apply: candidate must be ordinary C with no asm wrappers, barriers, or register pins")
-    if not candidate_audit["layout_quality_ok"]:
+    if not candidate_audit["semantic_quality_ok"]:
+        if not candidate_audit["strict_real_c"]:
+            raise CycleError("refusing apply: candidate must be ordinary C with no asm wrappers, barriers, or register pins")
+        if candidate_audit["volatile_accesses"]:
+            raise CycleError("refusing apply: candidate uses non-mapped volatile to force code generation")
         raise CycleError("refusing apply: candidate uses an opaque offset-heavy byte-pointer layout")
     validate_candidate_linker_symbols(root, entry)
     _, source_transform = source_for_apply(entry, entry["candidate"].read_text())
@@ -1020,9 +1024,11 @@ def apply_batch_command(root: Path, manifest: Path, output: Path | None, *, forc
                          "; generated evidence paths are allowed, source/tool edits are not")
     for entry in entries:
         candidate_audit = source_audit(entry["candidate"].read_text(errors="replace"))
-        if not candidate_audit["strict_real_c"]:
-            raise CycleError(f"{entry['function']}: refusing apply: candidate must be ordinary C with no asm wrappers, barriers, or register pins")
-        if not candidate_audit["layout_quality_ok"]:
+        if not candidate_audit["semantic_quality_ok"]:
+            if not candidate_audit["strict_real_c"]:
+                raise CycleError(f"{entry['function']}: refusing apply: candidate must be ordinary C with no asm wrappers, barriers, or register pins")
+            if candidate_audit["volatile_accesses"]:
+                raise CycleError(f"{entry['function']}: refusing apply: candidate uses non-mapped volatile to force code generation")
             raise CycleError(f"{entry['function']}: refusing apply: candidate uses an opaque offset-heavy byte-pointer layout")
         validate_candidate_linker_symbols(root, entry)
     source_transforms = {

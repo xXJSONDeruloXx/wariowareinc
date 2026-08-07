@@ -46,11 +46,11 @@ Notes:
 14. Push immediately after verified progress.
 15. New candidates must pass the strict real-C audit: no original-asm
     wrappers, inline instruction asm, empty asm barriers, compiler register
-    pins, or opaque offset-heavy byte-pointer stand-ins. Use
-    `python3 tools/audit_decomp_source.py CANDIDATE.c --strict --strict-layout`.
-    A bounded raw layout access is still recorded as evidence, and a named
-    struct overlay is preferred when several fields from one packed record are
-    involved.
+    pins, non-mapped `volatile`, or opaque offset-heavy byte-pointer stand-ins. Use
+    `python3 tools/audit_decomp_source.py --candidate CANDIDATE.c --strict --strict-layout`.
+    A bounded raw layout access is still recorded as evidence, scalar-pointer
+    aliases are counted across later lines, and a named struct overlay is
+    preferred when several fields from one packed record are involved.
 
 ## Required verification commands
 ### Clean Docker build
@@ -294,16 +294,16 @@ The project extension `.pi/extensions/warioware-decomp-guard.js` blocks common a
 - `bash` commands that appear to write naked/original/non-empty inline asm into `src/decomp/*.c`
 - `git add` / `git commit` when changed `src/decomp/*.c` files still contain banned asm patterns
 
-Use the `decomp_guard_check` tool before committing if a chunk touched `src/decomp`. Existing legacy asm files are allowed only while untouched; converting them to real C is allowed and encouraged. Empty asm barriers/clobbers are still allowed for C shaping, but instruction/call shims are not accepted for new progress.
+Use the `decomp_guard_check` tool before committing if a chunk touched `src/decomp`. Existing legacy asm files are allowed only while untouched; converting them to real C is allowed and encouraged. The tool-layer guard, source audit, and transactional cycle all reject empty asm barriers/clobbers, compiler register pins, and non-mapped volatile in new or accepted source. Instruction/call shims are never accepted for new progress.
 
 ## Naked asm → real C conversion (maintenance pass only)
 
-Each chunk MAY spend spare effort converting an existing `__attribute__((naked))` or non-empty-inline-asm decomp file to real C with register pinning + empty asm barriers/clobbers only. This is a dedicated maintenance pass, not a fallback when the primary candidate is stubborn.
+Each chunk MAY spend spare effort converting an existing `__attribute__((naked))` or non-empty-inline-asm decomp file to ordinary C. This is a dedicated maintenance pass, not a fallback when the primary candidate is stubborn. The accepted replacement must pass the same strict source audit; legacy pins/barriers may remain only in untouched historical files.
 
 **Process:**
 1. List legacy asm files: use `decomp_guard_check(includeLegacy=true)` for a guarded scan, or `grep -rl '__attribute__((naked))' src/decomp/` for the one remaining naked wrapper.
 2. Pick only a file with a clear C-shaping plan and a documented reason it is probably convertible.
-3. Write a real C version using register pinning + empty asm barriers/clobbers. Do not use `asm volatile("bl callee")`, `ldrsh`, `svc`, `add`, or other non-empty instruction shims for new progress.
+3. Write a real C version with ordinary source semantics. Do not use register pinning, empty asm barriers/clobbers, non-mapped volatile, `asm volatile("bl callee")`, `ldrsh`, `svc`, `add`, or other instruction shims in the accepted replacement.
 4. Keep iterating until perfect, or pick another real-C candidate if this file is not yielding.
 5. If it still won't match, stop, document the blocker, and leave the existing naked asm untouched. Do not create a new naked asm wrapper and do not use naked asm as a fallback for a near-miss primary conversion.
 

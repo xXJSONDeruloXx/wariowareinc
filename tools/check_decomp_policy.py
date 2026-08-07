@@ -3,9 +3,10 @@
 
 This is intentionally independent of the Pi extension.  It gives Git hooks a
 small, stable check for the rules that must hold even when no agent runtime is
-present: new ``src/decomp`` files may not smuggle in instruction asm, register
-pins, asm barriers, or an opaque offset-heavy byte-pointer stand-in, and the
-ROM verification gate may not be weakened in a normal commit.
+present: changed ``src/decomp`` files may not smuggle in instruction asm,
+register pins, asm barriers, non-mapped volatile codegen shims, or an opaque
+offset-heavy byte-pointer stand-in, and the ROM verification gate may not be
+weakened in a normal commit.
 """
 
 from __future__ import annotations
@@ -51,6 +52,35 @@ NUMERIC_ASSIGN_OFFSET_RE = re.compile(
 POINTER_OFFSET_CONTEXT_RE = re.compile(r"\b(?:offset|base|store|scene|ptr|data)\b")
 STRUCT_DECL_RE = re.compile(r"\bstruct\s+([A-Za-z_]\w*)\s*\{")
 STRUCT_FIELD_ACCESS_RE = re.compile(r"\b([A-Za-z_]\w*)\s*->\s*([A-Za-z_]\w*)")
+VOLATILE_RE = re.compile(r"\bvolatile\b")
+RAW_POINTER_ALIAS_DECL_RE = re.compile(
+    r"\b(?:const\s+)?(?:u8|u16|u32|u64|s8|s16|s32|s64|void)\s*\*\s*"
+    r"([A-Za-z_]\w*)\s*(?==|;|,|\))"
+)
+RAW_ALIAS_SUBSCRIPT_RE = re.compile(r"\b([A-Za-z_]\w*)\s*\[\s*(0x[0-9A-Fa-f]+|[0-9]+)\s*\]")
+RAW_ALIAS_ARITH_RE = re.compile(
+    r"\b([A-Za-z_]\w*)\s*(?:\+|\+=|-)\s*(0x[0-9A-Fa-f]+|[0-9]+)"
+)
+VOLATILE_GBA_CAST_RE = re.compile(
+    r"\*\s*\(\s*volatile\s+(?:u8|u16|u32|s8|s16|s32)\s*\*\s*\)\s*"
+    r"(0x[0-9A-Fa-f]+|[0-9]+)"
+)
+
+
+def is_direct_gba_address(value: str) -> bool:
+    """Recognize a direct literal in the GBA mapped-memory windows.
+
+    The source still has to spell the fixed address directly.  This allows
+    genuine hardware/shared-memory accesses while rejecting a volatile local,
+    a volatile pointer alias, or a volatile field reached through an unknown
+    offset as a codegen substitute.
+    """
+
+    try:
+        address = int(value, 0)
+    except ValueError:
+        return False
+    return 0x02000000 <= address <= 0x07FFFFFF or 0x0E000000 <= address <= 0x0E00FFFF
 
 
 def layout_quality(
@@ -78,9 +108,12 @@ def layout_quality(
     if raw_count == 0:
         classification = "typed_or_direct"
         accepted = True
-    elif declarations and field_accesses:
+    elif declarations and field_accesses and raw_count <= 2 and offset_count <= 2:
         classification = "named_overlay_with_raw_evidence"
         accepted = True
+    elif declarations and field_accesses:
+        classification = "named_overlay_with_opaque_raw_evidence"
+        accepted = False
     elif raw_count <= 2 and offset_count <= 2:
         classification = "bounded_layout_evidence"
         accepted = True
@@ -234,26 +267,63 @@ def source_audit(text: str) -> dict[str, Any]:
     Raw pointer casts and numeric offsets are reported as evidence.  Bounded
     layout evidence remains valid, while offset-heavy opaque casts fail the
     separate layout-quality gate.  The hard source rule is still that the
-    function must not use asm or include an original asm wrapper; byte matching
-    and the full-ROM gate remain the semantic proof.
+    function must not use asm or include an original asm wrapper.  Ordinary C
+    ``volatile`` outside direct GBA mapped-memory accesses is also rejected: it
+    is a common way to force a compiler to emit a desired sequence without
+    recovering the source semantics.  Byte matching and the full-ROM gate
+    remain the final semantic proof.
     """
 
     findings = asm_findings(text)
     pointer_lines: list[dict[str, Any]] = []
     numeric_offsets: list[dict[str, Any]] = []
+    raw_aliases: set[str] = set()
+    volatile_accesses: list[dict[str, Any]] = []
+
+    def add_unique(items: list[dict[str, Any]], item: dict[str, Any]) -> None:
+        if item not in items:
+            items.append(item)
+
     for line_number, line in enumerate(text.splitlines(), 1):
         if RAW_POINTER_RE.search(line) or POINTER_OFFSET_RE.search(line):
-            pointer_lines.append({"line": line_number, "text": line.strip()})
+            add_unique(pointer_lines, {"line": line_number, "text": line.strip()})
+
+        for alias in RAW_POINTER_ALIAS_DECL_RE.findall(line):
+            raw_aliases.add(alias)
+
+        # Count offsets through a byte/scalar pointer after its declaration as
+        # well as offsets written directly on the cast.  The previous
+        # line-local detector missed the opaque-but-tempting form:
+        # ``u8 *p = (u8 *)scene; p[0x10] = value;``.
+        for match in RAW_ALIAS_SUBSCRIPT_RE.finditer(line):
+            if match.group(1) in raw_aliases:
+                values = [match.group(2)]
+                add_unique(pointer_lines, {"line": line_number, "text": line.strip()})
+                add_unique(numeric_offsets, {"line": line_number, "values": values, "text": line.strip()})
+        for match in RAW_ALIAS_ARITH_RE.finditer(line):
+            if match.group(1) in raw_aliases:
+                values = [match.group(2)]
+                add_unique(pointer_lines, {"line": line_number, "text": line.strip()})
+                add_unique(numeric_offsets, {"line": line_number, "values": values, "text": line.strip()})
+
         values = NUMERIC_OFFSET_RE.findall(line) + NUMERIC_ASSIGN_OFFSET_RE.findall(line)
         if values and (
             RAW_POINTER_RE.search(line)
             or POINTER_OFFSET_RE.search(line)
             or (POINTER_OFFSET_CONTEXT_RE.search(line) and ("offset" in line or "+=" in line))
         ):
-            numeric_offsets.append({"line": line_number, "values": values, "text": line.strip()})
+            add_unique(numeric_offsets, {"line": line_number, "values": values, "text": line.strip()})
+
+        if VOLATILE_RE.search(line):
+            gba_values = VOLATILE_GBA_CAST_RE.findall(line)
+            if not gba_values or not all(is_direct_gba_address(value) for value in gba_values):
+                volatile_accesses.append({"line": line_number, "text": line.strip()})
 
     functions = re.findall(r"\b(func_[A-Za-z0-9_]+|asm_[A-Za-z0-9_]+)\s*\([^;{}]*\)\s*\{", text)
     layout = layout_quality(text, pointer_lines, numeric_offsets)
+    strict_real_c = not bool(NAKED_RE.search(text) or findings)
+    source_quality_ok = strict_real_c and not volatile_accesses
+    semantic_quality_ok = source_quality_ok and layout["layout_quality_ok"]
     return {
         "function_count": len(functions),
         "functions": functions,
@@ -264,8 +334,12 @@ def source_audit(text: str) -> dict[str, Any]:
         },
         "raw_pointer_accesses": pointer_lines,
         "numeric_pointer_offsets": numeric_offsets,
+        "raw_pointer_aliases": sorted(raw_aliases),
+        "volatile_accesses": volatile_accesses,
         "layout": layout,
-        "strict_real_c": not bool(NAKED_RE.search(text) or findings),
+        "strict_real_c": strict_real_c,
+        "source_quality_ok": source_quality_ok,
+        "semantic_quality_ok": semantic_quality_ok,
         "layout_quality_ok": layout["layout_quality_ok"],
     }
 
@@ -286,6 +360,10 @@ def policy_violations(root: Path, files: list[str], *, staged: bool) -> list[str
             if not audit["layout_quality_ok"]:
                 violations.append(
                     f"{rel}: opaque offset-heavy byte-pointer layout; use a named overlay or keep the evidence bounded"
+                )
+            if audit["volatile_accesses"]:
+                violations.append(
+                    f"{rel}: non-mapped volatile access; recover the source operation instead of forcing code generation"
                 )
 
     if staged:

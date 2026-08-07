@@ -38,9 +38,11 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
 - `verify` runs the current-worktree Docker gate for hooks or a final check.
 - New candidates also pass `python3 tools/audit_decomp_source.py ... --strict`.
   The Git hooks and transactional cycle reject original-asm wrappers, inline
-  instruction asm, empty asm barriers, compiler register pins, and opaque
-  offset-heavy byte-pointer stand-ins. Bounded raw layout evidence remains
-  visible in the receipt, as does a named overlay when the layout is modeled.
+  instruction asm, empty asm barriers, compiler register pins, non-mapped
+  `volatile`, and opaque offset-heavy byte-pointer stand-ins. Bounded raw
+  layout evidence remains visible in the receipt, scalar-pointer aliases are
+  counted across later lines, and a named overlay is recorded when the layout
+  is modeled.
 - Batch 229 confirms the strict audit on four newly accepted standalone files:
   zero instruction asm, barriers, and register pins in every candidate. The
   linker preflight also caught and then fixed the missing canonical
@@ -74,6 +76,11 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   The full gate advanced **1676 → 1682** matched functions and **1216 → 1222**
   linked C units, with zero instruction asm, barriers, register pins, or opaque
   layouts in the accepted sources and unchanged ROM SHA-1.
+- The Conker-style provenance follow-up tightened source admission without
+  changing ROM output: the audit now records/rejects codegen-forcing volatile
+  accesses except direct GBA I/O registers, and catches offset-heavy aliases
+  such as `u8 *p = ...; p[0x10] = ...;`. The focused source-quality suite is
+  **31 focused tests** (**33** across the tools suite); Round 86's exact candidate still passes the stricter audit.
 
 Manifests for exported symbols such as `set_soundplayer_pitch` may provide an
 explicit eight-digit `address`; this lets the cycle derive canonical paths even

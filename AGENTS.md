@@ -24,6 +24,7 @@ If those docs are not enough, mine prior session history from:
 - Push matched-function progress upward from the latest verified baseline documented in `docs/wariowareinc-decomp-scaleup.md`.
 - Prefer small, sibling-rich batches that can be verified and committed quickly.
 - In the remaining included-stub-heavy phase, one function per chunk is no longer mandatory when a tiny linked batch is safer; keep one function per `src/decomp/` file and verify ROM identity after each applied function or smallest reversible subgroup.
+- Accepted replacements must pass the strict source-quality gate: no original/instruction asm, empty asm barriers, compiler register pins, non-mapped `volatile`, or opaque offset-heavy scalar-pointer layouts. Bounded layout evidence is allowed only when it remains visible in the audit; scalar-pointer aliases are counted across later lines.
 
 ## Tool restrictions
 
