@@ -11,21 +11,21 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 234` — six scene/graphics/wrapper helpers admitted after strict ordinary-C/layout-quality isolation and one complete full-context Docker gate
-- `build/report.json`: **1682 / 5934 matched functions** (**28.345129%**) · **7.6105704%** matched code (**75634 / 993802**)
-- `tools/gen_objdiff.py`: **1222 linked C TUs / 5465 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1406 decompiled function files** = **1203 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 235` — one title-scene initializer admitted after strict ordinary-C/layout-quality isolation and one complete full-context Docker gate
+- `build/report.json`: **1683 / 5934 matched functions** (**28.361982%**) · **7.618218%** matched code (**75710 / 993802**)
+- `tools/gen_objdiff.py`: **1223 linked C TUs / 5464 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1407 decompiled function files** = **1204 standalone_tu** + **203 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1484 / 5934**; now exceeded by **178** matches
-- 26% milestone at the current function total: **1543 / 5934**; now exceeded by **131** matches
-- 27% active working goal at the current function total: **1603 / 5934**; exceeded by **79** matches
-- 30% milestone at the current function total: **1781 / 5934**; **99** more matches needed
+- 25% milestone at the current function total: **1484 / 5934**; now exceeded by **199** matches
+- 26% milestone at the current function total: **1543 / 5934**; now exceeded by **140** matches
+- 27% active working goal at the current function total: **1603 / 5934**; exceeded by **80** matches
+- 30% milestone at the current function total: **1781 / 5934**; **98** more matches needed
 - 80% target at the current function total: **4748 / 5934**
-- Remaining gap to 80%: **3086 matched functions**
+- Remaining gap to 80%: **3065 matched functions**
 
 ## Automated matching loop
 
@@ -76,6 +76,10 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   The full gate advanced **1676 → 1682** matched functions and **1216 → 1222**
   linked C units, with zero instruction asm, barriers, register pins, or opaque
   layouts in the accepted sources and unchanged ROM SHA-1.
+- Batch 235 accepted the exact `func_080178C4` title-scene wrapper under the
+  hardened source-quality gate. The full transaction advanced **1682 → 1683**
+  matched functions and **1222 → 1223** linked C units; the `08017930` frame
+  near miss and `0801776C` table/register near miss remain evidence-only.
 - The Conker-style provenance follow-up tightened source admission without
   changing ROM output: the audit now records/rejects codegen-forcing volatile
   accesses except direct GBA I/O registers, and catches offset-heavy aliases
