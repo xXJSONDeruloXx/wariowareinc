@@ -25,6 +25,29 @@ Use this file to record where the current decomp tools helped, where they missed
   register overlay. m2c/asmlift remain candidate aids only: asmlift's BF0
   output was a generic pointer skeleton and was not admitted.
 
+## Round 90 — included-stub direct-field shaping and full-context proof (2026-08-07)
+- Refreshing the local Mizuchi index was useful for discovery, but its remaining
+  queue is dominated by included stubs. Those conversions can improve source
+  coverage without changing the matched-function report, as happened for both
+  `func_0800C218` and `func_080147B0`; future 30% work must prioritize functions
+  that are currently mismatching in the linked report.
+- For `func_080147B0`, six readable local-overlay/order variants missed the
+  target register and constant shape. The seventh spelling used the existing
+  typed `gMainMenu` fields directly and reproduced the instruction sequence;
+  the isolated comparison still showed a small candidate-origin relocation
+  metadata gap, so it was not promoted by an instruction-only waiver.
+- The guarded full-context transaction caught a real same-TU integration issue:
+  the first candidate declared `func_08011698` as `s32`, conflicting with the
+  host's existing `u32` declaration. The transaction rolled back and verified
+  the baseline before the declaration was corrected. The rerun passed the
+  Docker ROM gate and report/objdiff refresh with the expected SHA-1.
+- This round is a useful no-cheap-shot proof: the accepted function has zero
+  instruction asm, compiler register pins, barriers, non-mapped volatile
+  accesses, raw pointer accesses, and numeric pointer-offset lines. The
+  candidate's `gMainMenu` accesses are named fields, not fragile byte-pointer
+  offsets. The six readable near misses remain in the receipts rather than
+  being forced.
+
 ## Round 88 — included-stub host-TU lifecycle (2026-08-07)
 - The next queue was predominantly included stubs, so the lifecycle was
   exercised against full host objects rather than treating a standalone

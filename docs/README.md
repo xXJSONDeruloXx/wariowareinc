@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 238` — one included-stub bitmap-font helper admitted after a strict host-TU exact screen and one complete full-context Docker gate
+- Verified working tree: `batch 239` — one included-stub main-menu wrapper admitted after a strict source audit, host-TU screen, and one complete full-context Docker gate
 - `build/report.json`: **1691 / 5934 matched functions** (**28.4968%**) · **7.6456504%** matched code (**75984 / 993820**)
 - `tools/gen_objdiff.py`: **1231 linked C TUs / 5456 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1417 decompiled function files** = **1212 standalone_tu** + **205 included_stub**
+- `src/decomp/*.c`: **1418 decompiled function files** = **1212 standalone_tu** + **206 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
@@ -107,6 +107,19 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   `func_0800C3AC` and `func_0800DE84` remain evidence-only near misses; the
   latter's instruction-identical isolated result differed only in literal-pool
   placement and was not accepted on metadata alone.
+- Batch 239 accepted `func_080147B0` as a strict real-C included-stub main-menu
+  wrapper. The direct existing `gMainMenu` fields produced a **99.85%**
+  isolated result whose only difference was candidate-origin relocation metadata;
+  the first full-context trial correctly rolled back on a conflicting
+  `func_08011698` prototype, then the corrected existing `u32` declaration
+  passed the complete Docker gate with `wariowareinc.gba: OK` and exact ROM
+  SHA-1. The source audit reports zero instruction asm, register pins,
+  barriers, non-mapped volatile accesses, and raw offset tricks. Report metrics
+  remain **1691 / 5934** and **75984 / 993820** because the function was already
+  byte-matching inside its host TU; decomp files advance **1417 → 1418**
+  (**205 → 206 included_stub**). The v1–v6 readable near misses and both
+  rollback/accept receipts remain recorded under `.decomp-runs/` and
+  `.nearmiss/`.
 - The Conker-style provenance follow-up tightened source admission without
   changing ROM output: the audit now records/rejects codegen-forcing volatile
   accesses except direct GBA I/O registers, and catches offset-heavy aliases
