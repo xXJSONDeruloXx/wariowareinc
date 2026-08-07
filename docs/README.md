@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 230` — three main-menu callback/sound wrappers admitted after strict ordinary-C isolation and one complete full-context Docker gate
-- `build/report.json`: **1669 / 5934 matched functions** (**28.126053%**) · **7.518903%** matched code (**74720 / 993762**)
-- `tools/gen_objdiff.py`: **1209 linked C TUs / 5478 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1393 decompiled function files** = **1190 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 231` — one scene-init helper admitted after strict ordinary-C isolation and one complete full-context Docker gate
+- `build/report.json`: **1670 / 5934 matched functions** (**28.142906%**) · **7.525746%** matched code (**74788 / 993762**)
+- `tools/gen_objdiff.py`: **1210 linked C TUs / 5477 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1394 decompiled function files** = **1191 standalone_tu** + **203 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
@@ -23,7 +23,7 @@ If an agent resumes cold, read these first:
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **178** matches
 - 26% milestone at the current function total: **1543 / 5934**; now exceeded by **119** matches
 - 27% active working goal at the current function total: **1603 / 5934**; exceeded by **59** matches
-- 30% milestone at the current function total: **1781 / 5934**; **112** more matches needed
+- 30% milestone at the current function total: **1781 / 5934**; **111** more matches needed
 - 80% target at the current function total: **4748 / 5934**
 - Remaining gap to 80%: **3086 matched functions**
 
@@ -51,6 +51,10 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   pins. The callbacks use the existing three-argument ABI and named callback
   data symbols; no function-body asm or numeric ROM-address substitute was
   needed.
+- Batch 231 accepted one ordinary-C scene initializer; its two packed scene
+  field writes are reported as pointer evidence, with no asm/pins/barriers.
+  Two structurally plausible candidates were retained as near-miss evidence
+  rather than being forced into the ROM.
 
 Manifests for exported symbols such as `set_soundplayer_pitch` may provide an
 explicit eight-digit `address`; this lets the cycle derive canonical paths even

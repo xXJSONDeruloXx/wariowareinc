@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 230` — three main-menu callback/sound wrappers admitted after strict ordinary-C isolation and a full-context Docker gate under the hardened candidate lifecycle
-- `build/report.json`: **1669 / 5934 matched functions** = **28.126053%**
-- `matched_code`: **74720 / 993762** = **7.518903%**
-- `tools/gen_objdiff.py`: **1209 linked C TUs / 5478 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1393 decompiled function files** = **1190 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 231` — one scene-init helper admitted after strict ordinary-C isolation and a full-context Docker gate under the hardened candidate lifecycle
+- `build/report.json`: **1670 / 5934 matched functions** = **28.142906%**
+- `matched_code`: **74788 / 993762** = **7.525746%**
+- `tools/gen_objdiff.py`: **1210 linked C TUs / 5477 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1394 decompiled function files** = **1191 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -18,7 +18,13 @@ Prefer this file + the other docs in `/docs`
 - 25% milestone: **1484 / 5934**, now exceeded by **178** matched functions.
 - 26% milestone: **1543 / 5934**; current progress is **1662**, exceeding it by **119** matches.
 - Active 27% working goal: **1603 / 5934**; current progress exceeds it by **59** matches.
-- Next 30% milestone: **1781 / 5934**; **112** additional matched functions are needed.
+- Next 30% milestone: **1781 / 5934**; **111** additional matched functions are needed.
+
+### Batch 231 — accepted (scene initializer)
+- Converted `func_08016F14` to standalone ordinary C. It allocates the scene sprite, stores the returned ID in the current scene record, installs the known `D_083AD81C` sprite table/callback pool, runs `func_08016EF8`, and clears the scene byte at offset `+4`.
+- m2c supplied the direct initialization skeleton. asmlift was run as a comparison path but reached its project-header compile boundary; no generated lift was admitted. A three-entry screen classified **1 exact / 2 near miss**. `func_08016DE0` remains a real state-machine branch/layout near miss; `func_08016C24` remains a real scene-base register-order near miss. Neither was force-applied.
+- The exact-only transaction passed the clean Docker ROM gate with `wariowareinc.gba: OK`; post-apply report/objdiff refreshed **1670 / 5934** matched functions, **74788 / 993762** matched code, and **1210 C / 5477 asm-only** units. ROM SHA-1 remains **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+- `tools/audit_decomp_source.py --strict` reports zero instruction asm, empty barriers, and register pins in the accepted file. Its only low-level evidence is the two explicit current-scene field stores. The canonical `D_083AD81C` map entry was added and verified in prerequisite commit `afd59602`. Evidence: `.decomp-runs/round-82-isolation-v1.json`, `round-82-isolation-v2.json`, `round-82-linker-verify.json`, and `round-82-apply.json`; near-miss seeds are in `.nearmiss/` and `tools/attempts.tsv`.
 
 ### Batch 230 — accepted (main-menu callback/sound wrappers)
 - Converted `func_08016B4C`, `func_08016B88`, and `func_08016BC4` to standalone ordinary C. The sibling trio plays the callback sound, normalizes the sprite ID from the callback ABI, sets callback cels 7/0x11/-1, and installs the next callback/data pair for the first two wrappers.

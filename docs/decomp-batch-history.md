@@ -17,6 +17,12 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 - The canonical linker map needed `D_083FF654` and `D_083FF67C`; `75c4148d` added both and passed a separate full Docker SHA gate before the batch transaction. The exact-only apply passed `wariowareinc.gba: OK`, advancing **1666 → 1669** matched functions, **1206 → 1209** linked C TUs, and **1390 → 1393** decomp files. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Evidence is in `.decomp-runs/round-81-isolation-v1.json` through `round-81-isolation-v3.json`, `round-81-linker-verify.json`, and `round-81-apply.json`.
 
+## Batch 231 — scene initializer (2026-08-07)
+- Converted `func_08016F14` to standalone ordinary C. It allocates the scene sprite, stores the ID at current-scene offset 0, installs `D_083AD81C` through `func_08005538`, runs `func_08016EF8`, and clears the scene byte at offset `+4`.
+- m2c supplied the direct initialization skeleton. asmlift was used diagnostically but reached its project-header boundary; no generated lift was admitted. A three-entry isolation screen classified **1 exact / 2 near miss**. `func_08016DE0` and `func_08016C24` remain evidence-only because their state-machine branch ladder and global-base register roles do not match ordinary C codegen.
+- The strict source audit found zero instruction asm, empty barriers, or compiler register pins in the accepted initializer. `afd59602` added the canonical `D_083AD81C` linker assignment and passed its own full Docker SHA gate before apply. The exact-only batch transaction passed `wariowareinc.gba: OK`, advancing **1669 → 1670** matched functions, **1209 → 1210** linked C TUs, and **1393 → 1394** decomp files. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence is in `.decomp-runs/round-82-isolation-v1.json`, `round-82-isolation-v2.json`, `round-82-linker-verify.json`, and `round-82-apply.json`; near-miss seeds are in `.nearmiss/` and `tools/attempts.tsv`.
+
 ## Workflow engineering pass — 2026-08-05
 
 Paused the 30% expansion target to re-engineer the candidate lifecycle around
