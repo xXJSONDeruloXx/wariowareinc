@@ -5,18 +5,24 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 226` — nine richer stage-unlock predicates admitted from one exact isolation screen and a full-context Docker gate under the hardened candidate lifecycle
-- `build/report.json`: **1657 / 5934 matched functions** = **27.923828%**
-- `matched_code`: **73836 / 993728** = **7.430203%**
-- `tools/gen_objdiff.py`: **1197 linked C TUs / 5490 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1381 decompiled function files** = **1178 standalone_tu** + **203 included_stub**
+- Verified working tree: `batch 227` — two counted save-unlock predicates and their aggregate OR wrapper admitted from one exact isolation screen and a full-context Docker gate under the hardened candidate lifecycle
+- `build/report.json`: **1660 / 5934 matched functions** = **27.974384%**
+- `matched_code`: **74166 / 993728** = **7.463410%**
+- `tools/gen_objdiff.py`: **1200 linked C TUs / 5487 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1384 decompiled function files** = **1181 standalone_tu** + **203 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
-- 25% milestone: **1484 / 5934**, now exceeded by **173** matched functions.
-- 26% milestone: **1543 / 5934**; current progress is **1657**, exceeding it by **114** matches.
-- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **54** matches.
-- Next 30% milestone: **1781 / 5934**; **124** additional matched functions are needed.
+- 25% milestone: **1484 / 5934**, now exceeded by **176** matched functions.
+- 26% milestone: **1543 / 5934**; current progress is **1660**, exceeding it by **117** matches.
+- Active 27% working goal: **1603 / 5934**; current progress exceeds it by **57** matches.
+- Next 30% milestone: **1781 / 5934**; **121** additional matched functions are needed.
+
+### Batch 227 — accepted (counted save-unlock family and aggregate)
+- Converted `func_08016140`, `func_0801618C`, and `func_080163B8` to standalone ordinary C. The first two count bit 0/bit 1 microgame flags across the save buffer and unlock stages 0x12/0x13; the third ORs the complete stage-unlock result family into one aggregate flag word.
+- m2c recovered the counted-loop and aggregate-call skeletons. asmlift explicitly declined the post-loop form and the aggregate's alignment halfword, so it served as a diagnostic boundary rather than a candidate generator; the final C was shaped from m2c plus the sibling patterns.
+- One exact-only isolation screen classified **3 exact / 0 rejected**. The exact-only `apply-batch` transaction passed the clean full Docker ROM/report gate with `wariowareinc.gba: OK`; ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh report: **1660 / 5934 matched functions** (**27.974384%**), **74166 / 993728** matched code (**7.463410%**), **1200 C / 5487 asm-only** units, and **1384** decomp files (`1181 standalone_tu` + `203 included_stub`). Evidence: `.decomp-runs/round-78-stage-isolation-v1.json` and `.decomp-runs/round-78-stage-apply.json`.
 
 ### Batch 226 — accepted (richer stage-unlock predicates)
 - Converted `func_08015FBC`, `func_08015FF8`, `func_08016028`, `func_08016060`, `func_08016098`, `func_080161D8`, `func_08016220`, `func_08016268`, and `func_080162B0` to standalone ordinary C. These siblings extend the stage-unlock family with nested threshold checks and count-normalized achievement predicates.

@@ -431,6 +431,12 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Difference load order**: for a helper whose target loads the argument field first, then the global-scene field, subtracts into the result register, and compares that result with the second argument, pin the incoming values to the target ABI registers and spell the loads/subtraction as separate C statements. `func_08089648` matches with register-bound locals and no instruction asm.
 - **Asmlift exact skeletons still need project validation**: `func_0805C5D8` and `func_08088B80` were exact from the first asmlift-shaped C spelling, but Round 70 still screened all five candidates through the same Docker isolation receipt. Semantic similarity is a discovery aid; only exact isolated code followed by the full ROM gate is admissible.
 
+### Round 78 additions: counted save-unlock loops and aggregates
+
+- **Save-buffer microgame count loop**: use `u8 *flags = gSaveBuffer->microgameFlags`, initialize a `u32` count and index, then use a `do { if ((flags[i] & mask) != 0) count++; i++; } while (i <= 0xE1);`. This preserves the target's `BLS` loop condition, byte indexing, and callee-save register allocation for the 0x100-byte flag range.
+- **Counted unlock threshold**: keep the post-loop test as `if (count > 0xD4)` so agbcc emits the target's `CMP #0xD4; BLS` fall-through shape before the unlock side effect.
+- **Long aggregate OR wrapper**: for a caller that repeatedly ORs no-argument `s32` results, use one mutable `s32 result` and separate `result |= callee();` statements. This retains the target's R4 accumulator and repeated `ORRS` sequence even when several callees are already converted C functions.
+
 ### Round 77 additions: richer save-unlock predicates
 
 - **Nonzero-to-one prerequisite count**: when the target turns a helper result into a boolean with `RSBS`/`ORRS`/shift, preserve `u32 count = (u32)((0 - temp) | temp) >> 31;` rather than using a direct C comparison. This retains the target's normalization before later count increments.
