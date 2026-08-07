@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 237` — one included-stub bitmap-font wrapper admitted after a host-TU exact screen and one complete full-context Docker gate
+- Verified working tree: `batch 238` — one included-stub bitmap-font helper admitted after a strict host-TU exact screen and one complete full-context Docker gate
 - `build/report.json`: **1691 / 5934 matched functions** (**28.4968%**) · **7.6456504%** matched code (**75984 / 993820**)
 - `tools/gen_objdiff.py`: **1231 linked C TUs / 5456 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1416 decompiled function files** = **1212 standalone_tu** + **204 included_stub**
+- `src/decomp/*.c`: **1417 decompiled function files** = **1212 standalone_tu** + **205 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
@@ -96,6 +96,17 @@ The runtime-neutral lifecycle is `tools/decomp_cycle.py`:
   C units; decomp files advanced **1415 → 1416** (**203 → 204 included_stub**).
   `func_08011864` remains evidence-only after five real-C spellings reached a
   best **0.74074** isolated gap and hit the documented `CMP #1; BLO` trap.
+- Batch 238 accepted `func_0800C218` as an included-stub ordinary-C bitmap
+  helper. Two readable spellings were exact in host-TU isolation; the selected
+  form keeps the helper's `void *` return, uses an all-`s16` typed function
+  pointer plus named `u32` truncation locals for the original ABI shape, and
+  contains no asm, register pin, barrier, volatile codegen trick, or opaque
+  offset blob. The full gate remained byte-identical. Report metrics stay at
+  **1691 / 5934** and **75984 / 993820** because this is an included stub;
+  decomp files advance **1416 → 1417** (**204 → 205 included_stub**).
+  `func_0800C3AC` and `func_0800DE84` remain evidence-only near misses; the
+  latter's instruction-identical isolated result differed only in literal-pool
+  placement and was not accepted on metadata alone.
 - The Conker-style provenance follow-up tightened source admission without
   changing ROM output: the audit now records/rejects codegen-forcing volatile
   accesses except direct GBA I/O registers, and catches offset-heavy aliases

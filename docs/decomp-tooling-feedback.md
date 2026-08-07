@@ -52,6 +52,29 @@ Use this file to record where the current decomp tools helped, where they missed
   replacement. The 33-test suite, strict audit, policy scan, report, and
   objdiff refresh passed.
 
+## Round 89 — refreshed included-stub ABI screen (2026-08-07)
+- The locally built Mizuchi index was refreshed before screening. Its supported
+  unmatched-function queue exposed the remaining included-stub candidates;
+  data labels were kept out of the function screen. m2c supplied useful
+  semantic skeletons, while the isolation/audit receipts—not generated text
+  alone—determined whether a spelling could proceed.
+- `func_0800C218` demonstrated the useful pure-C ABI pattern for this host TU:
+  preserve the helper's argument order with a unique typed function pointer,
+  keep all seven call parameters `s16` at the local call boundary, and use
+  named `u32` temporaries for the source `u16` truncations. The v7 and v8
+  spellings were both exact in host-TU isolation; v7 was chosen because it
+  returns the helper's real `void *` value. The full transaction passed without
+  any asm, register pin, barrier, volatile shaping, or opaque offset layout.
+- `func_0800C3AC` stayed at a best **13.046875** isolated gap across its
+  readable variants. `func_0800DE84` reached **0.34884** with equal instruction
+  sequences but literal-pool/relocation metadata differences; it was retained
+  as evidence rather than promoted through a metadata waiver. This keeps the
+  byte-match policy stricter than an instruction-only near miss.
+- The c218 apply receipt (`.decomp-runs/round-89-c218-apply.json`) records the
+  clean Docker result, report refresh, and unchanged ROM SHA-1. The round's
+  candidate audits, isolation receipts, near-miss sources, and attempt-ledger
+  rows are committed together so later runs can reproduce the decision.
+
 ## Round 87 — named-overlay standalone screen (2026-08-07)
 - The screen evaluated **12** fresh standalone candidates in one isolation
   container and classified **8 exact / 4 near miss**. Only the eight exact
