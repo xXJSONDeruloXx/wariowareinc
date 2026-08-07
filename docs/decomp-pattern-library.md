@@ -431,6 +431,13 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Difference load order**: for a helper whose target loads the argument field first, then the global-scene field, subtracts into the result register, and compares that result with the second argument, pin the incoming values to the target ABI registers and spell the loads/subtraction as separate C statements. `func_08089648` matches with register-bound locals and no instruction asm.
 - **Asmlift exact skeletons still need project validation**: `func_0805C5D8` and `func_08088B80` were exact from the first asmlift-shaped C spelling, but Round 70 still screened all five candidates through the same Docker isolation receipt. Semantic similarity is a discovery aid; only exact isolated code followed by the full ROM gate is admissible.
 
+### Round 76 additions: save-unlock predicate wrappers
+
+- **Nested save-unlock predicates**: for wrappers that test `save_is_stage_unlocked(id) == 0`, perform a second progress test inside a nested C `if`, then call the unlock helper and return the target flag. This preserves the target's `BNE`/`BEQ` failure layout across the fifteen Batch 225 siblings.
+- **Scalar-return interwork epilogue**: these semantically flag-valued wrappers use `s32` return types and an explicit zero fallback, preserving the target `POP {R1}; BX R1` epilogue. Do not make them `void` or rely on an implicit return.
+- **Shifted flag constants**: when the target emits `MOVS R0, #0x80` followed by `LSLS R0, R0, #N`, write the result as `0x80 << N` rather than a precomputed literal. This preserved the target literal/shift shape in `func_080160C8`, `func_080160F0`, `func_08016118`, and the later achievement wrappers.
+- **Threshold branch spelling**: for `CMP value, #limit; BLS failure`, use `if (value > limit)` for the success body. This keeps the failure branch as the target's fall-through-compatible unsigned threshold test in the `080160C8`/`080160F0`/`08016118` siblings.
+
 ### Round 75 additions: task/scene/sprite wrappers and ABI placeholders
 
 - **Task-loader callback wrappers**: short ordinary-C wrappers can preserve the target's task setup and Thumb callback literal when the callback is explicitly cast and the existing task helper prototypes are declared. `func_08016E9C` and `func_08016EC8` use the numeric ROM table addresses and `(callback + 1)` callback expressions directly; the isolated literal-pool bytes are the authority.
