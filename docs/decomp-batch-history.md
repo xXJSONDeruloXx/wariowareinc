@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 234 — strict ordinary-C scene/graphics wrappers (2026-08-07)
+- Converted `func_08017054`, `func_0801709C`, `func_0801720C`, `func_0801743C`, `func_080179A8`, and `func_080179E4` to standalone ordinary C. The graphics initializer and scene-variable store use named local overlays; no opaque offset-heavy pointer blob, instruction asm, barrier, or register pin was admitted.
+- Round 85's final screen classified **6 exact / 9 near miss**. m2c supplied the useful semantic skeletons. asmlift was used diagnostically, but its stack/prototype/project-compile failures produced no admitted source. The DMA flag siblings remain near-miss evidence because agbcc chooses a signed branch and different register/literal layout; `func_080174A4` remains the MOVS+RSBS mask-folding near miss.
+- The exact-only apply passed `wariowareinc.gba: OK`, advancing **1676 → 1682** matched functions, **1216 → 1222** linked C TUs, and **1400 → 1406** decomp files. Fresh report is **1682 / 5934** (**28.345129%**), **75634 / 993802** matched code (**7.6105704%**), with **1203 standalone_tu / 203 included_stub**. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-85-manifest.json`, `round-85-isolation-v1.json` through `round-85-isolation-v14.json`, `round-85-exact-manifest.json`, `round-85-source-audit.json`, and `round-85-apply.json`; rejected seeds are retained in `.nearmiss/` and `tools/attempts.tsv`.
+
 ## Batch 233 — named scene/graphics overlays (2026-08-07)
 - Converted `func_080165D4` and `func_08016BF0` to standalone ordinary C. The first uses a named packed `SceneState` overlay for the title-scene dispatcher; the second uses a named `GraphicsMenuRegisters` overlay for the graphics register setup.
 - Round 84's broad screen produced **2 exact / 3 near miss** candidates. The exact-only manifest was re-screened after the new opaque-layout policy and reached **2 exact / 0 rejected**. The first exact `func_080165D4` raw-byte-pointer spelling was reshaped to the named overlay and stayed exact; asmlift's generic BF0 pointer skeleton was rejected as a candidate.

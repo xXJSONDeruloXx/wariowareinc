@@ -25,6 +25,13 @@ Use this file to record where the current decomp tools helped, where they missed
   register overlay. m2c/asmlift remain candidate aids only: asmlift's BF0
   output was a generic pointer skeleton and was not admitted.
 
+## Round 85 — six-function strict-C screen (2026-08-07)
+- The shared screen covered **15** candidate entries and classified **6 exact / 9 near miss**. Only the six exact entries entered `apply-batch`, so the expensive full-context Docker build ran once for the accepted subset rather than once per spelling. The gate passed `wariowareinc.gba: OK`, preserving SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3` and advancing **1676 → 1682** functions, **1216 → 1222** linked C TUs, and **1400 → 1406** decomp files.
+- m2c was the fastest semantic source for the sprite/gameplay/scene wrappers. asmlift was still useful as a diagnostic boundary, but it declined stack-pointer/data shapes or hit project-compile failures; no asmlift-generated C was admitted. The compiler isolation receipt remained the authority for exactness.
+- The layout-quality guard worked as intended. A named `GraphicsInitRegisters` overlay recovered the `0x48` halfword while preserving the known `0x4C` field, and an inline named `SceneVariableRoot` lvalue preserved the target's post-call global reload. Both passed `--strict-layout`; neither is a large raw pointer-offset stand-in.
+- The DMA siblings are a valuable negative result: after reducing the source/destination conversions to bounded ordinary C, the candidates passed policy but still emitted a signed branch and changed register/literal order. The mask-clear helper likewise folded `MOVS #2; RSBS` into `0xFE`. These remain near-miss receipts; no mismatched prototype, barrier, volatile trick, or instruction asm was used to manufacture a match.
+- Post-apply `make report`, `gen_objdiff.py`, the strict source audit, policy scan, and all **29** unit tests passed. The six accepted files contain zero instruction asm, barriers, register pins, or opaque layouts. Receipts: `.decomp-runs/round-85-isolation-v1.json` through `round-85-isolation-v14.json`, `round-85-source-audit.json`, and `round-85-apply.json`.
+
 ## Round 84 — overlay-only exact batch (2026-08-07)
 - The five-candidate title/main-menu screen initially had **2 exact / 2
   compile errors / 1 near miss**. After header/prototype repairs it had **2
