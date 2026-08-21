@@ -3,6 +3,11 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 245 — strict included-stub sprite anim-progress selector (2026-08-21)
+- Converted `sprite_set_anim_progress` (`asm_080eeb50`) to guarded ordinary C using the batch-244 widening/narrowing-order pattern plus a typed `struct Animation` walk: accumulate `duration` bytes until `(progress * sprite->totalDuration) >> 8`, then call `sprite_set_anim_cel(handler, id, (s8)index)`. Strict audit clean (no asm/pins/barriers/volatile/raw offsets).
+- Durable shaping lesson: agbcc's u8-increment high-byte idiom only survives as `index = ((index << 24) + 0x1000000) >> 24` on a `u32`; every compound spelling fuses into the wrong add-first form. Recorded in the pattern library.
+- Symbol-level comparison was exact; the raw-object fallback reported only placement residuals. Full host-TU Docker gate passed: `wariowareinc.gba: OK`, ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3` unchanged. Decomp files **1432 → 1433** (**1225 standalone_tu / 208 included_stub**); linked metrics unchanged at 1704/5934 and 1244 C / 5443 asm-only.
+
 ## Batch 244 — strict included-stub sprite Z setter (2026-08-21)
 - Converted `sprite_set_z` (`asm_080ef2cc`) from the lib_sprite host TU's asm include to guarded ordinary C. Widened `s32` parameters with explicit `(u16)`/`(s16)` narrowings in target order reproduce the early z truncation, the `D_03000E70` operation store, and the signed id normalization; sprite records stay typed via `handler->sprites[id].zDepth`.
 - The first spelling was exact (100%) at the symbol level in isolated comparison. The cycle's whole-host-object fallback reported only placement-address residuals — branch/literal-pool targets at different link offsets plus the target's local-pool symbol boundary — the documented included-stub relocation false near miss. The guarded research-path transaction relied on the full host-TU Docker gate: `wariowareinc.gba: OK`, `rom_exact: true`, ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3` unchanged.

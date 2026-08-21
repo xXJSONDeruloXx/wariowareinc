@@ -191,6 +191,12 @@ Example trap: `func_08002514` calls `func_080024D0`. Both were originally asm. `
 - For sequential byte writes: use `u8 *p = *a0; *p = byte0; p++; *p = byte1; p++; *a0 = p;` — pointer increment `p++` pattern generates `ADDS R2, #1` matching the original asm, while array indexing `p[0]`/`p[1]` uses different offset forms
 - D_ symbols used in C files need entries in both `include/undefined_syms.inc` (for asm preprocessing) AND `undefined_syms.ld` (for linker resolution from C objects). When converting from asm to C, any D_ symbol referenced in the C code must be added to `undefined_syms.ld` or the linker will fail / produce a different ROM.
 
+## Code-shaping rules that have proven important
+
+### agbcc u8-increment high-byte idiom (batch 245)
+- When a target increments a byte-width counter with the 5-instruction sequence `lsl rT,rN,#24 / mov rM,#0x80 / lsl rM,#17 (=1<<24) / add rT,rM / lsr rN,rT,#24`, the only ordinary-C spelling that reproduces it is a single expression on a **u32** variable: `index = ((index << 24) + 0x1000000) >> 24;`.
+- Compound spellings (`index++`, `index = index + 1`, `(u8)(index + 1)`, even on a declared-`u8` variable) are canonicalized by agbcc into the fused add-first truncate form (`add r0,rN,#1; lsl #24; lsr #24`). In-place compound shifts (`index <<= 24; index += ...; index >>= 24`) keep the right sequence but swap the temp/destination register roles. Use the single-expression form.
+
 ## Known traps
 ### Instruction ordering / code generation traps
 - `a0 = (u32)(s16)a0` **before** the pointer constant-add forces the sign-extension instruction first (LSLS/ASRS before ADDS R1, #0x80). Writing `a1 += 0x80; a1 += (s16)a0` reverses the order even though it reads naturally in C.

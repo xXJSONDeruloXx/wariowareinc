@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 244` — one included-stub ordinary-C sprite helper admitted after an exact symbol-level isolation and a full host-TU Docker gate
+- Verified working tree: `batch 245` — one included-stub ordinary-C sprite helper admitted after an exact symbol-level isolation and the full host-TU Docker gate
 - `build/report.json`: **1704 / 5934 matched functions** = **28.715876%**
 - `matched_code`: **76372 / 993820** = **7.6846914%**
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1432 decompiled function files** = **1225 standalone_tu** + **207 included_stub**
+- `src/decomp/*.c`: **1433 decompiled function files** = **1225 standalone_tu** + **208 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -25,6 +25,13 @@ Prefer this file + the other docs in `/docs`
 - `tools/check_decomp_policy.py` now follows scalar-pointer aliases across later lines, so a cast on `u8 *p = ...` cannot hide a multi-offset blob. It also classifies ordinary `volatile` and allows only direct fixed GBA mapped-memory addresses.
 - `tools/decomp_cycle.py` and `tools/audit_decomp_source.py` use that same semantic-quality result. A deliberately cheap candidate is rejected before compilation; the Round 86 `func_080178C4` candidate remains exact under the stricter check, while the `08017930` and `0801776C` spellings remain evidence-only near misses.
 - This is ROM-neutral tooling work. The verified baseline remains **1682 / 5934**, **75634 / 993802** matched code, **1222 / 5465** linked units, and ROM SHA-1 **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+
+### Batch 245 — accepted (strict included-stub sprite anim-progress selector)
+- Converted `sprite_set_anim_progress` (`asm_080eeb50`) from the lib_sprite host TU's asm include to guarded ordinary C. The source uses the widened-parameter narrowing-order pattern from batch 244 — `(u8)progress` before the `D_03000E70` operation store, `(s16)id` after — then walks the typed `struct Animation` table accumulating `duration` bytes until the `(progress * sprite->totalDuration) >> 8` target and calls `sprite_set_anim_cel(handler, id, (s8)index)`. No asm, register pin, barrier, non-mapped volatile, or raw offset access.
+- The cel-index increment required the documented agbcc u8-increment idiom: `index = ((index << 24) + 0x1000000) >> 24` on a `u32` reproduces the target's high-byte add exactly. Compound spellings (`index++`, `index += 1`, `(u8)(index + 1)`) all fuse into the cheaper add-first truncate form, and compound in-place shifts swap the temp-register roles.
+- The first spelling was exact (100%) at the symbol level in isolated comparison; the cycle's raw-object fallback again reported only placement residuals (symbol out of section bounds, diff_count 0), the documented included-stub false near miss. The full host-TU Docker gate was the final authority: `wariowareinc.gba: OK`, `rom_exact: true`, ROM SHA-1 unchanged `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Linked report metrics remain **1704 / 5934** matched functions, **76372 / 993820** matched code, **1244 C / 5443 asm-only** units. Decompiled-file coverage advances **1432 → 1433** (**1225 standalone_tu / 208 included_stub**).
+- Evidence: `.decomp-runs/round-96-manifest.json`, `.decomp-runs/20260821T204507Z-apply-sprite_set_anim_progress.json`.
 
 ### Batch 244 — accepted (strict included-stub sprite Z setter)
 - Converted `sprite_set_z` (`asm_080ef2cc`) from the lib_sprite host TU's asm include to guarded ordinary C. The source declares widened `s32` parameters and performs the target's explicit narrowings in target order — `(u16)z` before the `D_03000E70` operation store, `(s16)id` after it — then uses typed `handler->sprites[id].zDepth` accesses around `sprite_remove_z_link`/`sprite_update_z_link`. No asm, register pin, barrier, non-mapped volatile, or raw offset access.
