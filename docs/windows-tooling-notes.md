@@ -138,3 +138,9 @@ Set `MSYS_NO_PATHCONV=1` and use forward-slash paths. Test with a minimal script
 | `m2c_decompile` | Python path not found | `findM2cPython()` detects `.venv/Scripts/python.exe` |
 | `objdiff-cli` check | No executable bit on Windows | Check for `.exe` variant |
 | `resolveScript()` | Backslash paths in bash | Convert `\` → `/`, `C:` → `/c` |
+## 2026-08-21 — Stale root-owned files in host /tmp poison isolated comparisons
+- Symptom: an isolated candidate/target `.text` comparison reported impossible differences (absolute IWRAM addresses baked into an object assembled from symbol-only `.word` directives).
+- Root cause: Docker runs mount the host `/tmp`; scratch names like `/tmp/tgt.o` collide across sessions and chunks. A previous session's root-owned `tgt.o` could not be overwritten by the current non-root flow and was silently reused.
+- Fix: use run-unique scratch paths (e.g. `/tmp/r<round>_*`) for every isolated compile/audit artifact; never reuse generic names like `/tmp/tgt.o`, `/tmp/cand.o`, or `/tmp/c.s`.
+- Applies to: all manual Docker isolate/audit invocations documented in `docs/decomp-pattern-library.md`.
+

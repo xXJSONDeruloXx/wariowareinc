@@ -3,6 +3,11 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 252 — strict included-stub beatscript scene-thread setter (2026-08-21)
+- Converted `scene_set_current_thread` to guarded ordinary C using existing named members of `gBeatscriptScene` (`currentThread:3` bitfield store, `localVariables[threadId]`, `threads[threadId].sprites`); matched on the first real-C spelling.
+- Section audit: all instruction bytes identical; pointer-literal pools at identical offsets differ only as relocation placeholders vs addresses baked from the original ROM, which `undefined_syms.ld` resolves identically. Full Docker gate passed; ROM SHA-1 unchanged. Decomp files **1439 → 1440** (**1225 standalone_tu / 215 included_stub**); linked metrics unchanged.
+- Tooling trap recorded: stale root-owned scratch files in host `/tmp` (persisting across Docker runs) silently poisoned one target-object comparison; always use run-unique scratch names.
+
 ## Batch 251 — strict included-stub beatscript task-spawn helper (2026-08-21)
 - Converted `func_0800A2D8` to guarded ordinary C using a bitfield task-args struct (`lo:2`/`mid:15`/`hi:15` + three words); the overlapping byte/word RMW sequences matched agbcc's bitfield-insert codegen exactly. Function returns the `start_new_task` handle (deduced from its `pop {r1}; bx r1` epilogue).
 - Section audit: first 80 bytes identical; final pool word is link-time-relocation-identical. Full Docker gate: `wariowareinc.gba: OK`, ROM SHA-1 unchanged. Decomp files **1438 → 1439** (**1225 standalone_tu / 214 included_stub**); linked metrics unchanged.
