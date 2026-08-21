@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 252` — one included-stub ordinary-C beatscript scene-thread setter admitted after a section audit with relocation-vs-baked-address pool equivalence, under the full host-TU Docker gate
-- `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.6846914%** matched code (**76372 / 993820**)
+- Verified working tree: `batch 253` — included-stub ordinary-C name-select sprite-create wrapper (`func_0800DE84`) admitted via the documented BL-displacement boundary proof (defsym-equivalence link) under the full host-TU Docker gate
+- `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.6856203%** matched code (**76382 / 993830**)
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1440 decompiled function files** = **1225 standalone_tu** + **215 included_stub**
+- `src/decomp/*.c`: **1441 decompiled function files** = **1225 standalone_tu** + **216 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files in `src/decomp`: reduced by `func_080118E0` (batch 248)

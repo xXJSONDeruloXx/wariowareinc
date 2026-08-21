@@ -831,3 +831,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - Tried and failed: `off += 6` in clause/body, `off = k` final copy (kills rotation but changes update shape to a copy), while/goto forms (RTL loop pass still rotates), u8/u16 types, cast barriers `(u32)((u8 *)p + c)`, declaration orders. Also stubborn: gcc emits `(data+k)+const` add order where target is `(data+const)+k`.
 - Closest known spellings preserved under `.mizuchi-tmp/round-104/variants/` (y-family) and `.mizuchi-tmp/round-104b/` (func_08012AE8 v1-v6).
 - Guidance: if a target function shows non-rotated accumulation codegen, expect significant effort; check later accepted siblings for the source idiom first. Do not pivot to register pins or asm wrappers.
+
+## 2026-08-21 — apply --isolation-receipt requires an exact result even under --force
+- Symptom: `decomp_cycle.py apply --force --isolation-receipt <near-miss receipt>` fails with "isolation receipt does not contain one exact result".
+- Root cause: `reuse_isolation_receipt` validates receipt results before the `--force` branch is consulted; only a fresh in-apply isolation run flows into the force path.
+- Workaround: invoke `apply --force` without `--isolation-receipt` (it records its own isolation receipt, then proceeds to the full ROM gate).
+- Applies to: `tools/decomp_cycle.py apply`.
+
+## 2026-08-21 — isolate scores BL-pair candidates as 0.34 near-miss despite byte-equal sections
+- See pattern-library Round 105 entry: candidate-only links resolve undefined `BL` callees differently than target-TU links. Raw section audits and defsym-equivalence links are the reliable arbiters for such candidates.

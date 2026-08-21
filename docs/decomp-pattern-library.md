@@ -581,3 +581,8 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - `scene_set_current_thread(1)` sibling families
 - more MOVS R0, #const + BL wrapper families
 - multi-BL wrappers whose good spellings are now documented
+
+### Round 105 additions: sprite-create wrapper and the BL-displacement isolation artifact
+
+- **Sprite-create wrapper**: `func_0800DE84` shows the standard shape for `sprite_create` wrappers — zero-extend both u16 parameters first (the target's `LSLS/LSRS #16` pairs), sign-extend to s16 only at the call site, pass the fixed args (`0x800`, zeros) in source order, then wrap the returned id for visibility and return it. A small named struct (`unk8` at +8) models the scene-data field read that feeds the animation helper.
+- **BL-displacement isolation artifact is provable, not guessable**: when an included-stub candidate's only isolate mismatches are the two `BL` words, the cause is the harness linking the candidate alone with `--unresolved-symbols=ignore-all`; callees land at different addresses than in the target-TU link. Prove equivalence mechanically: assemble the extracted target `.s` and the candidate into separate objects, link each with identical `--defsym` callee addresses, and compare the function's bytes. Equal bytes justify the documented metadata-only `--force` admission; the full Docker ROM gate (`rom_exact`) remains the real acceptance control.
