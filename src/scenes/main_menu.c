@@ -235,7 +235,7 @@ void func_0801208C(void) {
 
 #include "../decomp/asm_08012d3c.c"
 
-#include "asm/scenes/main_menu/asm_08012d7c.s"
+#include "../decomp/asm_08012d7c.c"
 
 #include "../decomp/asm_08012dcc.c"
 
