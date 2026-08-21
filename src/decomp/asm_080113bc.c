@@ -7,7 +7,7 @@ extern void func_0801312C(void);
 extern void func_080148EC(void);
 extern void func_08014C9C(void);
 extern void func_08014FF4(void);
-extern void func_08011864(u8);
+extern void func_08011864(u32);
 extern void func_08015C7C(u8);
 
 void func_080113BC(void) {

@@ -5,7 +5,7 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 247` — one included-stub ordinary-C sprite handler constructor admitted after an exact symbol-level isolation and the full host-TU Docker gate
+- Verified working tree: `batch 248` — one included-stub ordinary-C main-menu scene-flag switch admitted after an exact symbol-level compile and the full host-TU Docker gate
 - `build/report.json`: **1704 / 5934 matched functions** = **28.715876%**
 - `matched_code`: **76372 / 993820** = **7.6846914%**
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 asm-only units** (**6687 total**)
@@ -25,6 +25,13 @@ Prefer this file + the other docs in `/docs`
 - `tools/check_decomp_policy.py` now follows scalar-pointer aliases across later lines, so a cast on `u8 *p = ...` cannot hide a multi-offset blob. It also classifies ordinary `volatile` and allows only direct fixed GBA mapped-memory addresses.
 - `tools/decomp_cycle.py` and `tools/audit_decomp_source.py` use that same semantic-quality result. A deliberately cheap candidate is rejected before compilation; the Round 86 `func_080178C4` candidate remains exact under the stricter check, while the `08017930` and `0801776C` spellings remain evidence-only near misses.
 - This is ROM-neutral tooling work. The verified baseline remains **1682 / 5934**, **75634 / 993802** matched code, **1222 / 5465** linked units, and ROM SHA-1 **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+
+### Batch 248 — accepted (strict included-stub main-menu scene-flag switch)
+- Converted `func_08011864` (`asm_08011864`) from the main_menu host TU's asm include to guarded ordinary C: a three-case switch whose case bodies are single `*(u8 *)((u8 *)gCurrentSceneData + 0xDD) |= mask` expression statements plus a `func_080140C0()` delegate. The pure-expression spelling (no named pointer local) is what reproduces the target's register homes (pool address r0, pointer r1, byte r0, mask r2); named-local spellings consistently land the pointer in r2. Bounded layout evidence (2 raw lines / 2 numeric offsets), no asm, pins, barriers, or volatile.
+- The two sibling decomp files (`asm_080113bc.c`, `asm_080118e0.c`) carried stale `extern void func_08011864(u8)` approximations that conflicted with the true 32-bit parameter (the target has no widening prologue and uses unsigned `blo` dispatch). Both prototypes were corrected to `(u32)`; call sites pass zero-extended bytes, so their codegen is unchanged (verified by the byte-identical ROM).
+- Symbol-level comparison was exact (100%). Full host-TU Docker gate: `wariowareinc.gba: OK`, `rom_exact: true`, ROM SHA-1 unchanged `3f556448d290fa5406d6ed367fee16cc02387ad3`. Linked report metrics stay **1704 / 5934** and **1244 C / 5443 asm-only**; decomp files advance **1435 → 1436** (**1225 standalone_tu / 211 included_stub**).
+- Evidence: `.decomp-runs/round-99-manifest.json`, `.decomp-runs/20260821T215721Z-apply-func_08011864.json`.
+- Same chunk, maintenance pass: legacy `src/decomp/asm_080118e0.c` was rewritten pin-free (the batch 248 prototype correction touched this file, and the guard blocks editing files that still carry compiler register pins). The strict spelling — typed `D_03006518.unk2` reads, one bounded `(u8 *)gCurrentSceneData + 0xDD` anchor, `val`/`mask` locals for the `movs/neg/ands` sequence, and a direct `play_sound((struct SongHeader *)&D_083FBBF8)` call — is symbol-level exact (100%) against the converted asm target. Full Docker gate re-run: `wariowareinc.gba: OK`, ROM SHA-1 unchanged.
 
 ### Batch 247 — accepted (strict included-stub sprite handler constructor)
 - Converted `sprite_handler_create` (`asm_080ee7b4`) from the lib_sprite host TU's asm include to guarded ordinary C. The OAM clear loop is modeled with a named 8-word `OamClearChunk` overlay (chained member assignment reproduces the target's eight descending word stores plus the 0x20-stride advance), the remainder-word tail is a plain u32 cursor walk, and the error-byte clear at handler+0x24 uses a two-member named overlay anchored at `handler->unk20` because that storage is a bitfield unit in the project record. No asm, pins, barriers, non-mapped volatile, or opaque offset blob.
