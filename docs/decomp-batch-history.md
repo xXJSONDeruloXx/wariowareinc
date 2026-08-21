@@ -3,6 +3,10 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 249 — strict included-stub main-menu scene-state helper (2026-08-21)
+- Converted `func_0801216C` to guarded ordinary C: `~3` byte-clear at `gcs+0xDD`, eight-argument `func_08005E48` call (register args `gcs+0x7C`, `0xF`, `0`, `0xE`; stack args `2`, typed `gMainMenu.unkD0`, `0xF`, `0`), then `func_08012420(D_03006518.unk0)`. Only two bounded raw anchors (0xDD, 0x7C); the 0xD0 load uses the typed scene field.
+- Isolate hit the known included-stub empty-candidate-side near miss; accepted via the documented full-`.text` boundary audit: candidate and target 76-byte sections share SHA-256 `1ecc34c4d0ac88ab286ce589da47d4c03264dc4c79df4565a9db1eed21db60cc`. Full Docker gate: `wariowareinc.gba: OK`, ROM SHA-1 unchanged. Decomp files **1436 → 1437** (**1225 standalone_tu / 212 included_stub**); linked metrics unchanged.
+
 ## Batch 248 — strict included-stub main-menu scene-flag switch (2026-08-21)
 - Converted `func_08011864` to guarded ordinary C: three-case switch, case bodies as single `*(u8 *)((u8 *)gCurrentSceneData + 0xDD) |= mask` expressions plus a `func_080140C0()` delegate. The pure-expression spelling (no named pointer local) reproduces the target's register homes; named-local pointer spellings consistently land the pointer in r2 instead of r1.
 - Same-chunk maintenance pass: rewrote legacy `src/decomp/asm_080118e0.c` without its four compiler register pins (guard blocks editing pinned files). Strict spelling verified 100% against the converted `asm/converted/asm_080118e0.s` target; typed `D_03006518.unk2` reads, one bounded 0xDD anchor, and `val`/`mask` statement order reproduce the `ldrb r2` / `movs r0,#2; rsbs; ands r0,r2` homes. Docker gate re-run byte-identical.
