@@ -819,3 +819,15 @@ Use this file to record where the current decomp tools helped, where they missed
 - Root cause: the isolation pipeline strips `.size` directives from candidate asm before assembling, and the single-symbol candidate ELF linked via `-Ttext=0 -e FUNC` leaves objdiff without an inferable size/instruction range for the candidate symbol, so the linked-ELF comparison degenerates.
 - Workaround: pass `--force` to `apply` (as batch 247 already did); the full Docker ROM SHA gate remains the acceptance authority and rollback still protects failure. Applies to `tools/decomp_cycle.py` container/link script (~line 300) and any consumer of its `isolate` receipts for included_stub mode. A real fix would keep `.size` for the candidate side or synthesize an end symbol before objdiff.
 - Second friction: `apply` refuses unrelated dirty source paths, which blocks coordinated sibling-prototype fixes in the same transaction. Escape hatch `WARIOWARE_ALLOW_DIRTY=1` exists and was sufficient; documented in the pattern library entry for batch 248.
+
+## 2026-08-21 — compile_and_view_asm can show misleading "0 differ / MISMATCH 0.0%" listings
+- Symptom: for included-stub functions whose declarations live in host-TU headers not visible to the tool's context (`src/lib_sprite.h`, `scenes.h`), `compile_and_view_asm` compiles the candidate with implicit-declaration errors and prints only the TARGET instruction list, all marked `✓`, ending in "0 instruction(s) differ" yet "MISMATCH 0.0%".
+- Root cause: candidate disassembly is empty after failed compile, so the diff has zero differing pairs; the tool does not surface the compile errors.
+- Fix/workaround: ignore the ✓-wall; always confirm with `tools/decomp_cycle.py isolate` or a manual Docker section audit with run-unique scratch paths before concluding anything.
+- Applies to: Pi tool `compile_and_view_asm`.
+
+## 2026-08-21 — agbcc IV-rotation trap for accumulation-style loops (func_08012BB8 family)
+- Symptom: target ROM code uses naive register accumulation (offset var += 6 at outer-loop bottom, byte-index copy at outer top), but every real-C spelling tried compiles to gcc's ROTATED induction form (next-offset precomputed into a spare register at loop top, copy-back after inner loop).
+- Tried and failed: `off += 6` in clause/body, `off = k` final copy (kills rotation but changes update shape to a copy), while/goto forms (RTL loop pass still rotates), u8/u16 types, cast barriers `(u32)((u8 *)p + c)`, declaration orders. Also stubborn: gcc emits `(data+k)+const` add order where target is `(data+const)+k`.
+- Closest known spellings preserved under `.mizuchi-tmp/round-104/variants/` (y-family) and `.mizuchi-tmp/round-104b/` (func_08012AE8 v1-v6).
+- Guidance: if a target function shows non-rotated accumulation codegen, expect significant effort; check later accepted siblings for the source idiom first. Do not pivot to register pins or asm wrappers.
