@@ -3,6 +3,11 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 246 — strict included-stub sprite XYZ setter (2026-08-21)
+- Converted `sprite_set_x_y_z` (`asm_080ef1ac`) to guarded ordinary C using the batch-244 widening pattern: `(u16)` narrowings declared/initialized x, y, z allocate r7/SB/R8 exactly as the target, then typed per-access `handler->sprites[id]` reloads with conditional `sprite_remove_z_link`/`sprite_update_z_link` calls. Strict audit clean.
+- Durable lesson: in an included-stub host TU, candidate helper externs must reuse the prototypes already present in that TU's accepted decomp files (`sprite_remove_z_link(void *, s16)`, not `(struct SpriteHandler *, s16)`), or the full-context build fails with conflicting types and rolls back. Recorded in the pattern library.
+- First apply rolled back cleanly on exactly that conflict; corrected spelling passed symbol-level exact plus the full Docker gate: `wariowareinc.gba: OK`, ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3` unchanged. Decomp files **1433 → 1434** (**1225 standalone_tu / 209 included_stub**); linked metrics unchanged at 1704/5934 and 1244 C / 5443 asm-only.
+
 ## Batch 245 — strict included-stub sprite anim-progress selector (2026-08-21)
 - Converted `sprite_set_anim_progress` (`asm_080eeb50`) to guarded ordinary C using the batch-244 widening/narrowing-order pattern plus a typed `struct Animation` walk: accumulate `duration` bytes until `(progress * sprite->totalDuration) >> 8`, then call `sprite_set_anim_cel(handler, id, (s8)index)`. Strict audit clean (no asm/pins/barriers/volatile/raw offsets).
 - Durable shaping lesson: agbcc's u8-increment high-byte idiom only survives as `index = ((index << 24) + 0x1000000) >> 24` on a `u32`; every compound spelling fuses into the wrong add-first form. Recorded in the pattern library.

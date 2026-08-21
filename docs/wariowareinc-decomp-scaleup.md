@@ -5,7 +5,7 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 245` — one included-stub ordinary-C sprite helper admitted after an exact symbol-level isolation and the full host-TU Docker gate
+- Verified working tree: `batch 246` — one included-stub ordinary-C sprite XYZ setter admitted after an exact symbol-level isolation and the full host-TU Docker gate
 - `build/report.json`: **1704 / 5934 matched functions** = **28.715876%**
 - `matched_code`: **76372 / 993820** = **7.6846914%**
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 asm-only units** (**6687 total**)
@@ -25,6 +25,12 @@ Prefer this file + the other docs in `/docs`
 - `tools/check_decomp_policy.py` now follows scalar-pointer aliases across later lines, so a cast on `u8 *p = ...` cannot hide a multi-offset blob. It also classifies ordinary `volatile` and allows only direct fixed GBA mapped-memory addresses.
 - `tools/decomp_cycle.py` and `tools/audit_decomp_source.py` use that same semantic-quality result. A deliberately cheap candidate is rejected before compilation; the Round 86 `func_080178C4` candidate remains exact under the stricter check, while the `08017930` and `0801776C` spellings remain evidence-only near misses.
 - This is ROM-neutral tooling work. The verified baseline remains **1682 / 5934**, **75634 / 993802** matched code, **1222 / 5465** linked units, and ROM SHA-1 **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+
+### Batch 246 — accepted (strict included-stub sprite XYZ setter)
+- Converted `sprite_set_x_y_z` (`asm_080ef1ac`) from the lib_sprite host TU's asm include to guarded ordinary C. Widened `s32` parameters with `(u16)` narrowings declared/initialized in x, y, z order put x in r7, y in SB, z in R8 exactly as the target; the body reloads `handler->sprites[id]` per access and calls `sprite_remove_z_link`/`sprite_update_z_link` around the conditional `zDepth` store. No asm, pins, barriers, non-mapped volatile, or raw offsets.
+- The first full-context apply rolled back cleanly: the candidate's `sprite_remove_z_link`/`sprite_update_z_link` externs used `(struct SpriteHandler *, s16)` while the already-accepted host-TU decomp files (`asm_080eecdc.c`, `asm_080ef2cc.c`) declare them as `(void *, s16)`, producing conflicting-types errors. Re-declaring with the existing host-TU prototypes passed. Lesson recorded in the pattern library.
+- Symbol-level comparison was exact (100%). Full host-TU Docker gate: `wariowareinc.gba: OK`, `rom_exact: true`, ROM SHA-1 unchanged `3f556448d290fa5406d6ed367fee16cc02387ad3`. Linked report metrics stay **1704 / 5934** and **1244 C / 5443 asm-only**; decomp files advance **1433 → 1434** (**1225 standalone_tu / 209 included_stub**).
+- Evidence: `.decomp-runs/round-97-manifest.json`, `.decomp-runs/20260821T205347Z-apply-sprite_set_x_y_z.json` (rollback), `.decomp-runs/20260821T205653Z-apply-sprite_set_x_y_z.json` (accepted).
 
 ### Batch 245 — accepted (strict included-stub sprite anim-progress selector)
 - Converted `sprite_set_anim_progress` (`asm_080eeb50`) from the lib_sprite host TU's asm include to guarded ordinary C. The source uses the widened-parameter narrowing-order pattern from batch 244 — `(u8)progress` before the `D_03000E70` operation store, `(s16)id` after — then walks the typed `struct Animation` table accumulating `duration` bytes until the `(progress * sprite->totalDuration) >> 8` target and calls `sprite_set_anim_cel(handler, id, (s8)index)`. No asm, register pin, barrier, non-mapped volatile, or raw offset access.

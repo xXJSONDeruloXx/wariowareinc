@@ -197,6 +197,10 @@ Example trap: `func_08002514` calls `func_080024D0`. Both were originally asm. `
 - When a target increments a byte-width counter with the 5-instruction sequence `lsl rT,rN,#24 / mov rM,#0x80 / lsl rM,#17 (=1<<24) / add rT,rM / lsr rN,rT,#24`, the only ordinary-C spelling that reproduces it is a single expression on a **u32** variable: `index = ((index << 24) + 0x1000000) >> 24;`.
 - Compound spellings (`index++`, `index = index + 1`, `(u8)(index + 1)`, even on a declared-`u8` variable) are canonicalized by agbcc into the fused add-first truncate form (`add r0,rN,#1; lsl #24; lsr #24`). In-place compound shifts (`index <<= 24; index += ...; index >>= 24`) keep the right sequence but swap the temp/destination register roles. Use the single-expression form.
 
+### Included-stub host-TU prototype consistency (batch 246)
+- When adding a candidate to a host TU that already has accepted decomp files, reuse those files' existing helper extern prototypes verbatim (e.g. `sprite_remove_z_link(void *, s16)` / `sprite_update_z_link(void *, s16)` in `src/lib_sprite.c`). Declaring the same helper with a differently-typed first parameter (`struct SpriteHandler *`) inside the same TU is a hard conflicting-types build error; the cycle rolls back cleanly but the chunk loses a full-build cycle. Grep the host TU's `src/decomp/` files for the helper name before writing externs.
+- High-register allocation for narrowed stack/argument locals follows declaration order: declaring/initializing `x, y, z` in that order placed x in r7, y in SB, z in R8 for `sprite_set_x_y_z`, matching the target even though the target loads the stack argument first.
+
 ## Known traps
 ### Instruction ordering / code generation traps
 - `a0 = (u32)(s16)a0` **before** the pointer constant-add forces the sign-extension instruction first (LSLS/ASRS before ADDS R1, #0x80). Writing `a1 += 0x80; a1 += (s16)a0` reverses the order even though it reads naturally in C.

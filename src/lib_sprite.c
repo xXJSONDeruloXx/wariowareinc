@@ -38,7 +38,7 @@ asm(".include \"include/gba.inc\"");
 
 #include "decomp/asm_080ef154.c"
 
-#include "asm/lib_sprite/asm_080ef1ac.s"
+#include "decomp/asm_080ef1ac.c"
 
 #include "decomp/asm_080ef224.c"
 
