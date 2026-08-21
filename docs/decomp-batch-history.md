@@ -3,6 +3,11 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 244 — strict included-stub sprite Z setter (2026-08-21)
+- Converted `sprite_set_z` (`asm_080ef2cc`) from the lib_sprite host TU's asm include to guarded ordinary C. Widened `s32` parameters with explicit `(u16)`/`(s16)` narrowings in target order reproduce the early z truncation, the `D_03000E70` operation store, and the signed id normalization; sprite records stay typed via `handler->sprites[id].zDepth`.
+- The first spelling was exact (100%) at the symbol level in isolated comparison. The cycle's whole-host-object fallback reported only placement-address residuals — branch/literal-pool targets at different link offsets plus the target's local-pool symbol boundary — the documented included-stub relocation false near miss. The guarded research-path transaction relied on the full host-TU Docker gate: `wariowareinc.gba: OK`, `rom_exact: true`, ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3` unchanged.
+- Linked report metrics are unchanged at **1704 / 5934** matched functions and **1244 C / 5443 asm-only** units; decomp files advance **1431 → 1432** (**1225 standalone_tu / 207 included_stub**). Evidence: `.decomp-runs/round-95-manifest.json`, `.decomp-runs/20260821T201654Z-isolation.json`, `.decomp-runs/20260821T202217Z-apply-sprite_set_z.json`, `.nearmiss/sprite_set_z.json`.
+
 ## Tooling hardening follow-up — Conker provenance and source quality (2026-08-07)
 - Compared the sister Conker workflow and retained the useful parts: hash-identified candidate inputs, durable near-miss receipts, and an uncompromised whole-ROM gate. Conker's legacy source model still permits inline ASM and volatile shaping, so those are not copied into WarioWare's admission policy.
 - Tightened WarioWare's source audit and transactional cycle to reject non-mapped `volatile` and to count numeric accesses made through a scalar-pointer alias after its declaration. Named overlays and small explicit layout evidence remain allowed and visible.

@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 243` — one standalone ordinary-C function admitted after a strict 13-entry screen and a full-context Docker gate
+- Verified working tree: `batch 244` — one included-stub ordinary-C sprite helper admitted after an exact symbol-level isolation and a full host-TU Docker gate
 - `build/report.json`: **1704 / 5934 matched functions** = **28.715876%**
 - `matched_code`: **76372 / 993820** = **7.6846914%**
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1431 decompiled function files** = **1225 standalone_tu** + **206 included_stub**
+- `src/decomp/*.c`: **1432 decompiled function files** = **1225 standalone_tu** + **207 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Maintenance state: **32 legacy inline-asm shims removed** from included-stub files; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
@@ -25,6 +25,12 @@ Prefer this file + the other docs in `/docs`
 - `tools/check_decomp_policy.py` now follows scalar-pointer aliases across later lines, so a cast on `u8 *p = ...` cannot hide a multi-offset blob. It also classifies ordinary `volatile` and allows only direct fixed GBA mapped-memory addresses.
 - `tools/decomp_cycle.py` and `tools/audit_decomp_source.py` use that same semantic-quality result. A deliberately cheap candidate is rejected before compilation; the Round 86 `func_080178C4` candidate remains exact under the stricter check, while the `08017930` and `0801776C` spellings remain evidence-only near misses.
 - This is ROM-neutral tooling work. The verified baseline remains **1682 / 5934**, **75634 / 993802** matched code, **1222 / 5465** linked units, and ROM SHA-1 **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+
+### Batch 244 — accepted (strict included-stub sprite Z setter)
+- Converted `sprite_set_z` (`asm_080ef2cc`) from the lib_sprite host TU's asm include to guarded ordinary C. The source declares widened `s32` parameters and performs the target's explicit narrowings in target order — `(u16)z` before the `D_03000E70` operation store, `(s16)id` after it — then uses typed `handler->sprites[id].zDepth` accesses around `sprite_remove_z_link`/`sprite_update_z_link`. No asm, register pin, barrier, non-mapped volatile, or raw offset access.
+- The first spelling was exact at the symbol level in `compile_and_view_asm` (100%). The cycle's whole-host-object fallback comparison reported only placement-address residuals (branch/literal-pool targets at different link offsets plus the target's local literal-pool symbol boundary), the documented included-stub false near miss. Per the established rule, the full host-TU Docker gate was the final authority: `wariowareinc.gba: OK`, `rom_exact: true`, ROM SHA-1 unchanged `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Because this is an included-stub conversion, linked report metrics remain **1704 / 5934** matched functions, **76372 / 993820** matched code, and **1244 C / 5443 asm-only** units. Decompiled-file coverage advances **1431 → 1432**, from **1225 standalone_tu / 206 included_stub** to **1225 / 207**.
+- Evidence: `.decomp-runs/round-95-manifest.json`, `.decomp-runs/20260821T201654Z-isolation.json`, `.decomp-runs/20260821T202217Z-apply-sprite_set_z.json`, and `.nearmiss/sprite_set_z.json` (the relocation-only fallback receipt).
 
 ### Batch 235 — accepted (strict title-scene wrapper)
 - Converted `func_080178C4` to standalone ordinary C. It performs the title-scene setup calls and stores the loader result through a small named `SceneVariableRoot` overlay at offset zero; there is no asm, register pin, barrier, non-mapped volatile, or opaque offset blob.

@@ -1,6 +1,7 @@
 # Decomp pattern library
 
 ## Build / verification rule (critical)
+- **Widened-parameter narrowing order**: when a target truncates its second/third incoming registers with explicit `LSLS`/`LSRS`/`ASRS` pairs at specific points between other statements, declare those parameters as wide `s32` and perform `(u16)`/`(s16)` conversions as standalone locals in exactly the target's statement order. Narrow declared parameter types let the compiler normalize at entry in declaration order, which mismatches when the target interleaves the narrowings around an operation-flag store. `sprite_set_z` is the exact ordinary-C example.
 - As of the strict real-C decomp guard, new `src/decomp/*.c` progress may not use original-asm wrappers, instruction-bearing inline asm, empty asm barriers, compiler register pins, non-mapped `volatile`, or opaque offset-heavy byte-pointer stand-ins. Historical notes below mention those legacy techniques; do not use them for new conversions. Bounded raw pointer casts and numeric offsets remain allowed but are recorded by `tools/audit_decomp_source.py`; the audit follows scalar-pointer aliases across later lines, and use a named overlay when a candidate touches several fields in one packed record.
 - Always verify with Docker before committing: `docker run --rm -v $(pwd):/workspace devkitpro/devkitarm:latest /bin/bash -c "cd /workspace && make -j4"`
 - The local `tools/agbcc/bin/agbcc` is not a reliable macOS host-native path; Docker is the only supported local verification path for this repo
