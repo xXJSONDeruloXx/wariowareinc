@@ -4,7 +4,7 @@ struct SpriteHandler* gSpriteHandler = &D_03000BF0;
 
 asm(".include \"include/gba.inc\"");
 
-#include "asm/lib_sprite/asm_080ee7b4.s"
+#include "decomp/asm_080ee7b4.c"
 
 #include "decomp/asm_080ee830.c"
 

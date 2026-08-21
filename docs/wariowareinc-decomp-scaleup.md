@@ -5,7 +5,7 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 246` — one included-stub ordinary-C sprite XYZ setter admitted after an exact symbol-level isolation and the full host-TU Docker gate
+- Verified working tree: `batch 247` — one included-stub ordinary-C sprite handler constructor admitted after an exact symbol-level isolation and the full host-TU Docker gate
 - `build/report.json`: **1704 / 5934 matched functions** = **28.715876%**
 - `matched_code`: **76372 / 993820** = **7.6846914%**
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 asm-only units** (**6687 total**)
@@ -25,6 +25,13 @@ Prefer this file + the other docs in `/docs`
 - `tools/check_decomp_policy.py` now follows scalar-pointer aliases across later lines, so a cast on `u8 *p = ...` cannot hide a multi-offset blob. It also classifies ordinary `volatile` and allows only direct fixed GBA mapped-memory addresses.
 - `tools/decomp_cycle.py` and `tools/audit_decomp_source.py` use that same semantic-quality result. A deliberately cheap candidate is rejected before compilation; the Round 86 `func_080178C4` candidate remains exact under the stricter check, while the `08017930` and `0801776C` spellings remain evidence-only near misses.
 - This is ROM-neutral tooling work. The verified baseline remains **1682 / 5934**, **75634 / 993802** matched code, **1222 / 5465** linked units, and ROM SHA-1 **`3f556448d290fa5406d6ed367fee16cc02387ad3`**.
+
+### Batch 247 — accepted (strict included-stub sprite handler constructor)
+- Converted `sprite_handler_create` (`asm_080ee7b4`) from the lib_sprite host TU's asm include to guarded ordinary C. The OAM clear loop is modeled with a named 8-word `OamClearChunk` overlay (chained member assignment reproduces the target's eight descending word stores plus the 0x20-stride advance), the remainder-word tail is a plain u32 cursor walk, and the error-byte clear at handler+0x24 uses a two-member named overlay anchored at `handler->unk20` because that storage is a bitfield unit in the project record. No asm, pins, barriers, non-mapped volatile, or opaque offset blob.
+- Two strict-audit rejections were resolved without weakening semantics: a `u8 pad[0x24]` gap array was classified as an opaque byte-pointer layout (re-anchoring at `unk20` removed it), and the chained `oam[0]..oam[7]` subscripts through a raw `u32 *` alias counted as nine numeric offsets (the typed chunk model replaced them). Lesson recorded in the pattern library.
+- `sprite_clone` (`asm_080ef038`) was screened to **93.3%** and left as near-miss evidence: everything matches except agbcc LICM hoists the `mov/lsl #0x10000` materialization out of the copy loop while the original rematerializes it inside. Receipts in `.nearmiss/sprite_clone.json` + attempt ledger; do not force-apply.
+- Symbol-level comparison was exact (100%). Full host-TU Docker gate: `wariowareinc.gba: OK`, `rom_exact: true`, ROM SHA-1 unchanged `3f556448d290fa5406d6ed367fee16cc02387ad3`. Linked report metrics stay **1704 / 5934** and **1244 C / 5443 asm-only**; decomp files advance **1434 → 1435** (**1225 standalone_tu / 210 included_stub**).
+- Evidence: `.decomp-runs/round-98-manifest.json`, `.decomp-runs/20260821T213503Z-apply-sprite_handler_create.json`.
 
 ### Batch 246 — accepted (strict included-stub sprite XYZ setter)
 - Converted `sprite_set_x_y_z` (`asm_080ef1ac`) from the lib_sprite host TU's asm include to guarded ordinary C. Widened `s32` parameters with `(u16)` narrowings declared/initialized in x, y, z order put x in r7, y in SB, z in R8 exactly as the target; the body reloads `handler->sprites[id]` per access and calls `sprite_remove_z_link`/`sprite_update_z_link` around the conditional `zDepth` store. No asm, pins, barriers, non-mapped volatile, or raw offsets.

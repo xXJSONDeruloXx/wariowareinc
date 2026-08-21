@@ -201,6 +201,17 @@ Example trap: `func_08002514` calls `func_080024D0`. Both were originally asm. `
 - When adding a candidate to a host TU that already has accepted decomp files, reuse those files' existing helper extern prototypes verbatim (e.g. `sprite_remove_z_link(void *, s16)` / `sprite_update_z_link(void *, s16)` in `src/lib_sprite.c`). Declaring the same helper with a differently-typed first parameter (`struct SpriteHandler *`) inside the same TU is a hard conflicting-types build error; the cycle rolls back cleanly but the chunk loses a full-build cycle. Grep the host TU's `src/decomp/` files for the helper name before writing externs.
 - High-register allocation for narrowed stack/argument locals follows declaration order: declaring/initializing `x, y, z` in that order placed x in r7, y in SB, z in R8 for `sprite_set_x_y_z`, matching the target even though the target loads the stack argument first.
 
+### Strict-audit layout traps (batch 247)
+- Overlay gap arrays (`u8 pad[0x24];`) inside a named overlay are rejected as opaque byte-pointer layouts even when the overlay also has named fields. Re-anchor the overlay at the nearest existing named field (e.g. `&handler->unk20`) and model only the bytes you actually touch.
+- Chained subscripts through a raw scalar alias (`oam[0] = oam[1] = ... = v;`) count one numeric offset per index in the layout gate; the bounded threshold is two. Model fixed-stride block fills with a named struct of explicit members and a chained member assignment instead — identical codegen (descending word stores + stride advance), zero raw-offset evidence.
+- A raw-alias pointer walk with no numeric arithmetic (`*word++ = v;`) is audit-free; introduce the u32 cursor only at the point where word granularity starts.
+
+### agbcc scheduler/register shaping (batch 247)
+- Constant materialization statements (`mask = -0x10;`) are scheduled at their statement position; to get a mask built AFTER a load, make the load a separate preceding statement and combine in a later one (`t = *flags; mask = -0x10; mask = mask & t;`).
+- The commutative-AND destination follows the source operand order: `mask = mask & bound` emits `and mask_reg, byte_reg`; `bound &= mask` emits the reverse.
+- Reusing a live short-lived local as a temp can block agbcc's "sub from zeroed register" constant trick; fresh locals may trigger it.
+- LICM hoists `mov/lsl` constant materializations out of loops whenever a high register is free at regalloc time (see `sprite_clone` near miss). No pure-C spelling found that prevents it under low register pressure; treat such functions as near-miss evidence unless a pressure-increasing shape exists.
+
 ## Known traps
 ### Instruction ordering / code generation traps
 - `a0 = (u32)(s16)a0` **before** the pointer constant-add forces the sign-extension instruction first (LSLS/ASRS before ADDS R1, #0x80). Writing `a1 += 0x80; a1 += (s16)a0` reverses the order even though it reads naturally in C.

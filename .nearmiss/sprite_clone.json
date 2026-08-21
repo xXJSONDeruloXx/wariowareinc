@@ -1,0 +1,12 @@
+{
+  "function": "sprite_clone",
+  "target": "asm/lib_sprite/asm_080ef038.s",
+  "best_score": 93.3,
+  "status": "near_miss_evidence_only",
+  "summary": "All control flow, guards, register allocation (r4/r5/r6/r1/r2/r3), pointer math, copy loop order, unk30 store, and return sequence match exactly. Residual: agbcc LICM hoists the mov/lsl materialization of 0x10000 out of the copy loop into r6; the original code rematerializes it inside the loop. Every spelling tried (u32/u16 counter, explicit widening idiom, split statements, while/for/do-while/while(1), anti-invariant arithmetic) still hoists because r6 is free at regalloc time.",
+  "spellings_tried": [
+    ".mizuchi-tmp/round-98-candidates/sprite_clone-v1.c",
+    ".mizuchi-tmp/round-98-candidates/sprite_clone-v7.c"
+  ],
+  "note": "sprite_copy's identical loop stays unhoisted only under higher register pressure (R8/SB in use). sprite_clone's target keeps newId-widened live in r6 through the loop with no visible reader; no pure-C shape found that reproduces it without extra instructions."
+}

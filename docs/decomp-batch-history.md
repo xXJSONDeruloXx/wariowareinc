@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 247 — strict included-stub sprite handler constructor (2026-08-21)
+- Converted `sprite_handler_create` (`asm_080ee7b4`) to guarded ordinary C: named 8-word `OamClearChunk` overlay with chained member assignment for the descending 8×STR/0x20-stride OAM clear, u32 cursor tail for the `objAmount & 7` remainder, and a two-member overlay at `handler->unk20` for the byte-level error-flag clear (`-0x10` mask materialized as mov/neg). Strict audit clean after two reshapes.
+- Audit lessons (pattern library): raw `pad[N]` gap arrays inside overlays classify as opaque byte-pointer layouts — anchor overlays at the nearest existing named field instead; chained scalar-alias subscripts count one numeric offset per index, so prefer typed struct models over `p[0]..p[7]` chains.
+- Register/scheduler shaping that reached exactness: loop bounds as named locals (`bound`, `j`) control high-register homes; the final AND needed dest = mask register (`mask = mask & bound`), and reusing a short-lived local for the byte temp blocked agbcc's sub-on-zero constant trick.
+- `sprite_clone` remains near-miss evidence at 93.3% (LICM hoists the #0x10000 materialization; original rematerializes in-loop — no pure-C spelling found). Full Docker gate passed: `wariowareinc.gba: OK`, ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3` unchanged. Decomp files **1434 → 1435** (**1225 standalone_tu / 210 included_stub**); linked metrics unchanged.
+
 ## Batch 246 — strict included-stub sprite XYZ setter (2026-08-21)
 - Converted `sprite_set_x_y_z` (`asm_080ef1ac`) to guarded ordinary C using the batch-244 widening pattern: `(u16)` narrowings declared/initialized x, y, z allocate r7/SB/R8 exactly as the target, then typed per-access `handler->sprites[id]` reloads with conditional `sprite_remove_z_link`/`sprite_update_z_link` calls. Strict audit clean.
 - Durable lesson: in an included-stub host TU, candidate helper externs must reuse the prototypes already present in that TU's accepted decomp files (`sprite_remove_z_link(void *, s16)`, not `(struct SpriteHandler *, s16)`), or the full-context build fails with conflicting types and rolls back. Recorded in the pattern library.
