@@ -691,3 +691,9 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Scene init plus mask clear**: `func_080143F0` matches with the typed `D_03006518.unk1 = 0` store followed by a named `gCurrentSceneData + 0xDD` overlay and ordinary `value`/`mask` locals. The declaration order preserves the target's literal-pool store and post-call `LDRB; RSBS; ANDS` sequence.
 - **Post-call byte reload**: in `func_08014490`, keep the first scene record as a named overlay but use a separate ordinary `u8 *data` for the later `data = (u8 *)*base; data[8] = zero;` store. Reusing the named scene local changes the target's R0/R1 reload home even when the bytes are semantically identical.
 - **Callback sibling reuse**: `func_080148BC` uses the same `struct Scene **base`, named `+0xDE` byte, shifted callback offset, and ordinary function-pointer local as the previous main-menu callback wrappers.
+
+### Round 136 additions: direct scene-init siblings
+
+- **Typed mode store plus delayed mask overlay**: `func_080119B8` and `func_08013428` use `D_03006518.unk1 = 4/0`, make the scene overlay assignment after their setup calls, then apply the ordinary `value`/`mask` sequence at `+0xDD`. This preserves the literal-pool byte store and post-call low-register mask code without pins.
+- **Byte argument must stay in R0**: for `func_080143BC`, pass `data[0xFD]` directly to `func_0801429C` rather than assigning it to a widened local. The direct expression keeps `LDRB R0` in the call ABI; a `u32` temporary introduces a real `R2` load plus `MOV R0,R2`.
+- **Host-boundary recurrence**: all three are included stubs in `main_menu.c`; candidate-only BL relocation and pool-tail metadata is not a body mismatch, but the integrated host-TU ROM gate remains mandatory.
