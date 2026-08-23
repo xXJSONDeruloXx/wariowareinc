@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 269 — three exact included-stub main-menu wrappers (2026-08-23)
+- Rewrote `func_08014878`, `func_08014C34`, and `func_08014C6C` with named scene-byte overlays, ordinary `value`/`mask` locals, and explicit callback address locals. Seventeen compiler register pins were removed without barriers, volatile accesses, or instruction asm.
+- The five-entry host-object screen selected v1 spellings whose instruction bodies matched through their epilogues; isolated near-miss scores were only external-call relocations plus target pool/symbol-boundary tails. The v2 named-large-callback-field spellings were retained as evidence because they changed real register operands. The strict accepted-source audit passed, and the integrated host-TU Docker gate was the acceptance authority.
+- The clean Docker ROM/report gate, local `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **159 → 156 files / 710 → 693 pins**; full strict barrier residue remains **35 files / 39 findings**. Receipts: `.decomp-runs/round-134-isolation.json`, `.decomp-runs/round-134-candidate-source-audit.json`, `.decomp-runs/round-134-accepted-source-audit.json`, `.decomp-runs/round-134-full-source-audit.json`, `.decomp-runs/round-134-verify.json`, and `.decomp-runs/round-134-accepted-manifest.json`.
+
 ## Batch 268 — three exact included-stub mask wrappers (2026-08-23)
 - Rewrote `func_080109CC`, `func_080144BC`, and `func_08014A0C` with small named scene overlays and ordinary `value`/`mask` locals around the existing scene/thread calls. Three compiler register pins were removed without barriers, volatile accesses, or instruction asm.
 - The three-entry host-object screen produced instruction-identical ordinary-C bodies; isolated near-miss scores were only the known external-call and symbol/pool-boundary artifact. `func_080109CC` used an explicit function extern in its standalone candidate to avoid an unrelated broad-header warning. The strict accepted-source audit passed, and the integrated host-TU Docker gate was the acceptance authority.

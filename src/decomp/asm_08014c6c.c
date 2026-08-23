@@ -1,33 +1,36 @@
 #if __INCLUDE_LEVEL__ > 0
 #include "global.h"
+#include "scenes.h"
 
-extern void *gCurrentSceneData;
 extern void scene_set_current_thread(u32);
 
-typedef void (*MainMenuCallback14C6C)(void);
+struct Func08014C6CScene {
+    u8 padding[0xDE];
+    u8 fieldDE;
+};
 
 void func_08014C6C(void) {
-    register void **base asm("r3");
-    register u8 *bytePtr asm("r1");
-    register u32 value asm("r2");
-    register u32 mask asm("r0");
-    register u8 *data asm("r0");
-    register u32 offset asm("r1");
+    struct Func08014C6CScene **base;
+    struct Func08014C6CScene *scene;
+    u8 *data;
+    u32 value;
+    u32 mask;
+    u32 offset;
+    void (*callback)(void);
 
     scene_set_current_thread(0);
-    base = &gCurrentSceneData;
-    bytePtr = *base;
-    bytePtr += 0xDE;
-    value = *bytePtr;
+    base = (struct Func08014C6CScene **)&gCurrentSceneData;
+    scene = *base;
+    value = scene->fieldDE;
     mask = 0x21;
     mask = -mask;
     mask &= value;
-    *bytePtr = mask;
-
-    data = *base;
+    scene->fieldDE = mask;
+    data = (u8 *)*base;
     offset = 0xB8;
     offset <<= 1;
     data += offset;
-    ((MainMenuCallback14C6C)*(u32 *)data)();
+    callback = *(void (**)(void))data;
+    callback();
 }
 #endif

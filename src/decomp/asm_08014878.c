@@ -6,11 +6,15 @@
 extern void func_08014810(u32);
 extern void func_0800C77C(u32);
 
+struct Func08014878Scene {
+    u8 padding[0xDE];
+    u8 fieldDE;
+};
+
 void func_08014878(void) {
-    register u32 gptr asm("r0");
-    register u8 *bytePtr asm("r1");
-    register u32 value asm("r2");
-    register u32 mask asm("r0");
+    struct Func08014878Scene *scene;
+    u32 value;
+    u32 mask;
 
     scene_set_current_thread(0);
     func_08014810(1);
@@ -19,13 +23,11 @@ void func_08014878(void) {
     func_0800C77C(0x15);
     func_0800C77C(0x16);
     func_0800C77C(0x17);
-    gptr = (u32)&gCurrentSceneData;
-    bytePtr = *(u8 **)gptr;
-    bytePtr += 0xDE;
-    value = *bytePtr;
+    scene = (struct Func08014878Scene *)gCurrentSceneData;
+    value = scene->fieldDE;
     mask = 0x11;
     mask = -mask;
     mask &= value;
-    *bytePtr = mask;
+    scene->fieldDE = mask;
 }
 #endif
