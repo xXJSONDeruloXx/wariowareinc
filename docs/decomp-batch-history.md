@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 286 — three exact ordinary-C main-menu scene cleanups (2026-08-23)
+- Rewrote `func_080115DC`, `func_0801522C`, and `func_08015590` as pin-free included-stub C. The spellings use named scene overlays for DMA/heap/callback fields, explicit typed handle fields, and only bounded `+0xDE` byte-pointer evidence where the target register lifetime requires it.
+- The isolated screen retained only included-TU pool boundaries and external-call relocation metadata for the selected bodies; earlier direct-field variants either changed register homes or failed the strict layout gate. The integrated clean Docker ROM gate accepted all three source-only replacements.
+- Clean Docker build, report regeneration, `gen_objdiff.py`, targeted/full source audits, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **109 → 106 files / 521 → 502 pins**; full strict barrier residue remains **27 files / 31 findings**. Receipts: `.decomp-runs/round-152-scene-family-isolation.json`, `.decomp-runs/round-152-accepted-source-audit.json`, `.decomp-runs/round-152-full-source-audit.json`, `.decomp-runs/round-152-verify.json`, and `.decomp-runs/round-152-accepted-manifest.json`.
+
 ## Batch 285 — exact ordinary-C scene-data reload cleanup (2026-08-23)
 - Rewrote `func_080152A0` with an ordinary `void **base`, explicit shifted `+0xC2` halfword address calculation, and a named post-call `+0xDD` scene byte field. Seven compiler register pins were removed without instruction asm, barriers, volatile codegen shims, or opaque offset-heavy layouts.
 - The mixed layout spelling preserves the target `MOV #0xC2; LSL; ADD; LDRSH [R0,R1]` sequence while using the named field for the second reload. Its isolated candidate differed only by the known included-TU pool/padding boundary; the integrated clean ROM gate accepted the source-only replacement.

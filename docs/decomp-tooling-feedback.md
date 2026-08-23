@@ -6,6 +6,11 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 152 — included-stub scene-family screen and host-TU acceptance (2026-08-23)
+- A 19-entry Docker isolation screen was useful for register shaping but not sufficient as the acceptance signal: the selected `080115DC`, `08015590`, and `0801522C` bodies differed only by host-TU literal-pool boundaries and external `BL` relocation metadata, while earlier direct-field variants had real register-home changes.
+- The strict source audit correctly accepted the bounded `+0xDE` byte-pointer evidence for `08015590` and the named-overlay version for `0801522C`, while rejecting the untyped-handle/raw-pointer variants as opaque offset-heavy layouts. This preserved the no-pins/no-barriers rule without hiding codegen shims.
+- The included-stub workflow was the decisive integration check: replacing the existing guarded C bodies and rebuilding the full host TU passed the clean Docker gate and `decomp_cycle.py verify --no-report` with equal ROM/base SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. No assembly move or linker edit was required.
+
 ## Round 149 — indexed packed-record setters and source-only acceptance (2026-08-23)
 - The final six-entry exact screen found strict-clean ordinary-C spellings for `func_080F2374`, `func_080F24A0`, `func_080F24C0`, `func_080F2558`, `func_080F2578`, and `func_080F26BC`. The useful shape was a named 0x20-byte record plus integer base/index arithmetic; the first five needed separate field/mask/result locals, while F26BC needed a distinct `base2` reload local.
 - The old pinned family was useful as a codegen reference but not admissible source. The accepted candidates pass strict source/layout audit with zero instruction asm, barriers, register pins, non-mapped volatile, or opaque scalar-pointer layouts; the full audit now reports **111 pin-bearing files / 536 pins** and **27 barrier-bearing files / 31 findings**.

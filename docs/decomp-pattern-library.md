@@ -89,6 +89,11 @@
 - signed-load helpers using explicit `(s8)` or `(s16)` shaping
 - multi-store patterns that need a local pointer reload shape
 
+### Main-menu scene-data packed records (batch 286)
+- For a scene record with DMA source/destination handles at `+0xD4`/`+0xD8` and a predicate byte at `+0xDC`, a named overlay plus explicit `source`, `destination`, and constant locals reproduces the target DMA wrapper without register pins.
+- For high-offset scene fields such as `+0x1BC` and `+0x1C0`, a named overlay can preserve the shifted `0xDE`/`0xE0` address formation for the word and callback. When the target keeps the `+0xDE` flag pointer in a specific low register, a single bounded `u8 *` anchor and visible `+= 0xDE` evidence is acceptable; do not replace it with a scalar-cast blob or a compiler constraint.
+- In the teardown sibling, type heap handles as their real pointer kinds (`s16 *`/`void *`) for the sprite call, then cast only at the heap API boundary. This keeps the call argument registers and three reload/deallocate sequences stable while the scene overlay documents the packed layout.
+
 ### Wrapper families
 - `scene_set_current_thread(1)` + byte/word store wrappers
 - two-call and four-call R4-save wrappers
