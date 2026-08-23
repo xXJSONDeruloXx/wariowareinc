@@ -1,20 +1,16 @@
 #include "global.h"
 #include "types.h"
 
-void func_080B27B8(void) {
-    register u32 r0 asm("r0") = (u32)&gCurrentSceneVariable;
-    register u32 r1 asm("r1");
-    register u32 r2 asm("r2");
+typedef struct {
+    u8 padding[0x1C8];
+    u16 field1C8;
+    u8 field1CA;
+} Func080B27B8Scene;
 
-    r2 = *(u32 *)r0;
-    r0 = 0xE4;
-    r0 <<= 1;
-    r1 = r2 + r0;
-    r0 = 0;
-    *(u16 *)r1 = r0;
-    r0 = 0xE5;
-    r0 <<= 1;
-    r1 = r2 + r0;
-    r0 = 1;
-    *(u8 *)r1 = r0;
+void func_080B27B8(void) {
+    Func080B27B8Scene *scene;
+
+    scene = (Func080B27B8Scene *)gCurrentSceneVariable;
+    scene->field1C8 = 0;
+    scene->field1CA = 1;
 }

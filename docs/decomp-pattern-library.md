@@ -734,3 +734,9 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Large current-scene byte field**: `func_08062488` can use a named overlay for the `0xBD4` byte. The field remains a typed access even though agbcc materializes the large offset through a literal pool; the strict layout gate accepts the bounded named record.
 - **Signed halfword plus word scene update**: `func_080526D0` uses a named record at `0x6C`/`0x70` and a widened signed `value` local. The ordinary `value >> 8` predicate preserves the target signed compare and reload order without pins.
 - **Pool-width versus register mismatch**: the accepted three demonstrate the boundary: literal width and symbol pool tails can be resolved by the integrated ROM gate, but a different live-register home (as in the rejected `080F1B5C`/scene reload variants) is a real near miss and must remain evidence-only.
+
+### Round 144 additions: fixed-size cursors and scene field overlays
+
+- **Named fixed-size table cursor**: `func_08003028` matches when the terminating word is modeled as the first field of an eight-byte record and the cursor advances with `cursor++`. The labeled check-first loop preserves the target `ADDS #8`, compare, and call sequence without pointer pins.
+- **Named current-scene field siblings**: `func_080B27B8`, `func_080C6898`, and `func_080D28A4` use bounded overlays for their halfword/byte pairs at `0x1C8/0x1CA`, `0x1A0/0x1A2`, and `0x3E8/0x3EC`. Direct field assignments reproduce the instruction bodies without raw scalar offsets, pins, or barriers; isolated pool-tail symbol metadata still requires the integrated ROM gate.
+- **Redundant terminator reload trap**: a natural named-record copy loop can reuse the value loaded by its check when the target deliberately reloads the first word at the body label. Treat that as a real instruction near miss; do not add volatile, barriers, register pins, or instruction asm just to recreate the reload.
