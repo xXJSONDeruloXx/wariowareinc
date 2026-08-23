@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 267 — three exact included-stub mask setters (2026-08-23)
+- Rewrote `func_0800A3BC`, `func_080121B8`, and `func_08013114` with small named scene-data overlays and ordinary `value`/`mask` locals. Three compiler register pins were removed without barriers, volatile accesses, or instruction asm.
+- The six-entry host-object screen produced instruction-identical ordinary-C bodies for the selected three; isolated near-miss scores were only the known host symbol/pool-boundary artifact. The strict candidate audit passed, and the integrated host-TU Docker gate was the acceptance authority.
+- The clean Docker ROM/report gate and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **165 → 162 files / 716 → 713 pins**; full strict barrier residue remains **35 files / 39 findings**. Receipts: `.decomp-runs/round-132-isolation.json`, `.decomp-runs/round-132-candidate-source-audit.json`, `.decomp-runs/round-132-accepted-source-audit.json`, `.decomp-runs/round-132-full-source-audit.json`, `.decomp-runs/round-132-verify.json`, and `.decomp-runs/round-132-accepted-manifest.json`.
+
 ## Batch 266 — three exact ordinary-C scene/audio/graphics wrappers (2026-08-23)
 - Rewrote `func_0801D4B4` with a named scene/data overlay and ordinary shifted value/flag stores, `func_080A002C` with a widened value local normalized after the music-player load, and `func_080195E4` with named scene-variable/graphics overlays. Three compiler register pins and two empty barriers were removed without instruction asm or volatile codegen shims.
 - The fifteen-entry screen found **7 exact / 4 near miss / 4 policy-rejected** candidates. The raw-pointer 195E4 forms were rejected by the layout gate; named overlays supplied the exact source shape. The selected three-entry screen passed the strict source audit with zero instruction asm, barriers, register pins, or non-mapped volatile accesses.
