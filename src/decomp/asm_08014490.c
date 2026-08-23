@@ -1,20 +1,33 @@
 #if __INCLUDE_LEVEL__ > 0
 #include "global.h"
+#include "src/scenes/main_menu.h"
+#include "scenes.h"
+
+extern void scene_set_current_thread(u32);
+extern void set_pause_beatscript_scene(u32);
+extern void func_0800C7A4(s32);
+
+struct Func08014490SceneV3 {
+    u8 field8Padding[8];
+    u8 field8;
+    u8 padding[0x2F];
+    u16 field38;
+};
 
 void func_08014490(void) {
-    register void **base asm("r4");
-    register u32 zero asm("r5");
+    struct Func08014490SceneV3 **base;
+    struct Func08014490SceneV3 *scene;
     u8 *data;
-    register u8 *data2 asm("r0");
+    u32 zero;
 
     scene_set_current_thread(0);
-    base = &gCurrentSceneData;
-    data = *base;
+    base = (struct Func08014490SceneV3 **)&gCurrentSceneData;
+    scene = *base;
     zero = 0;
-    *(u16 *)(data + 0x38) = 1;
+    scene->field38 = 1;
     set_pause_beatscript_scene(0);
-    data2 = *base;
-    data2[8] = zero;
+    data = (u8 *)*base;
+    data[8] = zero;
     func_0800C7A4(0);
 }
 #endif
