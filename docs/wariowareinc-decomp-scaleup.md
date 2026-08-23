@@ -5,21 +5,27 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 275` — three additional ordinary-C graphics/scene helpers (`func_0801AE70`, `func_08039A44`, and `func_080C4A48`) now emit the same bytes without compiler register pins or empty barriers
+- Verified working tree: `batch 276` — three additional ordinary-C helpers (`func_080029D0`, `func_080039D0`, and `func_080F2C68`) now emit the same bytes without compiler register pins
 - `build/report.json`: **1704 / 5934 matched functions** = **28.715876%**
 - `matched_code`: **76392 / 993840** = **7.686549%**
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 asm-only units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
-- Remaining compiler-register-pin files: **139 / 635 pins**; remaining non-volatile empty compiler-barrier files: **12 / 12 barriers**. The full strict audit reports **33 files / 37 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
-- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files, plus one hundred thirty-seven compiler register pins removed across batches 256–275; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
+- Remaining compiler-register-pin files: **136 / 627 pins**; remaining non-volatile empty compiler-barrier files: **12 / 12 barriers**. The full strict audit reports **33 files / 37 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
+- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files, plus one hundred forty-five compiler register pins removed across batches 256–276; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, scalar-pointer aliases are counted across later lines, and named overlays are preferred for multi-field records.
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1484 / 5934**, now exceeded by **220** matched functions.
 - 26% milestone: **1543 / 5934**; current progress is **1704**, exceeding it by **161** matches.
 - Active 27% working goal: **1603 / 5934**; current progress exceeds it by **101** matches.
 - Next 30% milestone: **1781 / 5934**; **77** additional matched functions are needed.
+
+### Batch 276 — three exact ordinary-C low-level helpers (2026-08-23)
+- Rewrote `func_080029D0` with a typed byte/halfword union, `func_080039D0` with a named four-byte little-endian record, and `func_080F2C68` with ordinary scan-loop locals. Eight compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
+- The strict screen classified the three accepted candidates as exact. The rejected scene/graphics probes were kept as evidence: `0801A688` needed a real callee-saved base, `080C69CC` had real register-home differences, and raw scalar-pointer layouts for simple helpers were correctly policy-rejected. The accepted-source audit passed and the clean Docker ROM gate preserved the baseline ROM.
+- The clean `make clean && make -j4` Docker build reported `wariowareinc.gba: OK`; report and `gen_objdiff.py` were regenerated. `decomp_cycle.py verify --no-report` was also attempted, but its `rm -rf build; make -j4` path hit the known missing-output-directory race; `.decomp-runs/round-142-verify.json` records that tooling failure, while the explicit clean Docker build passed. ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **139 → 136 files / 635 → 627 pins**; full strict barrier residue remains **33 files / 37 findings**. Evidence: `.decomp-runs/round-142-typed-isolation.json`, `.decomp-runs/round-142-screen-isolation.json`, `.decomp-runs/round-142-accepted-source-audit.json`, `.decomp-runs/round-142-full-source-audit.json`, `.decomp-runs/round-142-verify.json`, and `.decomp-runs/round-142-accepted-manifest.json`.
 
 ### Batch 275 — three exact ordinary-C graphics/scene helpers (2026-08-23)
 - Rewrote `func_0801AE70`, `func_08039A44`, and `func_080C4A48` with named graphics/scene overlays and ordinary mask, zero, delta, and current-value locals. Nine compiler register pins and two empty compiler barriers were removed without instruction asm or volatile codegen shims.

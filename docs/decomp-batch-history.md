@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 276 — three exact ordinary-C low-level helpers (2026-08-23)
+- Rewrote `func_080029D0` with a typed byte/halfword union, `func_080039D0` with a named four-byte little-endian record, and `func_080F2C68` with ordinary scan-loop locals. Eight compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
+- The strict screen classified the three accepted candidates as exact. Scene/graphics probes that required a real callee-saved base or changed register homes remained evidence-only, and raw scalar-pointer layouts were policy-rejected. The accepted-source audit passed and the clean Docker ROM gate preserved the baseline ROM.
+- The explicit `make clean && make -j4` Docker build reported `wariowareinc.gba: OK`; report and `gen_objdiff.py` were regenerated. `decomp_cycle.py verify --no-report` hit the known `rm -rf build; make -j4` missing-output-directory race, recorded in `.decomp-runs/round-142-verify.json`; the explicit clean Docker build passed. ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **139 → 136 files / 635 → 627 pins**; full strict barrier residue remains **33 files / 37 findings**. Receipts: `.decomp-runs/round-142-typed-isolation.json`, `.decomp-runs/round-142-screen-isolation.json`, `.decomp-runs/round-142-accepted-source-audit.json`, `.decomp-runs/round-142-full-source-audit.json`, `.decomp-runs/round-142-verify.json`, and `.decomp-runs/round-142-accepted-manifest.json`.
+
 ## Batch 275 — three exact ordinary-C graphics/scene helpers (2026-08-23)
 - Rewrote `func_0801AE70`, `func_08039A44`, and `func_080C4A48` with named graphics/scene overlays and ordinary mask, zero, delta, and current-value locals. Nine compiler register pins and two empty compiler barriers were removed without instruction asm or volatile codegen shims.
 - The four-entry screen selected three body-identical candidates whose only differences were literal-pool/object-boundary representation. `func_08003D28` remained evidence-only because its ordinary bit-mask locals swapped the target R1/R2 homes. The strict accepted-source audit passed and the standalone Docker gate preserved the ROM.

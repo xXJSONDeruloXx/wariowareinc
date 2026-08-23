@@ -1,10 +1,12 @@
 #include "global.h"
 
 u32 func_080F2C68(u8 *arg0) {
-    register u8 *base asm("r2") = arg0;
-    register u32 count asm("r1") = 0;
-    register u32 value asm("r0");
+    u8 *base;
+    u32 count;
+    u32 value;
 
+    base = arg0;
+    count = 0;
     value = *base;
     if (value != 0) {
         do {

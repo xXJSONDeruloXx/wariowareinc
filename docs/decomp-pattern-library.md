@@ -720,3 +720,10 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Graphics mask overlay**: `func_0801AE70` is the one-field version of the `func_080186AC` pattern: load a named halfword, apply an ordinary widened mask, and store it back. `func_08039A44` extends the same overlay to the `0x4C`/`0x4E` zero fields while preserving the base pointer and zero lifetime.
 - **Scene-variable halfword delta**: `func_080C4A48` matches when `gCurrentSceneVariable` is cast to a named record, the incoming value is normalized through `(s16)`, and the current halfword is loaded into a separate ordinary local before the add/store.
 - **Barrier removal does not require volatile**: these fields were previously guarded by empty compiler barriers; the named record and declaration order supplied the required memory accesses and removed the barriers without changing the ROM.
+
+### Round 142 additions: typed overlapping records and byte readers
+
+- **Overlapping byte/halfword RMW**: `func_080029D0` can model the same address as a named union containing a byte and halfword. Ordinary widened `value`/`mask` locals preserve the target `LDRB; RSBS; ANDS; STRB` followed by the halfword mask sequence without raw scalar-pointer aliases.
+- **Little-endian reader record**: `func_080039D0` matches when the four bytes before the cursor are represented by named fields in a four-byte record. Casting the decremented cursor to that record and writing it back keeps the target `R2` base and byte-shift/OR sequence while making the layout evidence explicit.
+- **Byte scan locals**: `func_080F2C68` needs only ordinary `base`, `count`, and `value` locals. The `count + 1` byte-normalization through `LSLS #24`/`LSRS #24` is semantically meaningful codegen shaping and remains clean real C; no register pin or barrier is needed.
+- **Isolate metadata boundary**: an instruction-identical candidate may still report a near miss when a literal pool is included in one function symbol's inferred size. Treat that as host/object boundary evidence only after the integrated ROM gate passes; a real register-home mismatch, as in `080C69CC`, remains rejected.

@@ -1,17 +1,16 @@
 #include "global.h"
-#include "types.h"
+
+struct Func080039D0Bytes {
+    u8 byte0;
+    u8 byte1;
+    u8 byte2;
+    u8 byte3;
+};
 
 u32 func_080039D0(u8 **cursor) {
-    register u8 *r2 asm("r2") = *cursor - 4;
-    register u32 value asm("r0");
-    register u32 temp asm("r1");
-    *cursor = r2;
-    value = r2[0];
-    temp = r2[1] << 8;
-    value |= temp;
-    temp = r2[2] << 16;
-    value |= temp;
-    temp = r2[3] << 24;
-    value |= temp;
-    return value;
+    struct Func080039D0Bytes *base;
+
+    base = (struct Func080039D0Bytes *)(*cursor - 4);
+    *cursor = (u8 *)base;
+    return base->byte0 | (base->byte1 << 8) | (base->byte2 << 16) | (base->byte3 << 24);
 }
