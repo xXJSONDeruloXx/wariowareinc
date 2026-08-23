@@ -7,8 +7,10 @@ typedef struct {
 
 void func_0800C6E4(Func0800C6E4Node **nodes) {
     if (*nodes != 0) {
+        s32 value = -1;
+
         do {
-            *(*nodes)->fieldC = (u16)-1;
+            *(*nodes)->fieldC = value;
             nodes++;
         } while (*nodes != 0);
     }
