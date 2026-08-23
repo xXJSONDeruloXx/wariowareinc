@@ -5,27 +5,26 @@ extern u32 func_0801274C(u32);
 extern u8 D_083AA0C4[];
 
 s32 func_080127F8(u32 arg0) {
-    register u32 r0 asm("r0") = arg0;
-    register u32 r4 asm("r4");
-    register u32 r5 asm("r5");
+    u32 index;
+    u32 table;
+    s32 value;
 
-    r5 = (u32)D_083AA0C4;
-    r0 <<= 4;
+    table = (u32)D_083AA0C4;
+    index = arg0;
+    index <<= 4;
     goto check;
 body:
-    r0 = r4;
-    r0 = func_0801274C(r0);
-    if (r0 != 0) { r0 = r4; goto done; }
-    r0 = r4;
-    r0 <<= 4;
+    if (func_0801274C(value) != 0) {
+        return value;
+    }
+    index = value;
+    index <<= 4;
 check:
-    r0 += r5;
-    r4 = 7;
-    r4 = *(s8 *)(r0 + r4);
-    if ((s32)r4 >= 0) goto body;
-    r0 = 1;
-    r0 = -r0;
-done:
-    return r0;
+    index += table;
+    value = *(s8 *)(index + 7);
+    if (value >= 0) {
+        goto body;
+    }
+    return -1;
 }
 #endif

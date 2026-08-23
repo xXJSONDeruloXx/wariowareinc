@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 274 — three exact ordinary-C table/scene/graphics helpers (2026-08-23)
+- Rewrote `func_080127F8` with the labeled table-helper loop used by its exact siblings, `func_080126C8` with a named scene overlay and typed mode store, and `func_080186AC` with a named graphics-register overlay. Nine compiler register pins were removed without barriers, volatile accesses, or instruction asm.
+- The five-entry screen selected one exact table helper plus two body-identical host/pool-boundary candidates. The raw offset-heavy `0804E290` and `08082934` spellings were policy-rejected; `080186AC` retained only a literal-pool representation difference, while `080126C8` had only included-host BL/pool metadata. The integrated host-TU/standalone Docker gate accepted the three source replacements.
+- The clean Docker ROM/report gate, local `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **145 → 142 files / 653 → 644 pins**; full strict barrier residue remains **35 files / 39 findings**. Receipts: `.decomp-runs/round-140-isolation.json`, `.decomp-runs/round-140-candidate-source-audit.json`, `.decomp-runs/round-140-accepted-source-audit.json`, `.decomp-runs/round-140-full-source-audit.json`, `.decomp-runs/round-140-verify.json`, and `.decomp-runs/round-140-accepted-manifest.json`.
+
 ## Batch 273 — three exact included-stub table helpers (2026-08-23)
 - Rewrote `func_08012768`, `func_08012798`, and `func_080127C8` with ordinary `index`/`table`/`value` locals and bounded signed-byte table access. Nine compiler register pins were removed without barriers, volatile accesses, or instruction asm.
 - The final sibling screen was **3 exact / 0 near miss**. A labeled ordinary-C loop with the body before the check preserved the target backward `BGE` and natural callee-saved value lifetime; a structured `if` or generic `while` produced real branch-layout mismatches and was retained as evidence only. The integrated host-TU gate accepted all three source-only included-stub replacements.

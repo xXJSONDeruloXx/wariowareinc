@@ -1,21 +1,31 @@
 #include "global.h"
 #include "graphics.h"
 
-void func_080186AC(void) {
-    register u32 r2 asm("r2") = (u32)&gGraphicsBuffer;
-    register u32 r1 asm("r1") = *(u16 *)r2;
-    register u32 r0 asm("r0");
+struct Func080186ACGraphics {
+    u16 field0;
+    u8 padding3C[0x3A];
+    u16 field3C;
+    u8 padding40[2];
+    u16 field40;
+    u8 padding44[2];
+    u16 field44;
+    u16 field46;
+};
 
-    r0 = 0xDFFF;
-    r0 &= r1;
-    r1 = 0;
-    *(u16 *)r2 = r0;
-    *(u16 *)(r2 + 0x3C) = r1;
-    r0 = r2;
-    r0 += 0x40;
-    *(u16 *)r0 = r1;
-    r0 += 4;
-    *(u16 *)r0 = r1;
-    r0 += 2;
-    *(u16 *)r0 = r1;
+void func_080186AC(void) {
+    struct Func080186ACGraphics *graphics;
+    u32 value;
+    u32 mask;
+    u32 zero;
+
+    graphics = (struct Func080186ACGraphics *)&gGraphicsBuffer;
+    value = graphics->field0;
+    mask = 0xDFFF;
+    mask &= value;
+    zero = 0;
+    graphics->field0 = mask;
+    graphics->field3C = zero;
+    graphics->field40 = zero;
+    graphics->field44 = zero;
+    graphics->field46 = zero;
 }

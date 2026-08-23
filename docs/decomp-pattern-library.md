@@ -708,3 +708,9 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 
 - **Body-before-check layout**: for the fixed-stride signed-byte helpers at `D_083AA0C4`, keep an ordinary `table`, shifted `index`, and signed `value`, place the call body before the `check` label, and use `if (value >= 0) goto body`. This preserves the target backward `BGE`, literal-pool placement, and the callee-saved value across the predicate call without pins.
 - **Structured-loop trap**: a semantically equivalent `while` or nested `if` can invert the branch and move the call body after the check. That changes real code layout and should remain rejected evidence, even when the source audit is clean.
+
+### Rounds 139–140 additions: scene and graphics register overlays
+
+- **Scene-init sibling reuse**: `func_080126C8` follows the `D_03006518.unk1 = 0` plus delayed `gCurrentSceneData + 0xDD` overlay pattern. The included-stub host gate is still required when isolated scoring reports only BL/pool metadata.
+- **Named graphics register block**: `func_080186AC` is clean ordinary C when the known fields at `0x00`, `0x3C`, `0x40`, `0x44`, and `0x46` are represented by one named overlay and a shared zero local. This preserves the target base pointer and sequential `ADDS` stores without raw scalar-pointer aliases.
+- **Layout gate boundary**: a one-access semantic operation can still fail the policy if it is expressed through a scalar pointer reused across several numeric offsets. Recover a named field/record overlay before screening codegen; do not relax the layout gate for a promising near miss.
