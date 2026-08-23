@@ -49,6 +49,11 @@ Use this file to record where the current decomp tools helped, where they missed
   register overlay. m2c/asmlift remain candidate aids only: asmlift's BF0
   output was a generic pointer skeleton and was not admitted.
 
+## Round 151 — post-call scene reload and task-pool negative screen (2026-08-23)
+- The strict-clean `func_080152A0` candidate kept the first `gCurrentSceneData + (0xC2 << 1)` access as an explicit bounded offset accumulator, while a small named overlay modeled the post-call `+0xDD` byte. The all-named `+0xC4` spelling folded the shift into a real `ADDS #0xC4` mismatch; the mixed spelling reproduced the complete target body and passed the integrated included-TU ROM gate.
+- The three task-pool mutation siblings were screened with named 0x1C-byte records and no pins. They preserved the target field offsets and loop stride but retained real mask/index/ID register-home differences; the result is durable negative evidence, not a reason to relax the strict source gate.
+- Full residue after the accepted source-only replacement is **109 pin-bearing files / 521 pins**, **27 barrier-bearing files / 31 findings**, and **0 instruction-bearing asm**. The report remains **1704 / 5934**, **76392 / 993840**, and **1244 C / 5443 asm-only** units. Docker verification passed with equal ROM/base SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+
 ## Round 90 — included-stub direct-field shaping and full-context proof (2026-08-07)
 - Refreshing the local Mizuchi index was useful for discovery, but its remaining
   queue is dominated by included stubs. Those conversions can improve source

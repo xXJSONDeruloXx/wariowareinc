@@ -5,14 +5,19 @@ extern void *gCurrentSceneData;
 extern void scene_set_current_thread(u32);
 extern void func_08014E88(s32);
 
+typedef struct {
+    u8 paddingDD[0xDD];
+    u8 fieldDD;
+} Func080152A0Scene;
+
 void func_080152A0(void) {
-    register void **base asm("r4");
-    register u8 *data asm("r0");
-    register u32 offset asm("r1");
-    register s32 value asm("r0");
-    register u8 *bytePtr asm("r1");
-    register u32 byte asm("r2");
-    register u32 mask asm("r0");
+    void **base;
+    u8 *data;
+    u32 offset;
+    s32 value;
+    Func080152A0Scene *scene;
+    u32 byte;
+    u32 mask;
 
     scene_set_current_thread(0);
     base = &gCurrentSceneData;
@@ -23,13 +28,11 @@ void func_080152A0(void) {
     offset = 0;
     value = *(s16 *)(data + offset);
     func_08014E88(value);
-
-    bytePtr = *base;
-    bytePtr += 0xDD;
-    byte = *bytePtr;
+    scene = (Func080152A0Scene *)*base;
+    byte = scene->fieldDD;
     mask = 2;
     mask = -mask;
     mask &= byte;
-    *bytePtr = mask;
+    scene->fieldDD = mask;
 }
 #endif

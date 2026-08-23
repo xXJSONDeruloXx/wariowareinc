@@ -780,3 +780,9 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 
 - **Address-of-global reload shape**: `func_080116D4` matches when an ordinary `void **base = &gCurrentSceneData` local is kept alive, the first scene byte is reached through a separate `u8 *bytePtr`, and the second word uses a fresh `data = *base` reload. This preserves the target R3 global-address/R1 scene-pointer/R2 loaded-value/R0 mask roles without pins.
 - **Bounded legacy layout evidence**: the +0xDF byte and shifted +0x9E word accesses remain explicit bounded pointer evidence in this small helper; they do not require an opaque multi-field scalar-pointer blob. The strict audit accepts the source, and the full host-TU ROM gate—not isolated pool padding—decides acceptance.
+
+### Round 151 additions: post-call scene-data reload
+
+- **Preserve a shifted first address while naming the second field**: `func_080152A0` needs the first `gCurrentSceneData + (0xC2 << 1)` halfword access to remain an explicit `offset` accumulator; a named `fieldC4` overlay folds the shift into `ADDS #0xC4` and is a real instruction mismatch. A small named overlay for the post-call `+0xDD` byte keeps the source layout bounded and preserves the target reload/store sequence.
+- **Address-of-global lifetime across a call**: keep `void **base = &gCurrentSceneData`, reload `*base` after `func_08014E88`, and use separate `byte`/`mask` locals. This preserves the target `R4` global-address, `R1` scene pointer, `R2` loaded byte, and `R0` mask roles without compiler pins.
+- **Task-pool negative result**: strict-clean named `D_030006A0` slot records for `func_080058DC`, `func_080059A8`, and `func_08005A54` retained real constant/register-home differences in Round 151. Keep their screen receipt as evidence; do not restore pins or accept a layout exception merely because the slot stride and fields match.

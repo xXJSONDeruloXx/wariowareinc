@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 285 — exact ordinary-C scene-data reload cleanup (2026-08-23)
+- Rewrote `func_080152A0` with an ordinary `void **base`, explicit shifted `+0xC2` halfword address calculation, and a named post-call `+0xDD` scene byte field. Seven compiler register pins were removed without instruction asm, barriers, volatile codegen shims, or opaque offset-heavy layouts.
+- The mixed layout spelling preserves the target `MOV #0xC2; LSL; ADD; LDRSH [R0,R1]` sequence while using the named field for the second reload. Its isolated candidate differed only by the known included-TU pool/padding boundary; the integrated clean ROM gate accepted the source-only replacement.
+- Clean Docker verification, report regeneration, `gen_objdiff.py`, and strict source/policy audits passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because the function was already C-linked. Pin residue drops **110 → 109 files / 528 → 521 pins**; full strict barrier residue remains **27 files / 31 findings**. Receipts: `.decomp-runs/round-151-152a0-isolation-v3.json`, `.decomp-runs/round-151-152a0-accepted-source-audit.json`, `.decomp-runs/round-151-full-source-audit.json`, `.decomp-runs/round-151-152a0-verify.json`, and `.decomp-runs/round-151-accepted-manifest.json`.
+
 ## Batch 284 — exact ordinary-C scene-data pointer-lifetime cleanup (2026-08-23)
 - Rewrote `func_080116D4` with ordinary `base`, `bytePtr`, `data`, mask, and reload locals. Eight compiler register pins were removed without instruction asm, barriers, volatile codegen shims, or opaque offset-heavy layouts.
 - The selected v6 spelling preserved the target `&gCurrentSceneData` base lifetime, the +0xDF byte update, the shifted +0x9E word reload, and the call predicate. Its isolated candidate differed only by the known included-TU pool/padding boundary; the integrated clean ROM gate accepted the source-only replacement.

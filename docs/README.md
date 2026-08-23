@@ -11,13 +11,13 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 284` — `func_080116D4` now emits the same bytes with ordinary pointer-lifetime C and no compiler register pins
+- Verified working tree: `batch 285` — `func_080152A0` now emits the same bytes with ordinary scene-data pointer C and no compiler register pins
 - `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.686549%** matched code (**76392 / 993840**)
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 non-C units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–284 additionally removed two hundred forty-four compiler register pins across eighty-seven already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
-- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **110 files / 528 pins**
+- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–285 additionally removed two hundred fifty-one compiler register pins across eighty-eight already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
+- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **109 files / 521 pins**
 - Remaining non-volatile empty compiler barriers: **7 files / 7 barriers**; the full strict audit also reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **220** matches
@@ -26,6 +26,12 @@ If an agent resumes cold, read these first:
 - 30% milestone at the current function total: **1781 / 5934**; **77** more matches needed
 - 80% target at the current function total: **4748 / 5934**
 - Remaining gap to 80%: **3044 matched functions**
+
+### Batch 285 — exact ordinary-C scene-data reload cleanup (2026-08-23)
+- Rewrote `func_080152A0` with an ordinary `void **base`, explicit shifted `+0xC2` halfword address calculation, and a named post-call `+0xDD` scene byte field. Seven compiler register pins were removed without instruction asm, barriers, volatile codegen shims, or opaque offset-heavy layouts.
+- The mixed layout spelling preserves the target `MOV #0xC2; LSL; ADD; LDRSH [R0,R1]` sequence while using the named field for the second reload. Its isolated candidate differed only by the known included-TU pool/padding boundary; the integrated clean ROM gate accepted the source-only replacement.
+- Clean Docker verification, report regeneration, `gen_objdiff.py`, and strict source/policy audits passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because the function was already C-linked. Pin residue drops **110 → 109 files / 528 → 521 pins**; full strict barrier residue remains **27 files / 31 findings**. Evidence: `.decomp-runs/round-151-152a0-isolation-v3.json`, `.decomp-runs/round-151-152a0-accepted-source-audit.json`, `.decomp-runs/round-151-full-source-audit.json`, `.decomp-runs/round-151-152a0-verify.json`, and `.decomp-runs/round-151-accepted-manifest.json`.
 
 ### Batch 284 — exact ordinary-C scene-data pointer-lifetime cleanup (2026-08-23)
 - Rewrote `func_080116D4` with ordinary `base`, `bytePtr`, `data`, mask, and reload locals. Eight compiler register pins were removed without instruction asm, barriers, volatile codegen shims, or opaque offset-heavy layouts.

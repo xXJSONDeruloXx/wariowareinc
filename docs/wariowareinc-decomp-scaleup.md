@@ -5,21 +5,27 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 284` — `func_080116D4` now emits the same bytes with ordinary pointer-lifetime C and no compiler register pins
+- Verified working tree: `batch 285` — `func_080152A0` now emits the same bytes with ordinary scene-data pointer C and no compiler register pins
 - `build/report.json`: **1704 / 5934 matched functions** = **28.715876%**
 - `matched_code`: **76392 / 993840** = **7.686549%**
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 asm-only units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
-- Remaining compiler-register-pin files: **110 / 528 pins**; remaining non-volatile empty compiler-barrier files: **7 / 7 barriers**. The full strict audit reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
-- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files, plus two hundred forty-four compiler register pins removed across batches 256–284; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
+- Remaining compiler-register-pin files: **109 / 521 pins**; remaining non-volatile empty compiler-barrier files: **7 / 7 barriers**. The full strict audit reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
+- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files, plus two hundred fifty-one compiler register pins removed across batches 256–285; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, scalar-pointer aliases are counted across later lines, and named overlays are preferred for multi-field records.
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1484 / 5934**, now exceeded by **220** matched functions.
 - 26% milestone: **1543 / 5934**; current progress is **1704**, exceeding it by **161** matches.
 - Active 27% working goal: **1603 / 5934**; current progress exceeds it by **101** matches.
 - Next 30% milestone: **1781 / 5934**; **77** additional matched functions are needed.
+
+### Batch 285 — exact ordinary-C scene-data reload cleanup (2026-08-23)
+- Rewrote `func_080152A0` with an ordinary `void **base`, explicit shifted `+0xC2` halfword address calculation, and a named post-call `+0xDD` scene byte field. Seven compiler register pins were removed without instruction asm, barriers, volatile codegen shims, or opaque offset-heavy layouts.
+- The mixed layout spelling preserves the target `MOV #0xC2; LSL; ADD; LDRSH [R0,R1]` sequence while using the named field for the second reload. Its isolated candidate differed only by the known included-TU pool/padding boundary; the integrated clean ROM gate accepted the source-only replacement.
+- Clean Docker verification, report regeneration, `gen_objdiff.py`, and strict source/policy audits passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because the function was already C-linked. Pin residue drops **110 → 109 files / 528 → 521 pins**; full strict barrier residue remains **27 files / 31 findings**. Evidence: `.decomp-runs/round-151-152a0-isolation-v3.json`, `.decomp-runs/round-151-152a0-accepted-source-audit.json`, `.decomp-runs/round-151-full-source-audit.json`, `.decomp-runs/round-151-152a0-verify.json`, and `.decomp-runs/round-151-accepted-manifest.json`.
 
 ### Batch 284 — exact ordinary-C scene-data pointer-lifetime cleanup (2026-08-23)
 - Rewrote `func_080116D4` with ordinary `base`, `bytePtr`, `data`, mask, and reload locals. Eight compiler register pins were removed without instruction asm, barriers, volatile codegen shims, or opaque offset-heavy layouts.
