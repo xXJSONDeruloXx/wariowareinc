@@ -18,7 +18,7 @@ If an agent resumes cold, read these first:
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–262 additionally removed thirty-five compiler register pins across twenty wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **177 files / 737 pins**
-- Remaining empty compiler barriers: **8 files / 8 barriers**; remaining instruction-bearing inline-asm decomp files: **0**
+- Remaining non-volatile empty compiler barriers: **11 files / 11 barriers**; the full strict audit also reports **38 files / 45 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **220** matches
 - 26% milestone at the current function total: **1543 / 5934**; now exceeded by **161** matches
