@@ -5,15 +5,15 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 261` — three additional ordinary-C wrappers (`func_08003998`, `func_0801E44C`, and `func_080F1FB4`) now emit the same bytes without compiler register pins
+- Verified working tree: `batch 262` — three additional ordinary-C beatscript field wrappers (`func_0800CAA4`, `func_0800CAB8`, and `func_0800D224`) now emit the same bytes without compiler register pins or empty barriers
 - `build/report.json`: **1704 / 5934 matched functions** = **28.715876%**
 - `matched_code`: **76392 / 993840** = **7.686549%**
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 asm-only units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
-- Remaining compiler-register-pin files: **180 / 743 pins**; remaining empty compiler-barrier files: **11 / 11 barriers**
-- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files, plus twenty-nine compiler register pins removed across batches 256–261; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
+- Remaining compiler-register-pin files: **177 / 737 pins**; remaining empty compiler-barrier files: **8 / 8 barriers**
+- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files, plus thirty-five compiler register pins removed across batches 256–262; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, scalar-pointer aliases are counted across later lines, and named overlays are preferred for multi-field records.
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1484 / 5934**, now exceeded by **220** matched functions.
@@ -57,6 +57,12 @@ Prefer this file + the other docs in `/docs`
 - A thirteen-entry cleanup screen found six exact candidates, one policy-clean near miss, and six strict-policy rejections. The selected three-entry exact-only screen passed the strict source audit with zero instruction asm, barriers, register pins, or non-mapped volatile accesses.
 - The clean Docker ROM/report gate and `decomp_cycle.py verify` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Source residue is now **180 pin-bearing files / 743 pins** and **11 empty-barrier files / 11 barriers**. Evidence: `.decomp-runs/round-124-isolation.json`, `.decomp-runs/round-124-accepted-isolation.json`, and `.decomp-runs/round-124-verify.json`.
+
+### Batch 262 — three exact beatscript field wrappers (2026-08-23)
+- Rewrote `func_0800CAA4`, `func_0800CAB8`, and `func_0800D224` with ordinary mapped-base, offset, and scaled-index locals. The target literal loads, additions, and halfword/word stores remain exact without six compiler register pins or five empty barriers.
+- The eight-entry standalone screen was **8 exact / 0 rejected** under the strict source audit. The final three-entry exact-only screen was **3 exact / 0 rejected**; each accepted source contains only bounded layout evidence and no instruction asm, barrier, register pin, or non-mapped volatile access.
+- The clean Docker ROM/report gate and `decomp_cycle.py verify` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Source residue is now **177 pin-bearing files / 737 pins** and **8 empty-barrier files / 8 barriers**. Evidence: `.decomp-runs/round-126-isolation.json`, `.decomp-runs/round-126-accepted-isolation.json`, and `.decomp-runs/round-126-verify.json`.
 
 ### Tooling hardening follow-up — Conker provenance and source quality (2026-08-07)
 - The Conker comparison confirmed that its durable strengths are hash-identified candidate receipts, retained near misses, and a full-ROM pre-commit gate; its legacy MIPS source model does not itself prohibit inline ASM or volatile codegen shaping. WarioWare keeps the provenance model and enforces the stricter source rule before isolation/apply.

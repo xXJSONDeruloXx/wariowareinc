@@ -637,3 +637,9 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Global-load wrapper order**: `func_0801E44C` keeps the literal-pool data base and `gSpriteHandler` in separate ordinary locals before the signed-halfword read and `sprite_set_visible` call. The declaration/initialization order preserves the target's `R1` data base and `R0` handler homes without compiler metadata.
 - **Clamp branch layout**: the existing `if (temp <= 0x3F) return 0x7F;` spelling for `func_080F1FB4` remains exact when `value` and `temp` are ordinary `u32` locals; using a narrow `u8 temp` changes the arithmetic stream and is a near miss.
 - **Cleanup screening boundary**: the same screen correctly rejected raw multi-offset pointer aliases for `func_080029D0` and offset-heavy allocation candidates for `func_08007FC0`; exact code generation alone is not enough when the candidate fails the strict source-quality gate.
+
+### Round 126 additions: ordinary beatscript field helpers
+
+- **Mapped-base plus literal offset**: `func_0800CAA4` and `func_0800CAB8` match when an ordinary `u8 *base` points at `&gBeatscriptScene`, a separate `u32 offset` holds `0x1C32` or `0x1C30`, and the typed halfword store uses `base + offset`. This preserves the target's two literal loads and `ADDS` without an empty barrier.
+- **Scaled index after a mapped base**: `func_0800D224` keeps `base`, `offset`, and `field` as ordinary locals, shifts the incoming index before adding `0x1C5C` to the mapped base, then stores through the resulting word pointer. Declaration order reproduces the target's `R2` base, `R0` scaled index, and `R3` field literal homes.
+- **Bounded layout evidence is enough when bounded**: each accepted helper uses two raw pointer accesses and at most one numeric offset, which stays within the strict audit's visible evidence threshold. The old register pins and barriers were compiler metadata, not semantic layout recovery.
