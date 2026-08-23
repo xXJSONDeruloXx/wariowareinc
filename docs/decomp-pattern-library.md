@@ -703,3 +703,8 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Scene-init mask sibling**: `func_080133EC` follows the established typed `D_03006518.unk1` store plus delayed named `gCurrentSceneData + 0xDD` overlay. Keeping the `value`/`mask = -mask` locals in that order reproduces the low-register mask sequence without pins.
 - **Typed sprite-call shape**: `func_080136A4` can use `sprite_set_anim_cel(gSpriteHandler, gCurrentSceneSpritePool[6], 0)` directly when the project interface is visible. The indexed pool expression supplies the target signed-halfword load and call ABI without a function-pointer typedef or compiler shaping.
 - **Honest near-miss boundary**: `func_0801197C` is not equivalent to the other scene siblings under ordinary locals; its candidate changes the prologue and mask register homes. Preserve it as near-miss evidence until a source shape reproduces those homes naturally.
+
+### Round 138 additions: labeled table-helper loops
+
+- **Body-before-check layout**: for the fixed-stride signed-byte helpers at `D_083AA0C4`, keep an ordinary `table`, shifted `index`, and signed `value`, place the call body before the `check` label, and use `if (value >= 0) goto body`. This preserves the target backward `BGE`, literal-pool placement, and the callee-saved value across the predicate call without pins.
+- **Structured-loop trap**: a semantically equivalent `while` or nested `if` can invert the branch and move the call body after the check. That changes real code layout and should remain rejected evidence, even when the source audit is clean.
