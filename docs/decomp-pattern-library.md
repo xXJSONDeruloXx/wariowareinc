@@ -714,3 +714,9 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Scene-init sibling reuse**: `func_080126C8` follows the `D_03006518.unk1 = 0` plus delayed `gCurrentSceneData + 0xDD` overlay pattern. The included-stub host gate is still required when isolated scoring reports only BL/pool metadata.
 - **Named graphics register block**: `func_080186AC` is clean ordinary C when the known fields at `0x00`, `0x3C`, `0x40`, `0x44`, and `0x46` are represented by one named overlay and a shared zero local. This preserves the target base pointer and sequential `ADDS` stores without raw scalar-pointer aliases.
 - **Layout gate boundary**: a one-access semantic operation can still fail the policy if it is expressed through a scalar pointer reused across several numeric offsets. Recover a named field/record overlay before screening codegen; do not relax the layout gate for a promising near miss.
+
+### Round 141 additions: graphics masks and scene deltas
+
+- **Graphics mask overlay**: `func_0801AE70` is the one-field version of the `func_080186AC` pattern: load a named halfword, apply an ordinary widened mask, and store it back. `func_08039A44` extends the same overlay to the `0x4C`/`0x4E` zero fields while preserving the base pointer and zero lifetime.
+- **Scene-variable halfword delta**: `func_080C4A48` matches when `gCurrentSceneVariable` is cast to a named record, the incoming value is normalized through `(s16)`, and the current halfword is loaded into a separate ordinary local before the add/store.
+- **Barrier removal does not require volatile**: these fields were previously guarded by empty compiler barriers; the named record and declaration order supplied the required memory accesses and removed the barriers without changing the ROM.

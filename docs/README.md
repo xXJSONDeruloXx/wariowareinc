@@ -11,14 +11,14 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 274` — three additional ordinary-C table/scene/graphics helpers (`func_080127F8`, `func_080126C8`, and `func_080186AC`) now emit the same bytes without compiler register pins
+- Verified working tree: `batch 275` — three additional ordinary-C graphics/scene helpers (`func_0801AE70`, `func_08039A44`, and `func_080C4A48`) now emit the same bytes without compiler register pins or empty barriers
 - `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.686549%** matched code (**76392 / 993840**)
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 non-C units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–274 additionally removed one hundred twenty-eight compiler register pins across fifty-five wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
-- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **142 files / 644 pins**
-- Remaining non-volatile empty compiler barriers: **11 files / 11 barriers**; the full strict audit also reports **35 files / 39 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
+- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–275 additionally removed one hundred thirty-seven compiler register pins across fifty-eight wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
+- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **139 files / 635 pins**
+- Remaining non-volatile empty compiler barriers: **12 files / 12 barriers**; the full strict audit also reports **33 files / 37 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **220** matches
 - 26% milestone at the current function total: **1543 / 5934**; now exceeded by **161** matches

@@ -1,17 +1,25 @@
 #include "global.h"
 #include "graphics.h"
 
-void func_08039A44(void) {
-    register u8 *base asm("r1") = (u8 *)&gGraphicsBuffer;
-    register u32 value asm("r2") = *(u16 *)base;
-    register u32 masked asm("r0") = 0x7FFF;
+struct Func08039A44Graphics {
+    u16 field0;
+    u8 padding4C[0x4A];
+    u16 field4C;
+    u16 field4E;
+};
 
-    masked &= value;
-    value = 0;
-    *(u16 *)base = masked;
-    masked = (u32)base;
-    masked += 0x4C;
-    *(u16 *)masked = value;
-    base += 0x4E;
-    *(u16 *)base = value;
+void func_08039A44(void) {
+    struct Func08039A44Graphics *graphics;
+    u32 value;
+    u32 mask;
+    u32 zero;
+
+    graphics = (struct Func08039A44Graphics *)&gGraphicsBuffer;
+    value = graphics->field0;
+    mask = 0x7FFF;
+    mask &= value;
+    zero = 0;
+    graphics->field0 = mask;
+    graphics->field4C = zero;
+    graphics->field4E = zero;
 }
