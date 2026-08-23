@@ -1,0 +1,1794 @@
+{
+  "schema": 1,
+  "kind": "isolation",
+  "started": "2026-08-23T17:12:39+00:00",
+  "finished": "2026-08-23T17:12:40+00:00",
+  "branch": "docs/macabeus-tooling-assessment",
+  "commit": "49528ea580148b376d89372a3aa65ecb63d1cb16",
+  "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /var/folders/cq/tj_dgq0d4qsfs1xyx0jx2cp40000gn/T/warioware-cycle-zq3xaa17:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-127-candidates/func_0801D4A0-v1.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/target-0.o /run/target-0.status /run/target-0.stderr /run/target-0.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/converted/asm_0801d4a0.s -o /run/target-0.s.preprocessed >/run/target-0.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-0.o /run/target-0.s.preprocessed >>/run/target-0.stderr 2>&1; then\n    echo ok > /run/target-0.status\n  else\n    echo assemble_error > /run/target-0.status\n  fi\nelse\n  echo preprocess_error > /run/target-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /run/target-0.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-0.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-0.o | awk -v entry=func_0801D4A0 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0801D4A0 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-0.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0801D4A0 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-1.o /run/candidate-1.status /run/candidate-1.stderr /run/candidate-1.i /run/candidate-1.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-127-candidates/func_0801D4A0-v2.c -o /run/candidate-1.i >/run/candidate-1.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-1.i -o /run/candidate-1.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-1.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-1.s > /run/candidate-1.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-1.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-1.s.stripped && mv /run/candidate-1.s.stripped /run/candidate-1.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-1.o /run/candidate-1.s >>/run/candidate-1.stderr 2>&1; then\n      echo ok > /run/candidate-1.status\n    else\n      echo compile_error > /run/candidate-1.status\n    fi\n  else\n    echo compile_error > /run/candidate-1.status\n  fi\nelse\n  echo compile_error > /run/candidate-1.status\nfi\nrm -f /run/target-1.o /run/target-1.status /run/target-1.stderr /run/target-1.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/converted/asm_0801d4a0.s -o /run/target-1.s.preprocessed >/run/target-1.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-1.o /run/target-1.s.preprocessed >>/run/target-1.stderr 2>&1; then\n    echo ok > /run/target-1.status\n  else\n    echo assemble_error > /run/target-1.status\n  fi\nelse\n  echo preprocess_error > /run/target-1.status\nfi\nrm -f /run/candidate-1.elf /run/target-1.elf /run/link-1.stderr /run/target-1.defsym /run/target-1.unit-defsym\nif [ -f /run/candidate-1.o ] && [ -f /run/target-1.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-1.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-1.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-1.o | awk -v entry=func_0801D4A0 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-1.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-1.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-1.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0801D4A0 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-1.o -o /run/target-1.elf >>/run/link-1.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0801D4A0 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-1.o -o /run/candidate-1.elf >>/run/link-1.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-2.o /run/candidate-2.status /run/candidate-2.stderr /run/candidate-2.i /run/candidate-2.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-127-candidates/func_0801D4A0-v3.c -o /run/candidate-2.i >/run/candidate-2.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-2.i -o /run/candidate-2.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-2.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-2.s > /run/candidate-2.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-2.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-2.s.stripped && mv /run/candidate-2.s.stripped /run/candidate-2.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-2.o /run/candidate-2.s >>/run/candidate-2.stderr 2>&1; then\n      echo ok > /run/candidate-2.status\n    else\n      echo compile_error > /run/candidate-2.status\n    fi\n  else\n    echo compile_error > /run/candidate-2.status\n  fi\nelse\n  echo compile_error > /run/candidate-2.status\nfi\nrm -f /run/target-2.o /run/target-2.status /run/target-2.stderr /run/target-2.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/converted/asm_0801d4a0.s -o /run/target-2.s.preprocessed >/run/target-2.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-2.o /run/target-2.s.preprocessed >>/run/target-2.stderr 2>&1; then\n    echo ok > /run/target-2.status\n  else\n    echo assemble_error > /run/target-2.status\n  fi\nelse\n  echo preprocess_error > /run/target-2.status\nfi\nrm -f /run/candidate-2.elf /run/target-2.elf /run/link-2.stderr /run/target-2.defsym /run/target-2.unit-defsym\nif [ -f /run/candidate-2.o ] && [ -f /run/target-2.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-2.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-2.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-2.o | awk -v entry=func_0801D4A0 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-2.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-2.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-2.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0801D4A0 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-2.o -o /run/target-2.elf >>/run/link-2.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0801D4A0 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-2.o -o /run/candidate-2.elf >>/run/link-2.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-3.o /run/candidate-3.status /run/candidate-3.stderr /run/candidate-3.i /run/candidate-3.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-127-candidates/func_0805CB5C-v1.c -o /run/candidate-3.i >/run/candidate-3.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-3.i -o /run/candidate-3.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-3.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-3.s > /run/candidate-3.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-3.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-3.s.stripped && mv /run/candidate-3.s.stripped /run/candidate-3.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-3.o /run/candidate-3.s >>/run/candidate-3.stderr 2>&1; then\n      echo ok > /run/candidate-3.status\n    else\n      echo compile_error > /run/candidate-3.status\n    fi\n  else\n    echo compile_error > /run/candidate-3.status\n  fi\nelse\n  echo compile_error > /run/candidate-3.status\nfi\nrm -f /run/target-3.o /run/target-3.status /run/target-3.stderr /run/target-3.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/converted/asm_0805cb5c.s -o /run/target-3.s.preprocessed >/run/target-3.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-3.o /run/target-3.s.preprocessed >>/run/target-3.stderr 2>&1; then\n    echo ok > /run/target-3.status\n  else\n    echo assemble_error > /run/target-3.status\n  fi\nelse\n  echo preprocess_error > /run/target-3.status\nfi\nrm -f /run/candidate-3.elf /run/target-3.elf /run/link-3.stderr /run/target-3.defsym /run/target-3.unit-defsym\nif [ -f /run/candidate-3.o ] && [ -f /run/target-3.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-3.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-3.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-3.o | awk -v entry=func_0805CB5C '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-3.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-3.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-3.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0805CB5C \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-3.o -o /run/target-3.elf >>/run/link-3.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0805CB5C \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-3.o -o /run/candidate-3.elf >>/run/link-3.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-4.o /run/candidate-4.status /run/candidate-4.stderr /run/candidate-4.i /run/candidate-4.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-127-candidates/func_0805CB5C-v2.c -o /run/candidate-4.i >/run/candidate-4.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-4.i -o /run/candidate-4.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-4.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-4.s > /run/candidate-4.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-4.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-4.s.stripped && mv /run/candidate-4.s.stripped /run/candidate-4.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-4.o /run/candidate-4.s >>/run/candidate-4.stderr 2>&1; then\n      echo ok > /run/candidate-4.status\n    else\n      echo compile_error > /run/candidate-4.status\n    fi\n  else\n    echo compile_error > /run/candidate-4.status\n  fi\nelse\n  echo compile_error > /run/candidate-4.status\nfi\nrm -f /run/target-4.o /run/target-4.status /run/target-4.stderr /run/target-4.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/converted/asm_0805cb5c.s -o /run/target-4.s.preprocessed >/run/target-4.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-4.o /run/target-4.s.preprocessed >>/run/target-4.stderr 2>&1; then\n    echo ok > /run/target-4.status\n  else\n    echo assemble_error > /run/target-4.status\n  fi\nelse\n  echo preprocess_error > /run/target-4.status\nfi\nrm -f /run/candidate-4.elf /run/target-4.elf /run/link-4.stderr /run/target-4.defsym /run/target-4.unit-defsym\nif [ -f /run/candidate-4.o ] && [ -f /run/target-4.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-4.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-4.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-4.o | awk -v entry=func_0805CB5C '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-4.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-4.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-4.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0805CB5C \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-4.o -o /run/target-4.elf >>/run/link-4.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0805CB5C \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-4.o -o /run/candidate-4.elf >>/run/link-4.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-5.o /run/candidate-5.status /run/candidate-5.stderr /run/candidate-5.i /run/candidate-5.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-127-candidates/func_0804E290-v1.c -o /run/candidate-5.i >/run/candidate-5.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-5.i -o /run/candidate-5.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-5.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-5.s > /run/candidate-5.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-5.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-5.s.stripped && mv /run/candidate-5.s.stripped /run/candidate-5.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-5.o /run/candidate-5.s >>/run/candidate-5.stderr 2>&1; then\n      echo ok > /run/candidate-5.status\n    else\n      echo compile_error > /run/candidate-5.status\n    fi\n  else\n    echo compile_error > /run/candidate-5.status\n  fi\nelse\n  echo compile_error > /run/candidate-5.status\nfi\nrm -f /run/target-5.o /run/target-5.status /run/target-5.stderr /run/target-5.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/converted/asm_0804e290.s -o /run/target-5.s.preprocessed >/run/target-5.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-5.o /run/target-5.s.preprocessed >>/run/target-5.stderr 2>&1; then\n    echo ok > /run/target-5.status\n  else\n    echo assemble_error > /run/target-5.status\n  fi\nelse\n  echo preprocess_error > /run/target-5.status\nfi\nrm -f /run/candidate-5.elf /run/target-5.elf /run/link-5.stderr /run/target-5.defsym /run/target-5.unit-defsym\nif [ -f /run/candidate-5.o ] && [ -f /run/target-5.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-5.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-5.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-5.o | awk -v entry=func_0804E290 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-5.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-5.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-5.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0804E290 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-5.o -o /run/target-5.elf >>/run/link-5.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0804E290 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-5.o -o /run/candidate-5.elf >>/run/link-5.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-6.o /run/candidate-6.status /run/candidate-6.stderr /run/candidate-6.i /run/candidate-6.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-127-candidates/func_0804E290-v2.c -o /run/candidate-6.i >/run/candidate-6.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-6.i -o /run/candidate-6.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-6.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-6.s > /run/candidate-6.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-6.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-6.s.stripped && mv /run/candidate-6.s.stripped /run/candidate-6.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-6.o /run/candidate-6.s >>/run/candidate-6.stderr 2>&1; then\n      echo ok > /run/candidate-6.status\n    else\n      echo compile_error > /run/candidate-6.status\n    fi\n  else\n    echo compile_error > /run/candidate-6.status\n  fi\nelse\n  echo compile_error > /run/candidate-6.status\nfi\nrm -f /run/target-6.o /run/target-6.status /run/target-6.stderr /run/target-6.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/converted/asm_0804e290.s -o /run/target-6.s.preprocessed >/run/target-6.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-6.o /run/target-6.s.preprocessed >>/run/target-6.stderr 2>&1; then\n    echo ok > /run/target-6.status\n  else\n    echo assemble_error > /run/target-6.status\n  fi\nelse\n  echo preprocess_error > /run/target-6.status\nfi\nrm -f /run/candidate-6.elf /run/target-6.elf /run/link-6.stderr /run/target-6.defsym /run/target-6.unit-defsym\nif [ -f /run/candidate-6.o ] && [ -f /run/target-6.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-6.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-6.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-6.o | awk -v entry=func_0804E290 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-6.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-6.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-6.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0804E290 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-6.o -o /run/target-6.elf >>/run/link-6.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0804E290 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-6.o -o /run/candidate-6.elf >>/run/link-6.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-7.o /run/candidate-7.status /run/candidate-7.stderr /run/candidate-7.i /run/candidate-7.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-127-candidates/func_08082934-v1.c -o /run/candidate-7.i >/run/candidate-7.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-7.i -o /run/candidate-7.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-7.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-7.s > /run/candidate-7.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-7.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-7.s.stripped && mv /run/candidate-7.s.stripped /run/candidate-7.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-7.o /run/candidate-7.s >>/run/candidate-7.stderr 2>&1; then\n      echo ok > /run/candidate-7.status\n    else\n      echo compile_error > /run/candidate-7.status\n    fi\n  else\n    echo compile_error > /run/candidate-7.status\n  fi\nelse\n  echo compile_error > /run/candidate-7.status\nfi\nrm -f /run/target-7.o /run/target-7.status /run/target-7.stderr /run/target-7.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/converted/asm_08082934.s -o /run/target-7.s.preprocessed >/run/target-7.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-7.o /run/target-7.s.preprocessed >>/run/target-7.stderr 2>&1; then\n    echo ok > /run/target-7.status\n  else\n    echo assemble_error > /run/target-7.status\n  fi\nelse\n  echo preprocess_error > /run/target-7.status\nfi\nrm -f /run/candidate-7.elf /run/target-7.elf /run/link-7.stderr /run/target-7.defsym /run/target-7.unit-defsym\nif [ -f /run/candidate-7.o ] && [ -f /run/target-7.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-7.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-7.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-7.o | awk -v entry=func_08082934 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-7.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-7.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-7.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08082934 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-7.o -o /run/target-7.elf >>/run/link-7.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08082934 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-7.o -o /run/candidate-7.elf >>/run/link-7.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-8.o /run/candidate-8.status /run/candidate-8.stderr /run/candidate-8.i /run/candidate-8.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-127-candidates/func_08082934-v2.c -o /run/candidate-8.i >/run/candidate-8.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-8.i -o /run/candidate-8.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-8.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-8.s > /run/candidate-8.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-8.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-8.s.stripped && mv /run/candidate-8.s.stripped /run/candidate-8.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-8.o /run/candidate-8.s >>/run/candidate-8.stderr 2>&1; then\n      echo ok > /run/candidate-8.status\n    else\n      echo compile_error > /run/candidate-8.status\n    fi\n  else\n    echo compile_error > /run/candidate-8.status\n  fi\nelse\n  echo compile_error > /run/candidate-8.status\nfi\nrm -f /run/target-8.o /run/target-8.status /run/target-8.stderr /run/target-8.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/converted/asm_08082934.s -o /run/target-8.s.preprocessed >/run/target-8.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-8.o /run/target-8.s.preprocessed >>/run/target-8.stderr 2>&1; then\n    echo ok > /run/target-8.status\n  else\n    echo assemble_error > /run/target-8.status\n  fi\nelse\n  echo preprocess_error > /run/target-8.status\nfi\nrm -f /run/candidate-8.elf /run/target-8.elf /run/link-8.stderr /run/target-8.defsym /run/target-8.unit-defsym\nif [ -f /run/candidate-8.o ] && [ -f /run/target-8.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-8.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-8.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-8.o | awk -v entry=func_08082934 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-8.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-8.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-8.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08082934 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-8.o -o /run/target-8.elf >>/run/link-8.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08082934 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-8.o -o /run/candidate-8.elf >>/run/link-8.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-9.o /run/candidate-9.status /run/candidate-9.stderr /run/candidate-9.i /run/candidate-9.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-124-candidates/func_080F0DE0-v1.c -o /run/candidate-9.i >/run/candidate-9.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-9.i -o /run/candidate-9.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-9.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-9.s > /run/candidate-9.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-9.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-9.s.stripped && mv /run/candidate-9.s.stripped /run/candidate-9.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-9.o /run/candidate-9.s >>/run/candidate-9.stderr 2>&1; then\n      echo ok > /run/candidate-9.status\n    else\n      echo compile_error > /run/candidate-9.status\n    fi\n  else\n    echo compile_error > /run/candidate-9.status\n  fi\nelse\n  echo compile_error > /run/candidate-9.status\nfi\nrm -f /run/target-9.o /run/target-9.status /run/target-9.stderr /run/target-9.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/converted/asm_080f0de0.s -o /run/target-9.s.preprocessed >/run/target-9.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-9.o /run/target-9.s.preprocessed >>/run/target-9.stderr 2>&1; then\n    echo ok > /run/target-9.status\n  else\n    echo assemble_error > /run/target-9.status\n  fi\nelse\n  echo preprocess_error > /run/target-9.status\nfi\nrm -f /run/candidate-9.elf /run/target-9.elf /run/link-9.stderr /run/target-9.defsym /run/target-9.unit-defsym\nif [ -f /run/candidate-9.o ] && [ -f /run/target-9.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-9.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-9.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-9.o | awk -v entry=func_080F0DE0 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-9.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-9.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-9.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080F0DE0 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-9.o -o /run/target-9.elf >>/run/link-9.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080F0DE0 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-9.o -o /run/candidate-9.elf >>/run/link-9.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+  "docker_image": "devkitpro/devkitarm:latest",
+  "docker_invocations": 1,
+  "candidate_count": 10,
+  "results": [
+    {
+      "function": "func_0801D4A0",
+      "file": "asm/converted/asm_0801d4a0.s",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0801D4A0-v1.c",
+      "target": "asm/converted/asm_0801d4a0.s",
+      "target_object": null,
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_0801D4A0"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 6,
+            "text": "u8 *scene = (u8 *)gCurrentSceneVariable;"
+          },
+          {
+            "line": 7,
+            "text": "u8 *ptr = *(u8 **)(scene + 0xC);"
+          },
+          {
+            "line": 9,
+            "text": "*(u16 *)ptr = value;"
+          },
+          {
+            "line": 10,
+            "text": "*(u8 *)(ptr + 3) = 0;"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 7,
+            "values": [
+              "0xC"
+            ],
+            "text": "u8 *ptr = *(u8 **)(scene + 0xC);"
+          },
+          {
+            "line": 10,
+            "values": [
+              "3"
+            ],
+            "text": "*(u8 *)(ptr + 3) = 0;"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "ptr",
+          "scene"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 4,
+          "numeric_offset_count": 2,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "2b7e328d7a6ceac2095098e24e014f3caaa40745ee43a5223e28096ccbcf7ce8",
+      "target_sha256": "7e35b2cf555d2def14552e24e427577c3066446f469da1756965e8efc3979442",
+      "target_object_sha256": null
+    },
+    {
+      "function": "func_0801D4A0",
+      "file": "asm/converted/asm_0801d4a0.s",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0801D4A0-v2.c",
+      "target": "asm/converted/asm_0801d4a0.s",
+      "target_object": null,
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_0801D4A0"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 8,
+            "text": "scene = (u8 *)gCurrentSceneVariable;"
+          },
+          {
+            "line": 9,
+            "text": "ptr = *(u8 **)(scene + 0xC);"
+          },
+          {
+            "line": 11,
+            "text": "*(u16 *)ptr = value;"
+          },
+          {
+            "line": 12,
+            "text": "*(u8 *)(ptr + 3) = 0;"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 9,
+            "values": [
+              "0xC"
+            ],
+            "text": "ptr = *(u8 **)(scene + 0xC);"
+          },
+          {
+            "line": 12,
+            "values": [
+              "3"
+            ],
+            "text": "*(u8 *)(ptr + 3) = 0;"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "ptr",
+          "scene"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 4,
+          "numeric_offset_count": 2,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "72345271d84f1bae048a0e2b21b490c1d86bfad8b2c92a44ff1fd1a85609a40b",
+      "target_sha256": "7e35b2cf555d2def14552e24e427577c3066446f469da1756965e8efc3979442",
+      "target_object_sha256": null
+    },
+    {
+      "function": "func_0801D4A0",
+      "file": "asm/converted/asm_0801d4a0.s",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0801D4A0-v3.c",
+      "target": "asm/converted/asm_0801d4a0.s",
+      "target_object": null,
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_0801D4A0"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 6,
+            "text": "u8 *ptr = *(u8 **)((u8 *)gCurrentSceneVariable + 0xC);"
+          },
+          {
+            "line": 8,
+            "text": "*(u16 *)ptr = value;"
+          },
+          {
+            "line": 9,
+            "text": "*(u8 *)(ptr + 3) = 0;"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 6,
+            "values": [
+              "0xC"
+            ],
+            "text": "u8 *ptr = *(u8 **)((u8 *)gCurrentSceneVariable + 0xC);"
+          },
+          {
+            "line": 9,
+            "values": [
+              "3"
+            ],
+            "text": "*(u8 *)(ptr + 3) = 0;"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "ptr"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 3,
+          "numeric_offset_count": 2,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "38f6964f3b7ee88d59ab37711f03e9b688d878704eae03a1cc72af257f24bfb4",
+      "target_sha256": "7e35b2cf555d2def14552e24e427577c3066446f469da1756965e8efc3979442",
+      "target_object_sha256": null
+    },
+    {
+      "function": "func_0805CB5C",
+      "file": "asm/converted/asm_0805cb5c.s",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0805CB5C-v1.c",
+      "target": "asm/converted/asm_0805cb5c.s",
+      "target_object": null,
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_0805CB5C"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 6,
+            "text": "u8 *base = (u8 *)&gGraphicsBuffer;"
+          },
+          {
+            "line": 7,
+            "text": "base += 0x54;"
+          },
+          {
+            "line": 9,
+            "text": "*(u16 *)base = value;"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 7,
+            "values": [
+              "0x54"
+            ],
+            "text": "base += 0x54;"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "base"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 3,
+          "numeric_offset_count": 1,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "0d4b1dcaa39a6d058dc88fd6b910304b4e3a799adda38c6efe1fd1bea47ae2b9",
+      "target_sha256": "89814a4670ceebdd5b558bf1ef7d6e86b04638b9d0998356e883b586569f7c0d",
+      "target_object_sha256": null
+    },
+    {
+      "function": "func_0805CB5C",
+      "file": "asm/converted/asm_0805cb5c.s",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0805CB5C-v2.c",
+      "target": "asm/converted/asm_0805cb5c.s",
+      "target_object": null,
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_0805CB5C"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 8,
+            "text": "base = (u8 *)&gGraphicsBuffer;"
+          },
+          {
+            "line": 9,
+            "text": "base += 0x54;"
+          },
+          {
+            "line": 11,
+            "text": "*(u16 *)base = value;"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 9,
+            "values": [
+              "0x54"
+            ],
+            "text": "base += 0x54;"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "base"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 3,
+          "numeric_offset_count": 1,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "5e2cad74f0e0d13f9f69ccf89a30b14b99ac041f563386ccf1d1a850c042089b",
+      "target_sha256": "89814a4670ceebdd5b558bf1ef7d6e86b04638b9d0998356e883b586569f7c0d",
+      "target_object_sha256": null
+    },
+    {
+      "function": "func_0804E290",
+      "file": "asm/converted/asm_0804e290.s",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0804E290-v1.c",
+      "target": "asm/converted/asm_0804e290.s",
+      "target_object": null,
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_0804E290"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 6,
+            "text": "u8 *base = (u8 *)&gGraphicsBuffer;"
+          },
+          {
+            "line": 8,
+            "text": "base += 0x54;"
+          },
+          {
+            "line": 10,
+            "text": "*(s16 *)offset = arg1;"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 8,
+            "values": [
+              "0x54"
+            ],
+            "text": "base += 0x54;"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "base"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 3,
+          "numeric_offset_count": 1,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "b06940b68502dbc959f7391cca974b92876b309a61a652690e7914d86b3a2b4d",
+      "target_sha256": "9360e64063b440d85c48ccc86f931df25f6be964d24ec67aa928ad4245350e32",
+      "target_object_sha256": null
+    },
+    {
+      "function": "func_0804E290",
+      "file": "asm/converted/asm_0804e290.s",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0804E290-v2.c",
+      "target": "asm/converted/asm_0804e290.s",
+      "target_object": null,
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_0804E290"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 9,
+            "text": "base = (u8 *)&gGraphicsBuffer;"
+          },
+          {
+            "line": 10,
+            "text": "base += 0x54;"
+          },
+          {
+            "line": 12,
+            "text": "*(s16 *)offset = arg1;"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 10,
+            "values": [
+              "0x54"
+            ],
+            "text": "base += 0x54;"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "base"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 3,
+          "numeric_offset_count": 1,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "9f89bb49a5ed59c2f046f7c31d55b624d25e688aed7663e186ed3c28255b78de",
+      "target_sha256": "9360e64063b440d85c48ccc86f931df25f6be964d24ec67aa928ad4245350e32",
+      "target_object_sha256": null
+    },
+    {
+      "function": "func_08082934",
+      "file": "asm/converted/asm_08082934.s",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_08082934-v1.c",
+      "target": "asm/converted/asm_08082934.s",
+      "target_object": null,
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_08082934"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 9,
+            "text": "base = (u8 *)&gGraphicsBuffer;"
+          },
+          {
+            "line": 13,
+            "text": "value = *(u16 *)offset;"
+          },
+          {
+            "line": 14,
+            "text": "base += 0x7A;"
+          },
+          {
+            "line": 15,
+            "text": "*(u16 *)base = value;"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 12,
+            "values": [
+              "0x9A"
+            ],
+            "text": "offset += 0x9A;"
+          },
+          {
+            "line": 14,
+            "values": [
+              "0x7A"
+            ],
+            "text": "base += 0x7A;"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "base"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 4,
+          "numeric_offset_count": 2,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "b4c46629f624bb3f2087a2657e0445d3c928af76aedd8656d9072e782a1c4c50",
+      "target_sha256": "621436d6af832b729fc7b7daa5f0e34f20f2e1267a28b2c8e770c200c683ced1",
+      "target_object_sha256": null
+    },
+    {
+      "function": "func_08082934",
+      "file": "asm/converted/asm_08082934.s",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_08082934-v2.c",
+      "target": "asm/converted/asm_08082934.s",
+      "target_object": null,
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_08082934"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 9,
+            "text": "base = (u8 *)&gGraphicsBuffer;"
+          },
+          {
+            "line": 13,
+            "text": "value = *(u16 *)offset;"
+          },
+          {
+            "line": 14,
+            "text": "base += 0x7A;"
+          },
+          {
+            "line": 15,
+            "text": "*(u16 *)base = value;"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 12,
+            "values": [
+              "0x9A"
+            ],
+            "text": "offset += 0x9A;"
+          },
+          {
+            "line": 14,
+            "values": [
+              "0x7A"
+            ],
+            "text": "base += 0x7A;"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "base"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 4,
+          "numeric_offset_count": 2,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "fc93dc6f5f1f8bf8e53205480cbbf616a2114481189e2467cf37f4691a503e4d",
+      "target_sha256": "621436d6af832b729fc7b7daa5f0e34f20f2e1267a28b2c8e770c200c683ced1",
+      "target_object_sha256": null
+    },
+    {
+      "function": "func_080F0DE0",
+      "file": "asm/converted/asm_080f0de0.s",
+      "candidate": ".mizuchi-tmp/round-124-candidates/func_080F0DE0-v1.c",
+      "target": "asm/converted/asm_080f0de0.s",
+      "target_object": null,
+      "status": "exact",
+      "score": 0.0,
+      "match_percent": 100.0,
+      "diff_count": 0,
+      "symbol_found": true,
+      "comparison": "linked_elf",
+      "diff": {
+        "left": {
+          "sections": [
+            {
+              "name": ".text",
+              "kind": "SECTION_CODE",
+              "size": "28",
+              "match_percent": 100.0
+            }
+          ],
+          "symbols": [
+            {
+              "name": "func_080F0DE0",
+              "size": "28",
+              "flags": {
+                "global": true,
+                "size_inferred": true
+              },
+              "kind": "SYMBOL_FUNCTION",
+              "target_symbol": 3,
+              "match_percent": 100.0,
+              "instructions": [
+                {
+                  "instruction": {
+                    "size": 2,
+                    "formatted": "ldr r1, [pc, #0x14] (->0x18)",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldr",
+                          "opcode": 24
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "pc"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "20"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      },
+                      {
+                        "basic": " (->"
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "24"
+                        }
+                      },
+                      {
+                        "basic": ")"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "2",
+                    "size": 2,
+                    "formatted": "ldr r1, [r1, #0x0]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldr",
+                          "opcode": 24
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "0"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "4",
+                    "size": 2,
+                    "formatted": "lsl r0, #0x5",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "lsl",
+                          "opcode": 36
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "5"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "6",
+                    "size": 2,
+                    "formatted": "add r0, r1",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "add",
+                          "opcode": 1
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "8",
+                    "size": 2,
+                    "formatted": "mov r1, #0x0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "mov",
+                          "opcode": 43
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "0"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "10",
+                    "size": 2,
+                    "formatted": "str r1, [r0, #0xc]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "str",
+                          "opcode": 116
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "12"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "12",
+                    "size": 2,
+                    "formatted": "ldrb r1, [r0, #0x0]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldrb",
+                          "opcode": 25
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "0"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "14",
+                    "size": 2,
+                    "formatted": "mov r2, #0x1",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "mov",
+                          "opcode": 43
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r2"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "1"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "16",
+                    "size": 2,
+                    "formatted": "orr r1, r2",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "orr",
+                          "opcode": 54
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r2"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "18",
+                    "size": 2,
+                    "formatted": "strb r1, [r0, #0x0]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "strb",
+                          "opcode": 117
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "0"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "20",
+                    "size": 2,
+                    "formatted": "bx lr",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "bx",
+                          "opcode": 9
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "lr"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "22",
+                    "size": 2,
+                    "formatted": ".hword 0x0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": ".hword",
+                          "opcode": 65534
+                        }
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "0"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "24",
+                    "size": 4,
+                    "formatted": ".word 0x30068e8",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": ".word",
+                          "opcode": 65534
+                        }
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "50358504"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "right": {
+          "sections": [
+            {
+              "name": ".text",
+              "kind": "SECTION_CODE",
+              "size": "28"
+            }
+          ],
+          "symbols": [
+            {
+              "name": "func_080F0DE0",
+              "size": "28",
+              "flags": {
+                "global": true,
+                "size_inferred": true
+              },
+              "kind": "SYMBOL_FUNCTION",
+              "target_symbol": 2,
+              "match_percent": 100.0,
+              "instructions": [
+                {
+                  "instruction": {
+                    "size": 2,
+                    "formatted": "ldr r1, [pc, #0x14] (->0x18)",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldr",
+                          "opcode": 24
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "pc"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "20"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      },
+                      {
+                        "basic": " (->"
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "24"
+                        }
+                      },
+                      {
+                        "basic": ")"
+                      }
+                    ],
+                    "line_number": 1718
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "2",
+                    "size": 2,
+                    "formatted": "ldr r1, [r1, #0x0]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldr",
+                          "opcode": 24
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "0"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ],
+                    "line_number": 1718
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "4",
+                    "size": 2,
+                    "formatted": "lsl r0, #0x5",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "lsl",
+                          "opcode": 36
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "5"
+                        }
+                      }
+                    ],
+                    "line_number": 1720
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "6",
+                    "size": 2,
+                    "formatted": "add r0, r1",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "add",
+                          "opcode": 1
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      }
+                    ],
+                    "line_number": 1721
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "8",
+                    "size": 2,
+                    "formatted": "mov r1, #0x0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "mov",
+                          "opcode": 43
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "0"
+                        }
+                      }
+                    ],
+                    "line_number": 1722
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "10",
+                    "size": 2,
+                    "formatted": "str r1, [r0, #0xc]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "str",
+                          "opcode": 116
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "12"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ],
+                    "line_number": 1722
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "12",
+                    "size": 2,
+                    "formatted": "ldrb r1, [r0, #0x0]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldrb",
+                          "opcode": 25
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "0"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ],
+                    "line_number": 1723
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "14",
+                    "size": 2,
+                    "formatted": "mov r2, #0x1",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "mov",
+                          "opcode": 43
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r2"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "1"
+                        }
+                      }
+                    ],
+                    "line_number": 1723
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "16",
+                    "size": 2,
+                    "formatted": "orr r1, r2",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "orr",
+                          "opcode": 54
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r2"
+                        }
+                      }
+                    ],
+                    "line_number": 1723
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "18",
+                    "size": 2,
+                    "formatted": "strb r1, [r0, #0x0]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "strb",
+                          "opcode": 117
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "0"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ],
+                    "line_number": 1723
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "20",
+                    "size": 2,
+                    "formatted": "bx lr",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "bx",
+                          "opcode": 9
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "lr"
+                        }
+                      }
+                    ],
+                    "line_number": 1724
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "22",
+                    "size": 2,
+                    "formatted": ".hword 0x0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": ".hword",
+                          "opcode": 65534
+                        }
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "0"
+                        }
+                      }
+                    ],
+                    "line_number": 1724
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "24",
+                    "size": 4,
+                    "formatted": ".word 0x30068e8",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": ".word",
+                          "opcode": 65534
+                        }
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "50358504"
+                        }
+                      }
+                    ],
+                    "line_number": 1724
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "ffe209ae3b0069be31ba68836378a712cbae4657e31fa7d7c6aef0fca18e2598",
+      "target_sha256": "64d4fe21c76ca9f60dc585cb6d9dbbac29a39c7e403de2191bc20da017a890db",
+      "target_object_sha256": null,
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_080F0DE0"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 10,
+            "text": "*(u32 *)(offset + 0xC) = 0;"
+          },
+          {
+            "line": 11,
+            "text": "*(u8 *)offset |= 1;"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 10,
+            "values": [
+              "0xC"
+            ],
+            "text": "*(u32 *)(offset + 0xC) = 0;"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "D_030068E8",
+          "base"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "bounded_layout_evidence",
+          "layout_quality_ok": true,
+          "raw_access_count": 2,
+          "numeric_offset_count": 1,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": true,
+        "layout_quality_ok": true
+      }
+    }
+  ],
+  "ok": false,
+  "manifest": ".mizuchi-tmp/round-127-manifest.json",
+  "manifest_sha256": "16a1f52836798578871fccc0fd7586e500fd265b87519f94ae2d7a35e1a9a513",
+  "candidate_identities": [
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0801D4A0-v1.c",
+      "candidate_sha256": "2b7e328d7a6ceac2095098e24e014f3caaa40745ee43a5223e28096ccbcf7ce8",
+      "target": "asm/converted/asm_0801d4a0.s",
+      "target_sha256": "7e35b2cf555d2def14552e24e427577c3066446f469da1756965e8efc3979442",
+      "target_object": null,
+      "target_object_sha256": null
+    },
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0801D4A0-v2.c",
+      "candidate_sha256": "72345271d84f1bae048a0e2b21b490c1d86bfad8b2c92a44ff1fd1a85609a40b",
+      "target": "asm/converted/asm_0801d4a0.s",
+      "target_sha256": "7e35b2cf555d2def14552e24e427577c3066446f469da1756965e8efc3979442",
+      "target_object": null,
+      "target_object_sha256": null
+    },
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0801D4A0-v3.c",
+      "candidate_sha256": "38f6964f3b7ee88d59ab37711f03e9b688d878704eae03a1cc72af257f24bfb4",
+      "target": "asm/converted/asm_0801d4a0.s",
+      "target_sha256": "7e35b2cf555d2def14552e24e427577c3066446f469da1756965e8efc3979442",
+      "target_object": null,
+      "target_object_sha256": null
+    },
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0805CB5C-v1.c",
+      "candidate_sha256": "0d4b1dcaa39a6d058dc88fd6b910304b4e3a799adda38c6efe1fd1bea47ae2b9",
+      "target": "asm/converted/asm_0805cb5c.s",
+      "target_sha256": "89814a4670ceebdd5b558bf1ef7d6e86b04638b9d0998356e883b586569f7c0d",
+      "target_object": null,
+      "target_object_sha256": null
+    },
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0805CB5C-v2.c",
+      "candidate_sha256": "5e2cad74f0e0d13f9f69ccf89a30b14b99ac041f563386ccf1d1a850c042089b",
+      "target": "asm/converted/asm_0805cb5c.s",
+      "target_sha256": "89814a4670ceebdd5b558bf1ef7d6e86b04638b9d0998356e883b586569f7c0d",
+      "target_object": null,
+      "target_object_sha256": null
+    },
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0804E290-v1.c",
+      "candidate_sha256": "b06940b68502dbc959f7391cca974b92876b309a61a652690e7914d86b3a2b4d",
+      "target": "asm/converted/asm_0804e290.s",
+      "target_sha256": "9360e64063b440d85c48ccc86f931df25f6be964d24ec67aa928ad4245350e32",
+      "target_object": null,
+      "target_object_sha256": null
+    },
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_0804E290-v2.c",
+      "candidate_sha256": "9f89bb49a5ed59c2f046f7c31d55b624d25e688aed7663e186ed3c28255b78de",
+      "target": "asm/converted/asm_0804e290.s",
+      "target_sha256": "9360e64063b440d85c48ccc86f931df25f6be964d24ec67aa928ad4245350e32",
+      "target_object": null,
+      "target_object_sha256": null
+    },
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_08082934-v1.c",
+      "candidate_sha256": "b4c46629f624bb3f2087a2657e0445d3c928af76aedd8656d9072e782a1c4c50",
+      "target": "asm/converted/asm_08082934.s",
+      "target_sha256": "621436d6af832b729fc7b7daa5f0e34f20f2e1267a28b2c8e770c200c683ced1",
+      "target_object": null,
+      "target_object_sha256": null
+    },
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-127-candidates/func_08082934-v2.c",
+      "candidate_sha256": "fc93dc6f5f1f8bf8e53205480cbbf616a2114481189e2467cf37f4691a503e4d",
+      "target": "asm/converted/asm_08082934.s",
+      "target_sha256": "621436d6af832b729fc7b7daa5f0e34f20f2e1267a28b2c8e770c200c683ced1",
+      "target_object": null,
+      "target_object_sha256": null
+    },
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-124-candidates/func_080F0DE0-v1.c",
+      "candidate_sha256": "ffe209ae3b0069be31ba68836378a712cbae4657e31fa7d7c6aef0fca18e2598",
+      "target": "asm/converted/asm_080f0de0.s",
+      "target_sha256": "64d4fe21c76ca9f60dc585cb6d9dbbac29a39c7e403de2191bc20da017a890db",
+      "target_object": null,
+      "target_object_sha256": null
+    }
+  ]
+}

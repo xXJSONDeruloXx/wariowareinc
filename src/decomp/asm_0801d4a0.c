@@ -2,15 +2,21 @@
 #include "types.h"
 #include "scenes.h"
 
+struct Func0801D4A0Data {
+    u16 value;
+    u8 unk2;
+    u8 flag3;
+};
+
+struct Func0801D4A0Scene {
+    u8 pad0[0xC];
+    struct Func0801D4A0Data *data;
+};
+
 void func_0801D4A0(u32 value) {
-    register u8 *r1 asm("r1") = (u8 *)&gCurrentSceneVariable;
-    register u8 *r2 asm("r2");
-    asm volatile("" : "+r"(r1), "+r"(r2));
-    r1 = *(u8 **)r1;
-    r2 = *(u8 **)(r1 + 0xC);
+    struct Func0801D4A0Scene *scene = (struct Func0801D4A0Scene *)gCurrentSceneVariable;
+    struct Func0801D4A0Data *data = scene->data;
     value <<= 8;
-    r1 = 0;
-    asm volatile("" : "+r"(value), "+r"(r1), "+r"(r2));
-    *(u16 *)r2 = value;
-    *(u8 *)(r2 + 3) = r1;
+    data->value = value;
+    data->flag3 = 0;
 }
