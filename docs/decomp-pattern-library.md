@@ -775,3 +775,8 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Old-field versus result lifetimes**: for the mask setters, retaining the loaded field in a separate `mask` or `field` local and using a second `result` local preserves the target low-register roles. Reusing one C lvalue can be semantically equivalent but produces a real register/order near miss.
 - **Repeated base reload**: `func_080F26BC` writes two byte fields in the same 0x20-byte entry. A distinct `base2` local for the second `arg0->entries` reload preserves the target second-store register lifetime; reusing the first base or recomputing through the pointer changes codegen.
 - **Source-only linked-state maintenance**: these six functions already had converted assembly/linker entries, so the accepted change is a C-body replacement in the existing TU. No `asm/converted/` move or linker edit is needed; strict source audit plus the integrated ROM gate remains mandatory.
+
+### Round 150 additions: scene-data pointer lifetime
+
+- **Address-of-global reload shape**: `func_080116D4` matches when an ordinary `void **base = &gCurrentSceneData` local is kept alive, the first scene byte is reached through a separate `u8 *bytePtr`, and the second word uses a fresh `data = *base` reload. This preserves the target R3 global-address/R1 scene-pointer/R2 loaded-value/R0 mask roles without pins.
+- **Bounded legacy layout evidence**: the +0xDF byte and shifted +0x9E word accesses remain explicit bounded pointer evidence in this small helper; they do not require an opaque multi-field scalar-pointer blob. The strict audit accepts the source, and the full host-TU ROM gate—not isolated pool padding—decides acceptance.

@@ -5,14 +5,14 @@ extern void *gCurrentSceneData;
 extern void set_pause_beatscript_scene(u32);
 
 void func_080116D4(void) {
-    register void **base asm("r3");
-    register u8 *bytePtr asm("r1");
-    register u32 value asm("r2");
-    register u32 mask asm("r0");
-    register u8 *data asm("r0");
-    register u32 offset asm("r1");
-    register u32 val asm("r0");
-    register u32 m2 asm("r1");
+    void **base;
+    u8 *bytePtr;
+    u32 value;
+    u32 mask;
+    u8 *data;
+    u32 offset;
+    u32 val;
+    u32 m2;
 
     base = &gCurrentSceneData;
     bytePtr = *base;
@@ -22,7 +22,6 @@ void func_080116D4(void) {
     mask = -mask;
     mask &= value;
     *bytePtr = mask;
-
     data = *base;
     offset = 0x9E;
     offset <<= 1;

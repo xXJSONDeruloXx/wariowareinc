@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 284 — exact ordinary-C scene-data pointer-lifetime cleanup (2026-08-23)
+- Rewrote `func_080116D4` with ordinary `base`, `bytePtr`, `data`, mask, and reload locals. Eight compiler register pins were removed without instruction asm, barriers, volatile codegen shims, or opaque offset-heavy layouts.
+- The selected v6 spelling preserved the target `&gCurrentSceneData` base lifetime, the +0xDF byte update, the shifted +0x9E word reload, and the call predicate. Its isolated candidate differed only by the known included-TU pool/padding boundary; the integrated clean ROM gate accepted the source-only replacement.
+- Clean Docker build, report regeneration, `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because the function was already C-linked. Pin residue drops **111 → 110 files / 536 → 528 pins**; full strict barrier residue remains **27 files / 31 findings**. Receipts: `.decomp-runs/round-150-116d4-v6-v7-isolation.json`, `.decomp-runs/round-150-116d4-accepted-source-audit.json`, `.decomp-runs/round-150-full-source-audit.json`, `.decomp-runs/round-150-116d4-verify.json`, and `.decomp-runs/round-150-accepted-manifest.json`.
+
 ## Batch 283 — six exact ordinary-C packed-record setters (2026-08-23)
 - Rewrote `func_080F2374`, `func_080F24A0`, `func_080F24C0`, `func_080F2558`, `func_080F2578`, and `func_080F26BC` with named 0x20-byte indexed records, integer base/offset locals, and ordinary mask/result lifetimes. Twenty-four compiler register pins and five empty compiler barriers were removed without instruction asm, volatile codegen shims, or opaque scalar-pointer layouts.
 - The exact-only screen classified all six strict-clean spellings as exact. The first five preserve the target field/mask register roles through separate locals; `func_080F26BC` needs a distinct `base2` local for the second reload/store.

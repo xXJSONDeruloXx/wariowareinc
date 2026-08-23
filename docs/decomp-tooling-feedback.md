@@ -12,6 +12,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - Exploratory isolation generated noisy near-miss provenance in tracked `.nearmiss/` and `tools/attempts.tsv`; that tool-generated churn was restored to the clean baseline. The authoritative exact screen, accepted-source audit, full residue audit, verify receipt, and accepted manifest are retained under `.decomp-runs/round-149-*.json`.
 - The integrated clean Docker gate passed with equal ROM/base ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. No linker or converted-assembly move was required because these were already-linked C TUs.
 
+## Round 150 — scene-data pointer lifetime and stale-target isolation (2026-08-23)
+- The ordinary `void **base`/byte-pointer spelling for `func_080116D4` reproduced every target instruction and passed the strict source/layout audit. The integrated clean ROM gate accepted it and removed eight compiler register pins.
+- A first full-build failure on the earlier `08001A70` experiment rebuilt the target host object with the candidate source. Subsequent isolation against that object falsely reported an exact result; restoring the pinned baseline and rebuilding returned the known ROM SHA-1 before rescreening. Future candidate isolation must always use a baseline-rebuilt target object after any failed full-context experiment.
+- The `08001A70` and `0800894C` families remain evidence-only: the former needs a compiler-preserved temporary copy for `0x100`, and the latter retains real overlapping-record register-role differences. No asm/barrier exception was added.
+- The accepted source-only included-stub replacement required no linker or converted-assembly move. Full residue is now **110 pin-bearing files / 528 pins**, **27 barrier-bearing files / 31 findings**, and **0 instruction-bearing asm**.
+
 ## Round 148 — task-record overlays and source-only acceptance (2026-08-23)
 - The screen found strict-clean exact spellings for `func_08005870` and `func_080F1B5C`; for F1B5C, keeping a separate `result` local was decisive because reusing the prior value produced an extra `MOV R0,R2`.
 - `func_080058AC` was instruction-identical, with only a small target function-symbol pool-boundary metadata delta in isolation. The integrated clean ROM gate passed equal ROM hashes; this is a metadata-only exception, not a source-quality relaxation.
