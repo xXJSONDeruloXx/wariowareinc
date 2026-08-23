@@ -1,0 +1,282 @@
+{
+  "schema": 1,
+  "kind": "isolation",
+  "started": "2026-08-23T15:00:12+00:00",
+  "finished": "2026-08-23T15:00:12+00:00",
+  "branch": "docs/macabeus-tooling-assessment",
+  "commit": "3e868a138c2a9611669634979e78e0df49e16e84",
+  "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /var/folders/cq/tj_dgq0d4qsfs1xyx0jx2cp40000gn/T/warioware-cycle-m81x3wc6:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-107-candidates/func_08011d0c.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/target-0.o /run/target-0.status /run/target-0.stderr /run/target-0.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/scenes/main_menu/asm_08011d0c.s -o /run/target-0.s.preprocessed >/run/target-0.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-0.o /run/target-0.s.preprocessed >>/run/target-0.stderr 2>&1; then\n    echo ok > /run/target-0.status\n  else\n    echo assemble_error > /run/target-0.status\n  fi\nelse\n  echo preprocess_error > /run/target-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /run/target-0.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-0.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-0.o | awk -v entry=func_08011D0C '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08011D0C \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-0.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08011D0C \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-1.o /run/candidate-1.status /run/candidate-1.stderr /run/candidate-1.i /run/candidate-1.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-107-candidates/func_08011ca4.c -o /run/candidate-1.i >/run/candidate-1.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-1.i -o /run/candidate-1.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-1.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-1.s > /run/candidate-1.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-1.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-1.s.stripped && mv /run/candidate-1.s.stripped /run/candidate-1.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-1.o /run/candidate-1.s >>/run/candidate-1.stderr 2>&1; then\n      echo ok > /run/candidate-1.status\n    else\n      echo compile_error > /run/candidate-1.status\n    fi\n  else\n    echo compile_error > /run/candidate-1.status\n  fi\nelse\n  echo compile_error > /run/candidate-1.status\nfi\nrm -f /run/target-1.o /run/target-1.status /run/target-1.stderr /run/target-1.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/scenes/main_menu/asm_08011ca4.s -o /run/target-1.s.preprocessed >/run/target-1.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-1.o /run/target-1.s.preprocessed >>/run/target-1.stderr 2>&1; then\n    echo ok > /run/target-1.status\n  else\n    echo assemble_error > /run/target-1.status\n  fi\nelse\n  echo preprocess_error > /run/target-1.status\nfi\nrm -f /run/candidate-1.elf /run/target-1.elf /run/link-1.stderr /run/target-1.defsym /run/target-1.unit-defsym\nif [ -f /run/candidate-1.o ] && [ -f /run/target-1.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-1.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-1.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-1.o | awk -v entry=func_08011CA4 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-1.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-1.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-1.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08011CA4 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-1.o -o /run/target-1.elf >>/run/link-1.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08011CA4 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-1.o -o /run/candidate-1.elf >>/run/link-1.stderr 2>&1\n    fi\n  fi\nfi\nrm -f /run/candidate-2.o /run/candidate-2.status /run/candidate-2.stderr /run/candidate-2.i /run/candidate-2.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-107-candidates/func_08011bec.c -o /run/candidate-2.i >/run/candidate-2.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-2.i -o /run/candidate-2.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-2.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-2.s > /run/candidate-2.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-2.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-2.s.stripped && mv /run/candidate-2.s.stripped /run/candidate-2.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-2.o /run/candidate-2.s >>/run/candidate-2.stderr 2>&1; then\n      echo ok > /run/candidate-2.status\n    else\n      echo compile_error > /run/candidate-2.status\n    fi\n  else\n    echo compile_error > /run/candidate-2.status\n  fi\nelse\n  echo compile_error > /run/candidate-2.status\nfi\nrm -f /run/target-2.o /run/target-2.status /run/target-2.stderr /run/target-2.s.preprocessed\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef -x assembler-with-cpp /workspace/asm/scenes/main_menu/asm_08011bec.s -o /run/target-2.s.preprocessed >/run/target-2.stderr 2>&1; then\n  if arm-none-eabi-as -march=armv4t -o /run/target-2.o /run/target-2.s.preprocessed >>/run/target-2.stderr 2>&1; then\n    echo ok > /run/target-2.status\n  else\n    echo assemble_error > /run/target-2.status\n  fi\nelse\n  echo preprocess_error > /run/target-2.status\nfi\nrm -f /run/candidate-2.elf /run/target-2.elf /run/link-2.stderr /run/target-2.defsym /run/target-2.unit-defsym\nif [ -f /run/candidate-2.o ] && [ -f /run/target-2.o ]; then\n  if arm-none-eabi-nm -a --defined-only /run/target-2.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-2.defsym; then\n    arm-none-eabi-nm -a --defined-only /run/target-2.o | awk -v entry=func_08011BEC '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-2.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-2.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-2.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08011BEC \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/target-2.o -o /run/target-2.elf >>/run/link-2.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08011BEC \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-2.o -o /run/candidate-2.elf >>/run/link-2.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+  "docker_image": "devkitpro/devkitarm:latest",
+  "docker_invocations": 1,
+  "candidate_count": 3,
+  "results": [
+    {
+      "function": "func_08011D0C",
+      "file": "asm/scenes/main_menu/asm_08011d0c.s",
+      "candidate": ".mizuchi-tmp/round-107-candidates/func_08011d0c.c",
+      "target": "asm/scenes/main_menu/asm_08011d0c.s",
+      "target_object": null,
+      "status": "target_error",
+      "score": null,
+      "stderr": "/run/target-0.s.preprocessed: Assembler messages:\n/run/target-0.s.preprocessed:1: Error: unexpected character `y' in type specifier\n/run/target-0.s.preprocessed:1: Error: bad instruction `asm(\".syntax unified \\n \\nthumb_func_start func_08011D0C \\n/* 08011D0C */ PUSH {R4, LR} \\n/* 08011D0E */ SUB SP, #8 \\n/* 08011D10 */ LDR R1, _08011D50 \\n/* 08011D12 */ LSLS R2, R0, #4 \\n/* 08011D14 */ ADDS R1, #0XC \\n/* 08011D16 */ ADDS R2, R1 \\n/* 08011D18 */ LDR R2, [R2] \\n/* 08011D1A */ LDR R1, _08011D54 \\n/* 08011D1C */ LDR R1, [R1] \\n/* 08011D1E */ LSLS R0, R0, #1 \\n/* 08011D20 */ ADDS R1, #0X3A \\n/* 08011D22 */ ADDS R1, R0 \\n/* 08011D24 */ MOVS R3, #0 \\n/* 08011D26 */ LDRSH R0, [R1, R3] \\n/* 08011D28 */ MOVS R3, #0 \\n/* 08011D2A */ LDRSH R1, [R2, R3] \\n/* 08011D2C */ MOVS R3, #2 \\n/* 08011D2E */ LDRSH R2, [R2, R3] \\n/* 08011D30 */ MOVS R3, #0X20 \\n/* 08011D32 */ RSBS R3, R3, #0 \\n/* 08011D34 */ STR R2, [SP] \\n/* 08011D36 */ MOVS R4, #0XB4 \\n/* 08011D38 */ STR R4, [SP, #4] \\n/* 08011D3A */ BL func_0800C110 \\n/* 08011D3E */ LDR R1, =func_080119EC + 1 \\n/* 08011D40 */ MOVS R2, #0 \\n/* 08011D42 */ BL run_func_after_task \\n/* 08011D46 */ ADD SP, #8 \\n/* 08011D48 */ POP {R4} \\n/* 08011D4A */ POP {R0} \\n/* 08011D4C */ BX R0 \\n \\n.balign 4, 0 \\n_08011D58: \\n/* 08011D58 */ @ literal emitted by .ltorg for '=...' \\n \\n.balign 4, 0 \\n_08011D50: \\n/* 08011D50 */ .word D_083AA294 \\n \\n.balign 4, 0 \\n_08011D54: \\n/* 08011D54 */ .word gCurrentSceneData \\n.ltorg \\n.syntax divided\")'\n",
+      "mode": "included_stub",
+      "candidate_sha256": "53e7fffa5a250d9f8077b2df653b3e8b13c95521431928660ca9fad713918977",
+      "target_sha256": "4fb5fecc746daf8cdbd03d30a136158584b5b05553b6808442acf239d718bf80",
+      "target_object_sha256": null,
+      "host_source": "src/scenes/main_menu.c",
+      "include_line": "#include \"asm/scenes/main_menu/asm_08011d0c.s\"",
+      "decomp_include_line": "#include \"../decomp/asm_08011d0c.c\"",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_08011D0C"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [],
+        "numeric_pointer_offsets": [],
+        "raw_pointer_aliases": [],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "typed_or_direct",
+          "layout_quality_ok": true,
+          "raw_access_count": 0,
+          "numeric_offset_count": 0,
+          "named_structs": [
+            "MainMenuPositionTable",
+            "MainMenuSceneSprites"
+          ],
+          "named_field_accesses": [
+            {
+              "base": "table",
+              "field": "positions"
+            },
+            {
+              "base": "scene",
+              "field": "spriteIds"
+            },
+            {
+              "base": "position",
+              "field": "x"
+            },
+            {
+              "base": "position",
+              "field": "y"
+            },
+            {
+              "base": "position",
+              "field": "y"
+            }
+          ],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": true,
+        "layout_quality_ok": true
+      }
+    },
+    {
+      "function": "func_08011CA4",
+      "file": "asm/scenes/main_menu/asm_08011ca4.s",
+      "candidate": ".mizuchi-tmp/round-107-candidates/func_08011ca4.c",
+      "target": "asm/scenes/main_menu/asm_08011ca4.s",
+      "target_object": null,
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_08011CA4"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 29,
+            "text": "sceneRef = (u32 *)&gCurrentSceneData;"
+          },
+          {
+            "line": 33,
+            "text": "sprite_set_visible(handler, *(s16 *)(sceneBase + sceneOffset), 1);"
+          },
+          {
+            "line": 40,
+            "text": "*(s16 *)(sceneBase + sceneOffset), -0x20,"
+          }
+        ],
+        "numeric_pointer_offsets": [],
+        "raw_pointer_aliases": [
+          "sceneRef"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "named_overlay_with_opaque_raw_evidence",
+          "layout_quality_ok": false,
+          "raw_access_count": 3,
+          "numeric_offset_count": 0,
+          "named_structs": [
+            "MainMenuPositionTable",
+            "MainMenuSceneSprites"
+          ],
+          "named_field_accesses": [
+            {
+              "base": "table",
+              "field": "positions"
+            },
+            {
+              "base": "position",
+              "field": "y"
+            },
+            {
+              "base": "position",
+              "field": "x"
+            },
+            {
+              "base": "position",
+              "field": "y"
+            }
+          ],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "included_stub",
+      "candidate_sha256": "ff2c0137ecfd88a8c800f85f4339e416796134d7cd9e0a8e8d8ccda8dbe0992c",
+      "target_sha256": "086a6e6e7f2424d3a6f1e40fd484f712dab65adf3cca58cd376decff33688244",
+      "target_object_sha256": null,
+      "host_source": "src/scenes/main_menu.c",
+      "include_line": "#include \"asm/scenes/main_menu/asm_08011ca4.s\"",
+      "decomp_include_line": "#include \"../decomp/asm_08011ca4.c\""
+    },
+    {
+      "function": "func_08011BEC",
+      "file": "asm/scenes/main_menu/asm_08011bec.s",
+      "candidate": ".mizuchi-tmp/round-107-candidates/func_08011bec.c",
+      "target": "asm/scenes/main_menu/asm_08011bec.s",
+      "target_object": null,
+      "status": "target_error",
+      "score": null,
+      "stderr": "/run/target-2.s.preprocessed: Assembler messages:\n/run/target-2.s.preprocessed:1: Error: unexpected character `y' in type specifier\n/run/target-2.s.preprocessed:1: Error: bad instruction `asm(\".syntax unified \\n \\nthumb_func_start func_08011BEC \\n/* 08011BEC */ PUSH {R4, R5, LR} \\n/* 08011BEE */ SUB SP, #8 \\n/* 08011BF0 */ ADDS R3, R0, #0 \\n/* 08011BF2 */ CMP R3, #8 \\n/* 08011BF4 */ BGT _08011C4C \\n/* 08011BF6 */ LDR R0, _08011C3C \\n/* 08011BF8 */ LSLS R1, R3, #4 \\n/* 08011BFA */ ADDS R0, #0XC \\n/* 08011BFC */ ADDS R0, R1, R0 \\n/* 08011BFE */ LDR R2, [R0] \\n/* 08011C00 */ LDR R0, _08011C40 \\n/* 08011C02 */ ADDS R0, #0XC \\n/* 08011C04 */ ADDS R1, R0 \\n/* 08011C06 */ LDR R4, [R1] \\n/* 08011C08 */ LDR R0, _08011C44 \\n/* 08011C0A */ LDR R0, [R0] \\n/* 08011C0C */ LSLS R1, R3, #1 \\n/* 08011C0E */ ADDS R0, #0X3A \\n/* 08011C10 */ ADDS R0, R1 \\n/* 08011C12 */ MOVS R1, #0 \\n/* 08011C14 */ LDRSH R0, [R0, R1] \\n/* 08011C16 */ MOVS R3, #0 \\n/* 08011C18 */ LDRSH R1, [R2, R3] \\n/* 08011C1A */ MOVS R5, #2 \\n/* 08011C1C */ LDRSH R2, [R2, R5] \\n/* 08011C1E */ MOVS R5, #0 \\n/* 08011C20 */ LDRSH R3, [R4, R5] \\n/* 08011C22 */ MOVS R5, #2 \\n/* 08011C24 */ LDRSH R4, [R4, R5] \\n/* 08011C26 */ STR R4, [SP] \\n/* 08011C28 */ MOVS R4, #0XB4 \\n/* 08011C2A */ STR R4, [SP, #4] \\n/* 08011C2C */ BL func_0800C110 \\n/* 08011C30 */ LDR R1, _08011C48 \\n/* 08011C32 */ MOVS R2, #0 \\n/* 08011C34 */ BL run_func_after_task \\n/* 08011C38 */ B _08011C8A \\n \\n.balign 4, 0 \\n_08011C3C: \\n/* 08011C3C */ .word D_083AA0C4 \\n \\n.balign 4, 0 \\n_08011C40: \\n/* 08011C40 */ .word D_083AA294 \\n \\n.balign 4, 0 \\n_08011C44: \\n/* 08011C44 */ .word gCurrentSceneData \\n \\n.balign 4, 0 \\n_08011C48: \\n/* 08011C48 */ .word func_080119EC + 1 \\n_08011C4C: \\n/* 08011C4C */ LDR R0, _08011C94 \\n/* 08011C4E */ LDR R4, [R0, #0XC] \\n/* 08011C50 */ LDR R0, _08011C98 \\n/* 08011C52 */ LSLS R1, R3, #4 \\n/* 08011C54 */ ADDS R0, #0XC \\n/* 08011C56 */ ADDS R1, R0 \\n/* 08011C58 */ LDR R2, [R1] \\n/* 08011C5A */ LDR R0, _08011C9C \\n/* 08011C5C */ LDR R0, [R0] \\n/* 08011C5E */ LSLS R1, R3, #1 \\n/* 08011C60 */ ADDS R0, #0X3A \\n/* 08011C62 */ ADDS R0, R1 \\n/* 08011C64 */ MOVS R1, #0 \\n/* 08011C66 */ LDRSH R0, [R0, \n",
+      "mode": "included_stub",
+      "candidate_sha256": "ca648c0f7ca4f0787e8200928b09468661b0a2695e23dc2ef4c4c66534ee09cf",
+      "target_sha256": "a4478defd4702e8f194c07d6aeb24bde75a0670323bffd8f3db2043444b37baf",
+      "target_object_sha256": null,
+      "host_source": "src/scenes/main_menu.c",
+      "include_line": "#include \"asm/scenes/main_menu/asm_08011bec.s\"",
+      "decomp_include_line": "#include \"../decomp/asm_08011bec.c\"",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_08011BEC"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [],
+        "numeric_pointer_offsets": [],
+        "raw_pointer_aliases": [],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "typed_or_direct",
+          "layout_quality_ok": true,
+          "raw_access_count": 0,
+          "numeric_offset_count": 0,
+          "named_structs": [
+            "MainMenuPositionTable",
+            "MainMenuSceneSprites"
+          ],
+          "named_field_accesses": [
+            {
+              "base": "scene",
+              "field": "spriteIds"
+            },
+            {
+              "base": "positionA",
+              "field": "x"
+            },
+            {
+              "base": "positionA",
+              "field": "y"
+            },
+            {
+              "base": "positionB",
+              "field": "x"
+            },
+            {
+              "base": "positionB",
+              "field": "y"
+            }
+          ],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": true,
+        "layout_quality_ok": true
+      }
+    }
+  ],
+  "ok": false,
+  "manifest": ".mizuchi-tmp/round-107-raw-manifest.json",
+  "manifest_sha256": "5c5ca6ae688098b6781ec444d8a99c23229493c65e57a897ca2277a0207ce06d",
+  "candidate_identities": [
+    {
+      "mode": "included_stub",
+      "candidate": ".mizuchi-tmp/round-107-candidates/func_08011d0c.c",
+      "candidate_sha256": "53e7fffa5a250d9f8077b2df653b3e8b13c95521431928660ca9fad713918977",
+      "target": "asm/scenes/main_menu/asm_08011d0c.s",
+      "target_sha256": "4fb5fecc746daf8cdbd03d30a136158584b5b05553b6808442acf239d718bf80",
+      "target_object": null,
+      "target_object_sha256": null,
+      "host_source": "src/scenes/main_menu.c",
+      "include_line": "#include \"asm/scenes/main_menu/asm_08011d0c.s\"",
+      "decomp_include_line": "#include \"../decomp/asm_08011d0c.c\""
+    },
+    {
+      "mode": "included_stub",
+      "candidate": ".mizuchi-tmp/round-107-candidates/func_08011ca4.c",
+      "candidate_sha256": "ff2c0137ecfd88a8c800f85f4339e416796134d7cd9e0a8e8d8ccda8dbe0992c",
+      "target": "asm/scenes/main_menu/asm_08011ca4.s",
+      "target_sha256": "086a6e6e7f2424d3a6f1e40fd484f712dab65adf3cca58cd376decff33688244",
+      "target_object": null,
+      "target_object_sha256": null,
+      "host_source": "src/scenes/main_menu.c",
+      "include_line": "#include \"asm/scenes/main_menu/asm_08011ca4.s\"",
+      "decomp_include_line": "#include \"../decomp/asm_08011ca4.c\""
+    },
+    {
+      "mode": "included_stub",
+      "candidate": ".mizuchi-tmp/round-107-candidates/func_08011bec.c",
+      "candidate_sha256": "ca648c0f7ca4f0787e8200928b09468661b0a2695e23dc2ef4c4c66534ee09cf",
+      "target": "asm/scenes/main_menu/asm_08011bec.s",
+      "target_sha256": "a4478defd4702e8f194c07d6aeb24bde75a0670323bffd8f3db2043444b37baf",
+      "target_object": null,
+      "target_object_sha256": null,
+      "host_source": "src/scenes/main_menu.c",
+      "include_line": "#include \"asm/scenes/main_menu/asm_08011bec.s\"",
+      "decomp_include_line": "#include \"../decomp/asm_08011bec.c\""
+    }
+  ]
+}

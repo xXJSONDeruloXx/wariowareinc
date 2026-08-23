@@ -11,12 +11,12 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 254` — included-stub ordinary-C main-menu scene-tick helper (`func_08011DFC`) admitted via the BL-displacement boundary proof (byte-equal 120-byte defsym-equivalence link) under the full host-TU Docker gate
-- `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.6856203%** matched code (**76382 / 993830**)
+- Verified working tree: `batch 255` — three included-stub ordinary-C main-menu helpers (`func_08011D0C`, `func_08012AE8`, and `func_08014CF8`) admitted via raw-object/host-TU byte proof under the full Docker gate
+- `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.686549%** matched code (**76392 / 993840**)
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1442 decompiled function files** = **1225 standalone_tu** + **217 included_stub**
+- `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Latest accepted maintenance pass: **32 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report metrics are unchanged because these files were already C-linked.
+- Latest accepted maintenance pass: **35 legacy included-stub files** now use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; report function/unit metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files in `src/decomp`: reduced by `func_080118E0` (batch 248)
 - Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
