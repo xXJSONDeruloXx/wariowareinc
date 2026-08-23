@@ -1,33 +1,35 @@
 #if __INCLUDE_LEVEL__ > 0
 #include "global.h"
 #include "src/scenes/main_menu.h"
+#include "scenes.h"
 
 extern void scene_set_current_thread(u32);
 extern void func_08013AF4(void);
 extern void func_08013A94(void);
 extern void func_08013B94(void);
 extern void func_08013C60(void);
-extern void *gCurrentSceneData;
+
+struct Func080133ECScene {
+    u8 padding[0xDD];
+    u8 fieldDD;
+};
 
 void func_080133EC(void) {
-    register u8 *ptr asm("r1");
-    register u8 *data asm("r1");
-    register u32 value asm("r2");
-    register u32 mask asm("r0");
+    struct Func080133ECScene *scene;
+    u32 value;
+    u32 mask;
 
     scene_set_current_thread(0);
     func_08013AF4();
     func_08013A94();
     func_08013B94();
-    ptr = (u8 *)&D_03006518;
-    ptr[1] = 3;
+    D_03006518.unk1 = 3;
     func_08013C60();
-    data = gCurrentSceneData;
-    data += 0xDD;
-    value = *data;
+    scene = (struct Func080133ECScene *)gCurrentSceneData;
+    value = scene->fieldDD;
     mask = 2;
     mask = -mask;
     mask &= value;
-    *data = mask;
+    scene->fieldDD = mask;
 }
 #endif

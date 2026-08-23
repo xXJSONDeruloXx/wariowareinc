@@ -11,13 +11,13 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 271` — three additional ordinary-C included-stub main-menu wrappers (`func_080119B8`, `func_08013428`, and `func_080143BC`) now emit the same bytes without compiler register pins
+- Verified working tree: `batch 272` — two additional ordinary-C included-stub main-menu/sprite wrappers (`func_080133EC` and `func_080136A4`) now emit the same bytes without compiler register pins
 - `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.686549%** matched code (**76392 / 993840**)
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 non-C units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–271 additionally removed one hundred two compiler register pins across forty-seven wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
-- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **150 files / 670 pins**
+- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–272 additionally removed one hundred ten compiler register pins across forty-nine wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
+- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **148 files / 662 pins**
 - Remaining non-volatile empty compiler barriers: **11 files / 11 barriers**; the full strict audit also reports **35 files / 39 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **220** matches

@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 272 — two exact included-stub main-menu/sprite wrappers (2026-08-23)
+- Rewrote `func_080133EC` and `func_080136A4` with named scene overlays, typed `D_03006518` fields, ordinary mask locals, and the existing typed sprite interface. Eight compiler register pins were removed without barriers, volatile accesses, or instruction asm.
+- The three-entry host-object screen selected both bodies: `080133EC` and `080136A4` matched through their epilogues, with only candidate BL relocations and pool/symbol-boundary metadata in the isolated near-miss scores. `func_0801197C` remained evidence-only because its ordinary-local candidate changed the prologue and mask register homes.
+- The clean Docker ROM/report gate, local `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because both were already C-linked. Pin residue drops **150 → 148 files / 670 → 662 pins**; full strict barrier residue remains **35 files / 39 findings**. Receipts: `.decomp-runs/round-137-isolation.json`, `.decomp-runs/round-137-candidate-source-audit.json`, `.decomp-runs/round-137-accepted-source-audit.json`, `.decomp-runs/round-137-full-source-audit.json`, `.decomp-runs/round-137-verify.json`, and `.decomp-runs/round-137-accepted-manifest.json`.
+
 ## Batch 271 — three exact included-stub main-menu wrappers (2026-08-23)
 - Rewrote `func_080119B8`, `func_08013428`, and `func_080143BC` with named scene overlays, typed `D_03006518.unk1` stores, ordinary mask locals, and an explicit scene-base lifetime. Eleven compiler register pins were removed without barriers, volatile accesses, or instruction asm.
 - The five-entry host-object screen selected the two direct sibling spellings and `func_080143BC` v2. All three instruction bodies matched through their epilogues; candidate-only BL relocations and target pool/symbol-boundary tails explain the isolated near misses. The v1 `080143BC` spelling had a real byte-load home mismatch; passing the byte expression directly to `func_0801429C` fixed it. The strict accepted-source audit passed, and the integrated host-TU Docker gate was the acceptance authority.

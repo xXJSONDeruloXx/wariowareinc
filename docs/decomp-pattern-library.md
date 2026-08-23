@@ -697,3 +697,9 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Typed mode store plus delayed mask overlay**: `func_080119B8` and `func_08013428` use `D_03006518.unk1 = 4/0`, make the scene overlay assignment after their setup calls, then apply the ordinary `value`/`mask` sequence at `+0xDD`. This preserves the literal-pool byte store and post-call low-register mask code without pins.
 - **Byte argument must stay in R0**: for `func_080143BC`, pass `data[0xFD]` directly to `func_0801429C` rather than assigning it to a widened local. The direct expression keeps `LDRB R0` in the call ABI; a `u32` temporary introduces a real `R2` load plus `MOV R0,R2`.
 - **Host-boundary recurrence**: all three are included stubs in `main_menu.c`; candidate-only BL relocation and pool-tail metadata is not a body mismatch, but the integrated host-TU ROM gate remains mandatory.
+
+### Round 137 additions: scene-init and typed sprite-call siblings
+
+- **Scene-init mask sibling**: `func_080133EC` follows the established typed `D_03006518.unk1` store plus delayed named `gCurrentSceneData + 0xDD` overlay. Keeping the `value`/`mask = -mask` locals in that order reproduces the low-register mask sequence without pins.
+- **Typed sprite-call shape**: `func_080136A4` can use `sprite_set_anim_cel(gSpriteHandler, gCurrentSceneSpritePool[6], 0)` directly when the project interface is visible. The indexed pool expression supplies the target signed-halfword load and call ABI without a function-pointer typedef or compiler shaping.
+- **Honest near-miss boundary**: `func_0801197C` is not equivalent to the other scene siblings under ordinary locals; its candidate changes the prologue and mask register homes. Preserve it as near-miss evidence until a source shape reproduces those homes naturally.
