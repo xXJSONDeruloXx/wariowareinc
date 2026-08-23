@@ -2,15 +2,22 @@
 #include "types.h"
 #include "graphics.h"
 
+struct Func080195E4SceneVariable {
+    u8 padding[0x66];
+    u16 value66;
+};
+
+struct Func080195E4Graphics {
+    u8 padding[0x4C];
+    u16 value4C;
+};
+
 void func_080195E4(void) {
-    u8 *p;
-    u8 *graphics;
-    register u32 zero asm("r1");
-    p = (u8 *)gCurrentSceneVariable;
-    p += 0x66;
-    zero = 0;
-    *(u16 *)p = zero;
-    graphics = (u8 *)&gGraphicsBuffer;
-    graphics += 0x4C;
-    *(u16 *)graphics = zero;
+    struct Func080195E4SceneVariable *scene;
+    struct Func080195E4Graphics *graphics;
+
+    scene = (struct Func080195E4SceneVariable *)gCurrentSceneVariable;
+    scene->value66 = 0;
+    graphics = (struct Func080195E4Graphics *)&gGraphicsBuffer;
+    graphics->value4C = 0;
 }
