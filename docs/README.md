@@ -11,13 +11,13 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 280` — three additional ordinary-C graphics/table/scene helpers (`func_0801F1A0`, `func_080F0E14`, and `func_0801C2D4`) now emit the same bytes without compiler register pins
+- Verified working tree: `batch 281` — three additional ordinary-C threshold/sprite/task helpers (`func_08089648`, `func_0800E800`, and `func_08005834`) now emit the same bytes without compiler register pins
 - `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.686549%** matched code (**76392 / 993840**)
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 non-C units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–280 additionally removed one hundred eighty-eight compiler register pins across seventy-four wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
-- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **123 files / 584 pins**
+- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–281 additionally removed two hundred one compiler register pins across seventy-seven wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
+- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **120 files / 571 pins**
 - Remaining non-volatile empty compiler barriers: **12 files / 12 barriers**; the full strict audit also reports **32 files / 36 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **220** matches
@@ -27,17 +27,23 @@ If an agent resumes cold, read these first:
 - 80% target at the current function total: **4748 / 5934**
 - Remaining gap to 80%: **3044 matched functions**
 
-### Batch 279 — three exact ordinary-C scene/global helpers (2026-08-23)
-- Rewrote `func_0806F0A0` and `func_0809E804` with named current-scene/data overlays, and `func_080F2894` with typed byte/halfword global arrays. Nine compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
-- The three selected bodies were instruction-identical in isolation; the only standalone differences were target pool tails or literal-pool width. The `func_0800C9C0` candidate had a real register/order mismatch and remained evidence-only. The integrated clean Docker ROM gate and verifier accepted all three replacements.
+### Batch 281 — three exact ordinary-C threshold/sprite/task helpers (2026-08-23)
+- Rewrote `func_08089648` with named argument/scene overlays and separate result/difference locals, `func_0800E800` with a named scene halfword overlay and typed sprite-coordinate normalization, and `func_08005834` with a named 0x1C-byte task record and ordinary scan locals. Thirteen compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
+- The task-table sibling screen found an exact spelling for `func_08005834`; the selected `func_08089648` and `func_0800E800` bodies were instruction-identical, with only target function-symbol/literal-pool tails absent from the candidate-only isolated symbols. The strict accepted-source audit and integrated clean Docker ROM gate accepted all three.
 - Clean Docker build, report regeneration, `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
-- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **129 → 126 files / 604 → 595 pins**; full strict barrier residue remains **33 files / 37 findings**. Evidence: `.decomp-runs/round-145-isolation.json`, `.decomp-runs/round-145-accepted-source-audit.json`, `.decomp-runs/round-145-full-source-audit.json`, `.decomp-runs/round-145-verify.json`, and `.decomp-runs/round-145-accepted-manifest.json`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **123 → 120 files / 584 → 571 pins**; full strict barrier residue remains **32 files / 36 findings**. Evidence: `.decomp-runs/round-147-isolation-v11.json`, `.decomp-runs/round-147-accepted-source-audit.json`, `.decomp-runs/round-147-full-source-audit.json`, `.decomp-runs/round-147-verify.json`, and `.decomp-runs/round-147-accepted-manifest.json`.
 
 ### Batch 280 — three exact ordinary-C graphics/table/scene helpers (2026-08-23)
 - Rewrote `func_0801F1A0` with a named graphics overlay, `func_080F0E14` with ordinary table/base locals, and `func_0801C2D4` with a named current-scene overlay. Eleven compiler register pins and one empty compiler barrier were removed without instruction asm or volatile codegen shims.
 - All three selected bodies were instruction-identical in isolation; the only differences were literal-pool width or target trailing metadata. The strict-clean `func_0800CA5C` overlay remained evidence-only because agbcc folded the required `MOV #0x21; NEG` into a real `SUB #0x31` mismatch.
 - Clean Docker build, report regeneration, `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **126 → 123 files / 595 → 584 pins**; full strict barrier residue drops **33 → 32 files / 37 → 36 findings**. Evidence: `.decomp-runs/round-146-isolation-v2.json`, `.decomp-runs/round-146-candidate-source-audit-all-v2.json`, `.decomp-runs/round-146-accepted-source-audit.json`, `.decomp-runs/round-146-full-source-audit.json`, `.decomp-runs/round-146-verify.json`, and `.decomp-runs/round-146-accepted-manifest.json`.
+
+### Batch 279 — three exact ordinary-C scene/global helpers (2026-08-23)
+- Rewrote `func_0806F0A0` and `func_0809E804` with named current-scene/data overlays, and `func_080F2894` with typed byte/halfword global arrays. Nine compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
+- The three selected bodies were instruction-identical in isolation; the only standalone differences were target pool tails or literal-pool width. The `func_0800C9C0` candidate had a real register/order mismatch and remained evidence-only. The integrated clean Docker ROM gate and verifier accepted all three replacements.
+- Clean Docker build, report regeneration, `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **129 → 126 files / 604 → 595 pins**; full strict barrier residue remains **33 files / 37 findings**. Evidence: `.decomp-runs/round-145-isolation.json`, `.decomp-runs/round-145-accepted-source-audit.json`, `.decomp-runs/round-145-full-source-audit.json`, `.decomp-runs/round-145-verify.json`, and `.decomp-runs/round-145-accepted-manifest.json`.
 
 ## Automated matching loop
 

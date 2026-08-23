@@ -4,39 +4,43 @@
 extern u8 D_030006A0;
 extern void task_stop(void *, s32);
 
-void func_08005834(s32 arg0) {
-    register u32 r0 asm("r0") = (u32)arg0;
-    register u32 r1 asm("r1");
-    register u32 r2 asm("r2");
-    register u32 r3 asm("r3");
+typedef struct {
+    u8 flags;
+    u8 padding1[7];
+    s32 taskId;
+    u8 paddingC[0x10];
+} Func08005834Task;
 
-    r3 = r0;
-    if ((s32)r3 < 0) {
-        goto done;
-    }
-    r1 = 0;
-    r2 = (u32)&D_030006A0;
+void func_08005834(s32 arg0) {
+    Func08005834Task *task;
+    u32 index;
+    s32 compareId;
+    u32 value;
+
+    compareId = arg0;
+    if (compareId < 0) goto done;
+    index = 0;
+    task = (Func08005834Task *)&D_030006A0;
     goto scan;
 next:
-    r1 += 1;
-    r2 += 0x1C;
-    if (r1 > 0x2F) {
+    index += 1;
+    task++;
+    if (index > 0x2F) {
         goto done;
     }
 scan:
-    r0 = *(u32 *)(r2 + 8);
-    if (r0 != r3) {
+    if (task->taskId != compareId) {
         goto next;
     }
-    if (r1 > 0x2F) {
+    if (index > 0x2F) {
         goto done;
     }
-    r1 = *(u8 *)r2;
-    r0 = 1;
-    r0 &= r1;
-    if (r0 == 0) {
+    index = task->flags;
+    value = 1;
+    value &= index;
+    if (value == 0) {
         goto done;
     }
-    task_stop((void *)r2, 0);
+    task_stop(task, 0);
 done:;
 }

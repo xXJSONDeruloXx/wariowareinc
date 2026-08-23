@@ -1,18 +1,29 @@
 #include "global.h"
 
-s32 func_08089648(void *arg0, u32 arg1) {
-    register u32 r0 asm("r0") = (u32)arg0;
-    register u32 r1 asm("r1") = arg1;
-    register u32 r2 asm("r2");
-    register u32 r3 asm("r3") = 0;
+typedef struct {
+    u8 padding38[0x38];
+    u32 field38;
+} Func08089648Arg;
 
-    r2 = *(u32 *)(r0 + 0x38);
-    r0 = (u32)&gCurrentSceneVariable;
-    r0 = *(u32 *)r0;
-    r0 = *(u32 *)(r0 + 0x3C);
-    r0 -= r2;
-    if (r0 < r1) {
-        r3 = 1;
+typedef struct {
+    u8 padding3C[0x3C];
+    u32 field3C;
+} Func08089648Scene;
+
+s32 func_08089648(void *arg0, u32 arg1) {
+    Func08089648Arg *arg;
+    Func08089648Scene *scene;
+    u32 value;
+    u32 difference;
+    s32 result;
+
+    result = 0;
+    arg = (Func08089648Arg *)arg0;
+    value = arg->field38;
+    scene = (Func08089648Scene *)gCurrentSceneVariable;
+    difference = scene->field3C - value;
+    if (difference < arg1) {
+        result = 1;
     }
-    return r3;
+    return result;
 }
