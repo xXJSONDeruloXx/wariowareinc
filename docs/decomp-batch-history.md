@@ -18,6 +18,12 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 - The strict three-entry isolation screen was **3 exact / 0 rejected**. The clean Docker ROM/report gate and `decomp_cycle.py verify` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Source residue is now **183 pin-bearing files / 749 pins** and **11 empty-barrier files / 11 barriers**. Receipts: `.decomp-runs/round-123-isolation.json` and `.decomp-runs/round-123-verify.json`.
 
+## Batch 261 — three exact ordinary-C no-pin wrappers (2026-08-23)
+- Rewrote `func_08003998` with an ordinary cursor local and sequential post-increment byte stores, `func_0801E44C` with ordinary data-base and sprite-handler locals, and `func_080F1FB4` with ordinary arithmetic temporaries. Six compiler register pins were removed while the target bytes stayed exact.
+- The thirteen-entry screen found six exact candidates, one policy-clean near miss, and six strict-policy rejections. The final three-entry isolation screen was **3 exact / 0 rejected** under the strict source audit.
+- The clean Docker ROM/report gate and `decomp_cycle.py verify` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Source residue is now **180 pin-bearing files / 743 pins** and **11 empty-barrier files / 11 barriers**. Receipts: `.decomp-runs/round-124-isolation.json`, `.decomp-runs/round-124-accepted-isolation.json`, and `.decomp-runs/round-124-verify.json`.
+
 ## Batch 252 — strict included-stub beatscript scene-thread setter (2026-08-21)
 - Converted `scene_set_current_thread` to guarded ordinary C using existing named members of `gBeatscriptScene` (`currentThread:3` bitfield store, `localVariables[threadId]`, `threads[threadId].sprites`); matched on the first real-C spelling.
 - Section audit: all instruction bytes identical; pointer-literal pools at identical offsets differ only as relocation placeholders vs addresses baked from the original ROM, which `undefined_syms.ld` resolves identically. Full Docker gate passed; ROM SHA-1 unchanged. Decomp files **1439 → 1440** (**1225 standalone_tu / 215 included_stub**); linked metrics unchanged.

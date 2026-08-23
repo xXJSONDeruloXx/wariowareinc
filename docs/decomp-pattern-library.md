@@ -630,3 +630,10 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 
 - **Mask/RMW register shaping**: `func_0801AF18` and `func_0801BEA8` match when a named `+0x18` scene field is loaded into `value`, `mask` is initialized to `0x3D`, negated and ANDed, then ORed with the sibling-specific constant before the store. `func_0801B3E4` uses the same spelling at `+0xF4` with mask `2` and no OR step.
 - **Overlay quality matters**: the first raw `u8 *data` spellings were correctly rejected because the alias was used at two numeric offsets. A small named overlay made the layout explicit and preserved the exact target code without relaxing the strict source gate.
+
+### Round 124 additions: serializer, sprite-wrapper, and clamp cleanup
+
+- **Little-endian byte serializer**: for `func_08003998`, load `*cursor` into an ordinary `u8 *p`, perform four `*p++ = value >> shift` stores, then write `p` back to `*cursor`. The pointer's live range naturally selects the target cursor register and the compiler supplies the shifted byte temporary without a pin.
+- **Global-load wrapper order**: `func_0801E44C` keeps the literal-pool data base and `gSpriteHandler` in separate ordinary locals before the signed-halfword read and `sprite_set_visible` call. The declaration/initialization order preserves the target's `R1` data base and `R0` handler homes without compiler metadata.
+- **Clamp branch layout**: the existing `if (temp <= 0x3F) return 0x7F;` spelling for `func_080F1FB4` remains exact when `value` and `temp` are ordinary `u32` locals; using a narrow `u8 temp` changes the arithmetic stream and is a near miss.
+- **Cleanup screening boundary**: the same screen correctly rejected raw multi-offset pointer aliases for `func_080029D0` and offset-heavy allocation candidates for `func_08007FC0`; exact code generation alone is not enough when the candidate fails the strict source-quality gate.
