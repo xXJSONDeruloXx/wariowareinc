@@ -1,17 +1,19 @@
 #include "global.h"
-#include "types.h"
+
+struct Func08062488Scene {
+    u8 padding[0xBD4];
+    u8 valueBD4;
+};
 
 void func_08062488(void) {
-    register u32 r0 asm("r0") = (u32)&gCurrentSceneVariable;
-    register u32 r1 asm("r1");
-    register u32 r2 asm("r2");
+    struct Func08062488Scene *scene;
+    u32 value;
+    u32 mask;
 
-    r1 = *(u32 *)r0;
-    r0 = 0xBD4;
-    r1 += r0;
-    r2 = *(u8 *)r1;
-    r0 = 2;
-    r0 = -r0;
-    r0 &= r2;
-    *(u8 *)r1 = r0;
+    scene = (struct Func08062488Scene *)gCurrentSceneVariable;
+    value = scene->valueBD4;
+    mask = 2;
+    mask = -mask;
+    mask &= value;
+    scene->valueBD4 = mask;
 }

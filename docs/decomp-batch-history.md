@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 277 — three exact ordinary-C scene/table helpers (2026-08-23)
+- Rewrote `func_080F0DFC` with ordinary mapped-table base/offset/mask locals, `func_08062488` with a named current-scene field overlay, and `func_080526D0` with named current-scene halfword/word fields. Nine compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
+- The selected candidates were body-identical to their targets; standalone isolation reported only literal-pool width or function-symbol pool-boundary metadata. The integrated clean Docker ROM gate and verifier both passed, confirming those differences do not alter the linked ROM. Real register-home near misses in `080F1B5C`, `080EC308`, and `080DF440` remain evidence-only.
+- Clean Docker build, report regeneration, `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **136 → 133 files / 627 → 618 pins**; full strict barrier residue remains **33 files / 37 findings**. Receipts: `.decomp-runs/round-143-isolation.json`, `.decomp-runs/round-143-v2-isolation.json`, `.decomp-runs/round-143-accepted-source-audit.json`, `.decomp-runs/round-143-full-source-audit.json`, `.decomp-runs/round-143-verify.json`, and `.decomp-runs/round-143-accepted-manifest.json`.
+
 ## Batch 276 — three exact ordinary-C low-level helpers (2026-08-23)
 - Rewrote `func_080029D0` with a typed byte/halfword union, `func_080039D0` with a named four-byte little-endian record, and `func_080F2C68` with ordinary scan-loop locals. Eight compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
 - The strict screen classified the three accepted candidates as exact. Scene/graphics probes that required a real callee-saved base or changed register homes remained evidence-only, and raw scalar-pointer layouts were policy-rejected. The accepted-source audit passed and the clean Docker ROM gate preserved the baseline ROM.

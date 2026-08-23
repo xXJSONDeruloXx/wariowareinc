@@ -3,14 +3,18 @@
 extern u8 *D_030068E8;
 
 void func_080F0DFC(u32 arg0) {
-    register u32 base asm("r1") = (u32)D_030068E8;
-    register u32 offset asm("r0") = arg0;
-    register u32 value asm("r2");
+    u8 *base;
+    u32 offset;
+    u32 value;
+    u32 mask;
+
+    base = D_030068E8;
+    offset = arg0;
     offset <<= 5;
-    offset += base;
+    offset += (u32)base;
     value = *(u8 *)offset;
-    base = 2;
-    base = -base;
-    base &= value;
-    *(u8 *)offset = base;
+    mask = 2;
+    mask = -mask;
+    mask &= value;
+    *(u8 *)offset = mask;
 }
