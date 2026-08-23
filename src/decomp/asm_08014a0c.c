@@ -5,18 +5,23 @@
 extern void scene_set_current_thread(u32);
 extern void func_08014810(u32);
 
+struct Func08014A0CScene {
+    u8 padding[0xDD];
+    u8 fieldDD;
+};
+
 void func_08014A0C(void) {
-    u8 *ptr;
-    u8 val;
-    register u32 m asm("r0");
+    struct Func08014A0CScene *scene;
+    u32 value;
+    u32 mask;
+
     scene_set_current_thread(0);
     func_08014810(1);
-    ptr = (u8 *)gCurrentSceneData;
-    ptr = ptr + 0xDD;
-    val = ptr[0];
-    m = 2;
-    m = -m;
-    m = val & m;
-    ptr[0] = m;
+    scene = (struct Func08014A0CScene *)gCurrentSceneData;
+    value = scene->fieldDD;
+    mask = 2;
+    mask = -mask;
+    mask &= value;
+    scene->fieldDD = mask;
 }
 #endif

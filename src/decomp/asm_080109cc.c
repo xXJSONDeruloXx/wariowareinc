@@ -3,17 +3,22 @@
 #include "scenes.h"
 #include "src/beatscript.h"
 
+struct Func080109CCScene {
+    u8 padding[0xDF];
+    u8 fieldDF;
+};
+
 void func_080109CC(void) {
-    u8 *ptr;
-    u8 val;
-    register u32 m asm("r0");
+    struct Func080109CCScene *scene;
+    u32 value;
+    u32 mask;
+
     set_pause_beatscript_scene(0);
-    ptr = (u8 *)gCurrentSceneData;
-    ptr = ptr + 0xDF;
-    val = ptr[0];
-    m = 3;
-    m = -m;
-    m = val & m;
-    ptr[0] = m;
+    scene = (struct Func080109CCScene *)gCurrentSceneData;
+    value = scene->fieldDF;
+    mask = 3;
+    mask = -mask;
+    mask &= value;
+    scene->fieldDF = mask;
 }
 #endif

@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 268 — three exact included-stub mask wrappers (2026-08-23)
+- Rewrote `func_080109CC`, `func_080144BC`, and `func_08014A0C` with small named scene overlays and ordinary `value`/`mask` locals around the existing scene/thread calls. Three compiler register pins were removed without barriers, volatile accesses, or instruction asm.
+- The three-entry host-object screen produced instruction-identical ordinary-C bodies; isolated near-miss scores were only the known external-call and symbol/pool-boundary artifact. `func_080109CC` used an explicit function extern in its standalone candidate to avoid an unrelated broad-header warning. The strict accepted-source audit passed, and the integrated host-TU Docker gate was the acceptance authority.
+- The clean Docker ROM/report gate, local `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **162 → 159 files / 713 → 710 pins**; full strict barrier residue remains **35 files / 39 findings**. Receipts: `.decomp-runs/round-133-isolation.json`, `.decomp-runs/round-133-candidate-source-audit.json`, `.decomp-runs/round-133-accepted-source-audit.json`, `.decomp-runs/round-133-full-source-audit.json`, `.decomp-runs/round-133-verify.json`, and `.decomp-runs/round-133-accepted-manifest.json`.
+
 ## Batch 267 — three exact included-stub mask setters (2026-08-23)
 - Rewrote `func_0800A3BC`, `func_080121B8`, and `func_08013114` with small named scene-data overlays and ordinary `value`/`mask` locals. Three compiler register pins were removed without barriers, volatile accesses, or instruction asm.
 - The six-entry host-object screen produced instruction-identical ordinary-C bodies for the selected three; isolated near-miss scores were only the known host symbol/pool-boundary artifact. The strict candidate audit passed, and the integrated host-TU Docker gate was the acceptance authority.

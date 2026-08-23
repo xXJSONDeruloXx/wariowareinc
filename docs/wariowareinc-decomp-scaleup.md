@@ -5,21 +5,27 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 267` — three additional ordinary-C included-stub mask setters (`func_0800A3BC`, `func_080121B8`, and `func_08013114`) now emit the same bytes without compiler register pins
+- Verified working tree: `batch 268` — three additional ordinary-C included-stub mask wrappers (`func_080109CC`, `func_080144BC`, and `func_08014A0C`) now emit the same bytes without compiler register pins
 - `build/report.json`: **1704 / 5934 matched functions** = **28.715876%**
 - `matched_code`: **76392 / 993840** = **7.686549%**
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 asm-only units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
-- Remaining compiler-register-pin files: **162 / 713 pins**; remaining non-volatile empty compiler-barrier files: **11 / 11 barriers**. The full strict audit reports **35 files / 39 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
-- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files, plus fifty-nine compiler register pins removed across batches 256–267; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
+- Remaining compiler-register-pin files: **159 / 710 pins**; remaining non-volatile empty compiler-barrier files: **11 / 11 barriers**. The full strict audit reports **35 files / 39 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
+- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files, plus sixty-two compiler register pins removed across batches 256–268; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, scalar-pointer aliases are counted across later lines, and named overlays are preferred for multi-field records.
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1484 / 5934**, now exceeded by **220** matched functions.
 - 26% milestone: **1543 / 5934**; current progress is **1704**, exceeding it by **161** matches.
 - Active 27% working goal: **1603 / 5934**; current progress exceeds it by **101** matches.
 - Next 30% milestone: **1781 / 5934**; **77** additional matched functions are needed.
+
+### Batch 268 — three exact included-stub mask wrappers (2026-08-23)
+- Rewrote `func_080109CC`, `func_080144BC`, and `func_08014A0C` with small named scene overlays and ordinary `value`/`mask` locals around the existing scene/thread calls. Three compiler register pins were removed without barriers, volatile accesses, or instruction asm.
+- The three-entry host-object screen produced instruction-identical ordinary-C bodies; isolated near-miss scores were only the known external-call and symbol/pool-boundary artifact. `func_080109CC` used an explicit function extern in its standalone candidate to avoid an unrelated broad-header warning. The strict accepted-source audit passed, and the integrated host-TU Docker gate was the acceptance authority.
+- The clean Docker ROM/report gate, local `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops from **162 to 159 files / 713 to 710 pins**; full strict barrier residue remains **35 files / 39 findings**. Evidence: `.decomp-runs/round-133-isolation.json`, `.decomp-runs/round-133-candidate-source-audit.json`, `.decomp-runs/round-133-accepted-source-audit.json`, `.decomp-runs/round-133-full-source-audit.json`, `.decomp-runs/round-133-verify.json`, and `.decomp-runs/round-133-accepted-manifest.json`.
 
 ### Batch 267 — three exact included-stub mask setters (2026-08-23)
 - Rewrote `func_0800A3BC`, `func_080121B8`, and `func_08013114` with small named scene-data overlays and ordinary `value`/`mask` locals. Three compiler register pins were removed without barriers, volatile accesses, or instruction asm.

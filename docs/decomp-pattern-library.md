@@ -673,3 +673,9 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 
 - **One-pin scene byte mask setters**: `func_0800A3BC`, `func_080121B8`, and `func_08013114` match with a small named overlay for the target byte, then ordinary `value` and `mask` locals in the order `value = field; mask = constant; mask = -mask; mask &= value; field = mask;`. This preserves the target's low-register `LDRB; MOVS; RSBS; ANDS; STRB` roles without a hard register declaration.
 - **Host-object screen rule**: these already-included stubs show the recurring candidate-only pool/symbol-boundary near miss. Compare the raw instruction body to the built host object and require the integrated host-TU ROM gate; do not treat the isolated percentage as a real mismatch when the body is identical.
+
+### Round 133 additions: adjacent main-menu mask wrappers
+
+- **Post-call scene mask setter**: `func_080109CC`, `func_080144BC`, and `func_08014A0C` use a small named scene overlay for the target byte, then ordinary `value` and `mask` locals in the order `value = field; mask = constant; mask = -mask; mask &= value; field = mask;`. This preserves the target's `LDRB; MOVS; RSBS; ANDS; STRB` sequence across the existing scene/thread call without compiler register homes.
+- **Candidate header hygiene**: when a broad project header introduces an unrelated standalone warning, an explicit function extern is sufficient for the isolated candidate if it preserves the same target interface; do not add compiler shaping to silence the warning.
+- **External-call host boundary**: candidate-only links can show BL relocation and literal-pool/symbol-boundary near misses even when the function instruction body matches the host object. Keep the receipt and use the integrated host-TU ROM gate; a real instruction mismatch still fails acceptance.
