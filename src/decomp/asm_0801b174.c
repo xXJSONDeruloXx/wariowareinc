@@ -1,23 +1,26 @@
 #include "global.h"
 #include "types.h"
 
-void func_0801B174(u16 arg0) {
-    register u32 r0 asm("r0") = arg0;
-    register u32 r1 asm("r1");
-    register u32 r2 asm("r2");
+struct Func0801B174Scene {
+    u8 pad0[0x19];
+    u8 flags;
+    u8 pad1[0xD4];
+    u16 fieldEE;
+    u16 fieldF0;
+};
 
-    r0 <<= 16;
-    r0 >>= 16;
-    asm("" ::: "memory");
-    r1 = (u32)&gCurrentSceneVariable;
-    r2 = *(u32 *)r1;
-    r1 = r2;
-    r1 += 0xF0;
-    *(u16 *)r1 = r0;
-    r1 -= 2;
-    *(u16 *)r1 = r0;
-    r0 = *(u8 *)(r2 + 0x19);
-    r1 = 2;
-    r0 |= r1;
-    *(u8 *)(r2 + 0x19) = r0;
+void func_0801B174(u16 arg0) {
+    struct Func0801B174Scene *scene;
+    u32 value;
+    u32 flags;
+
+    value = arg0;
+    value <<= 16;
+    value >>= 16;
+    scene = (struct Func0801B174Scene *)gCurrentSceneVariable;
+    scene->fieldF0 = value;
+    scene->fieldEE = value;
+    flags = scene->flags;
+    flags |= 2;
+    scene->flags = flags;
 }
