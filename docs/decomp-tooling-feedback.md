@@ -6,6 +6,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 148 — task-record overlays and source-only acceptance (2026-08-23)
+- The screen found strict-clean exact spellings for `func_08005870` and `func_080F1B5C`; for F1B5C, keeping a separate `result` local was decisive because reusing the prior value produced an extra `MOV R0,R2`.
+- `func_080058AC` was instruction-identical, with only a small target function-symbol pool-boundary metadata delta in isolation. The integrated clean ROM gate passed equal ROM hashes; this is a metadata-only exception, not a source-quality relaxation.
+- The older `func_080059E4` ordinary-C spelling was byte-exact but strict-layout rejected because of three scalar byte-pointer offset operations; named variants retained real register-role mismatches.
+- These functions were already C-linked with converted assembly/linker state, so source-only body replacement was the correct repository-state path. The full gate passed, and the accepted-source audit found zero instruction asm, barriers, compiler register pins, and non-mapped volatile accesses in all three files.
+
 ## Round 147 — source-only pin removal and task-record register shaping (2026-08-23)
 - The isolated sibling screen was useful for the remaining task wrappers: a second spelling of `func_08005834` became exact after reusing the post-check index local for the flag byte, while the first spelling swapped the target flag/mask register homes. `func_08005870` reached the same exact shape; `func_080058AC` remained a real register-order near miss.
 - `func_08089648` and `func_0800E800` had instruction-identical bodies in the isolated comparison, with only candidate-only function-symbol/literal-pool tails absent from the target symbols. The integrated clean ROM gate was kept as the authority for these metadata-boundary cases; no source-quality rule was relaxed.

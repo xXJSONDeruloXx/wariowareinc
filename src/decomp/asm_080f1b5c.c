@@ -1,20 +1,28 @@
 #include "global.h"
+#include "types.h"
 
-u32 func_080F1B5C(void *arg0) {
-    register u32 r1 asm("r1");
-    register u32 r2 asm("r2");
-    register u32 r0 asm("r0");
+typedef struct { u8 padding[8]; u32 value; } Func080F1B5CInner;
+typedef struct {
+    u8 padding0[0xC];
+    Func080F1B5CInner *inner;
+    u8 padding10[0xF];
+    u8 scale;
+} Func080F1B5COuter;
 
-    r1 = *(u32 *)((u8 *)arg0 + 0xC);
-    r2 = *(u32 *)((u8 *)r1 + 8);
-    r2 <<= 11;
-    r2 >>= 25;
-    r1 = *(u8 *)((u8 *)arg0 + 1);
-    r1 <<= 25;
-    r1 >>= 25;
-    r1 *= r2;
-    r0 = *(u8 *)((u8 *)arg0 + 0x1F);
-    r0 *= r1;
-    r0 >>= 14;
-    return r0;
+u32 func_080F1B5C(Func080F1B5COuter *arg0) {
+    u32 value;
+    u32 factor;
+    u32 result;
+
+    value = arg0->inner->value;
+    value <<= 11;
+    value >>= 25;
+    factor = arg0->padding0[1];
+    factor <<= 25;
+    factor >>= 25;
+    factor *= value;
+    result = arg0->scale;
+    result *= factor;
+    result >>= 14;
+    return result;
 }

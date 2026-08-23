@@ -5,21 +5,27 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 281` — three additional ordinary-C threshold/sprite/task helpers (`func_08089648`, `func_0800E800`, and `func_08005834`) now emit the same bytes without compiler register pins
+- Verified working tree: `batch 282` — three additional ordinary-C task/arithmetic helpers (`func_08005870`, `func_080058AC`, and `func_080F1B5C`) now emit the same bytes without compiler register pins
 - `build/report.json`: **1704 / 5934 matched functions** = **28.715876%**
 - `matched_code`: **76392 / 993840** = **7.686549%**
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 asm-only units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
-- Remaining compiler-register-pin files: **120 / 571 pins**; remaining non-volatile empty compiler-barrier files: **12 / 12 barriers**. The full strict audit reports **32 files / 36 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
-- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files, plus two hundred one compiler register pins removed across batches 256–281; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
+- Remaining compiler-register-pin files: **117 / 560 pins**; remaining non-volatile empty compiler-barrier files: **12 / 12 barriers**. The full strict audit reports **32 files / 36 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
+- Maintenance state: **32 legacy inline-asm shims removed** from included-stub files, plus two hundred twelve compiler register pins removed across batches 256–282; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, scalar-pointer aliases are counted across later lines, and named overlays are preferred for multi-field records.
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1484 / 5934**, now exceeded by **220** matched functions.
 - 26% milestone: **1543 / 5934**; current progress is **1704**, exceeding it by **161** matches.
 - Active 27% working goal: **1603 / 5934**; current progress exceeds it by **101** matches.
 - Next 30% milestone: **1781 / 5934**; **77** additional matched functions are needed.
+
+### Batch 282 — three exact ordinary-C task/arithmetic helpers (2026-08-23)
+- Rewrote `func_08005870` with a named 0x1C-byte task record and ordinary scan locals, `func_080058AC` with a named active-task record and separate flag/value/task-ID locals, and `func_080F1B5C` with typed nested records for the +0xC pointer/+0x1F scale arithmetic. Eleven compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
+- The final screen selected exact ordinary-C spellings for `func_08005870` and `func_080F1B5C`; `func_080058AC` was instruction-identical with only target function-symbol trailing pool-boundary metadata differing in isolation. The raw ordinary-C `func_080059E4` spelling was rejected by strict layout, and named variants retained real register-home differences.
+- Clean Docker build, report regeneration, `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **120 → 117 files / 571 → 560 pins**; full strict barrier residue remains **32 files / 36 findings**. Evidence: `.decomp-runs/round-148-isolation-v12.json`, `.decomp-runs/round-148-accepted-source-audit.json`, `.decomp-runs/round-148-full-source-audit.json`, `.decomp-runs/round-148-verify.json`, and `.decomp-runs/round-148-accepted-manifest.json`.
 
 ### Batch 281 — three exact ordinary-C threshold/sprite/task helpers (2026-08-23)
 - Rewrote `func_08089648` with named argument/scene overlays and separate result/difference locals, `func_0800E800` with a named scene halfword overlay and typed sprite-coordinate normalization, and `func_08005834` with a named 0x1C-byte task record and ordinary scan locals. Thirteen compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
