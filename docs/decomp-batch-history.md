@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 264 — three exact included-stub scene/table wrappers (2026-08-23)
+- Rewrote `func_080024E4` with a named 12-byte table-entry overlay and ordinary cursor loop, plus `func_08016E6C` and `func_08016D88` with ordinary scene predicates, saved results, and typed globals. Six compiler register pins were removed without barriers, volatile accesses, or instruction asm.
+- The eight-entry screen found **3 exact / 5 near miss** spellings; the selected three-entry subset passed the strict source audit with zero instruction asm, barriers, pins, non-mapped volatile accesses, or opaque layouts. Because these host stubs had already moved their original assembly into `asm/converted/`, the accepted change was a source-only included-stub refresh with no linker or host-order change.
+- The clean Docker build/report gate and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **174 → 171 files** and **731 → 725 pins**; full strict barrier residue remains **36 files / 41 findings**. Receipts: `.decomp-runs/round-129-isolation.json`, `.decomp-runs/round-129-source-audit.json`, `.decomp-runs/round-129-accepted-source-audit.json`, `.decomp-runs/round-129-full-source-audit.json`, and `.decomp-runs/round-129-verify.json`.
+
 ## Batch 258 — three no-pin/barrier-free wrappers (2026-08-23)
 - Rewrote `func_0801B174` with a named scene-variable overlay and explicit flag local, removing three compiler register pins and the empty memory barrier; rewrote `func_080F282C` with an ordinary fixed-IWRAM halfword pointer and typed reload local, removing four pins and its ordering barrier; rewrote `func_08004BD4` with a named four-word heap-record overlay and explicit allocated-pointer return, removing its R0 pin.
 - The strict three-entry isolation screen was **3 exact / 0 rejected**. The clean Docker ROM/report gate and `decomp_cycle.py verify` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
