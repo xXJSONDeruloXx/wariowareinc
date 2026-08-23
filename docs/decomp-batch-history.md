@@ -13,6 +13,11 @@ It is intentionally concise: keep the durable rules in `docs/decomp-pattern-libr
 - The strict two-entry isolation screen was **2 exact / 0 rejected**. The clean Docker ROM/report gate and `decomp_cycle.py verify` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because both were already C-linked. Source residue is now **186 pin-bearing files / 755 pins** and **11 empty-barrier files / 11 barriers**. Receipts: `.decomp-runs/round-121-isolation.json` and `.decomp-runs/round-121-verify.json`.
 
+## Batch 260 — three exact mask/RMW no-pin wrappers (2026-08-23)
+- Rewrote `func_0801AF18`, `func_0801B3E4`, and `func_0801BEA8` with named scene overlays plus ordinary `value`/`mask` locals. The target byte read, `MOVS/RSBS/ANDS`, optional OR mask, and byte store register roles all match without compiler pins; six pins were removed.
+- The strict three-entry isolation screen was **3 exact / 0 rejected**. The clean Docker ROM/report gate and `decomp_cycle.py verify` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Source residue is now **183 pin-bearing files / 749 pins** and **11 empty-barrier files / 11 barriers**. Receipts: `.decomp-runs/round-123-isolation.json` and `.decomp-runs/round-123-verify.json`.
+
 ## Batch 252 — strict included-stub beatscript scene-thread setter (2026-08-21)
 - Converted `scene_set_current_thread` to guarded ordinary C using existing named members of `gBeatscriptScene` (`currentThread:3` bitfield store, `localVariables[threadId]`, `threads[threadId].sprites`); matched on the first real-C spelling.
 - Section audit: all instruction bytes identical; pointer-literal pools at identical offsets differ only as relocation placeholders vs addresses baked from the original ROM, which `undefined_syms.ld` resolves identically. Full Docker gate passed; ROM SHA-1 unchanged. Decomp files **1439 → 1440** (**1225 standalone_tu / 215 included_stub**); linked metrics unchanged.

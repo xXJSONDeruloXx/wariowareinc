@@ -1,11 +1,19 @@
 #include "global.h"
 
+struct Func0801B3E4Scene {
+    u8 pad0[0xF4];
+    u8 fieldF4;
+};
+
 void func_0801B3E4(void) {
-    u8 *data = (u8 *)gCurrentSceneVariable;
-    register u32 value asm("r2");
-    register u32 mask asm("r0") = 2;
-    value = data[0xF4];
+    struct Func0801B3E4Scene *scene;
+    u32 value;
+    u32 mask;
+
+    scene = (struct Func0801B3E4Scene *)gCurrentSceneVariable;
+    value = scene->fieldF4;
+    mask = 2;
     mask = -mask;
     mask &= value;
-    data[0xF4] = mask;
+    scene->fieldF4 = mask;
 }

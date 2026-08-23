@@ -625,3 +625,8 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Two-local fixed-point arithmetic**: `func_080F28F8` removes its R0 pin when `result` is initialized from the parameter, shifted by three, copied into `value` for the half-shift, then added back into `result`. The declaration/assignment order preserves the target's `R1` accumulator, `R0` half-value, and interwork-safe return epilogue.
 - **Heap copier sibling**: `func_0800557C` uses the same named four-word record overlay and explicit `(u32)dst` return as `func_08004BD4`; both siblings emit the target's natural R4 source lifetime and R0 return without a pin.
 - **Remaining one-pin scheduling traps**: ordinary C for `func_080A002C` hoists the u16 argument normalization ahead of the target's player-global load, `func_080195E4` materializes zero before the target's first pointer add even with a named overlay, and `func_0801D4B4` swaps the incoming value/pointer homes. Keep those as evidence until a genuinely exact source shape is found; do not use a barrier or pin to close them.
+
+### Round 122/123 additions: named-overlay mask/RMW siblings
+
+- **Mask/RMW register shaping**: `func_0801AF18` and `func_0801BEA8` match when a named `+0x18` scene field is loaded into `value`, `mask` is initialized to `0x3D`, negated and ANDed, then ORed with the sibling-specific constant before the store. `func_0801B3E4` uses the same spelling at `+0xF4` with mask `2` and no OR step.
+- **Overlay quality matters**: the first raw `u8 *data` spellings were correctly rejected because the alias was used at two numeric offsets. A small named overlay made the layout explicit and preserved the exact target code without relaxing the strict source gate.

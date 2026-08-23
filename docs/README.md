@@ -11,13 +11,13 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 259` — two additional ordinary-C wrappers (`func_080F28F8` and `func_0800557C`) now emit the same bytes without compiler register pins
+- Verified working tree: `batch 260` — three additional ordinary-C mask/RMW wrappers (`func_0801AF18`, `func_0801B3E4`, and `func_0801BEA8`) now emit the same bytes without compiler register pins
 - `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.686549%** matched code (**76392 / 993840**)
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 non-C units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–259 additionally removed seventeen compiler register pins across eleven wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
-- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **186 files / 755 pins**
+- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–260 additionally removed twenty-three compiler register pins across fourteen wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
+- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **183 files / 749 pins**
 - Remaining empty compiler barriers: **11 files / 11 barriers**; remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **220** matches
