@@ -11,13 +11,13 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 278` — four additional ordinary-C table/scene helpers (`func_08003028`, `func_080B27B8`, `func_080C6898`, and `func_080D28A4`) now emit the same bytes without compiler register pins
+- Verified working tree: `batch 279` — three additional ordinary-C scene/global helpers (`func_0806F0A0`, `func_0809E804`, and `func_080F2894`) now emit the same bytes without compiler register pins
 - `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.686549%** matched code (**76392 / 993840**)
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 non-C units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–278 additionally removed one hundred sixty-eight compiler register pins across sixty-eight wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
-- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **129 files / 604 pins**
+- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–279 additionally removed one hundred seventy-seven compiler register pins across seventy-one wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
+- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **126 files / 595 pins**
 - Remaining non-volatile empty compiler barriers: **12 files / 12 barriers**; the full strict audit also reports **33 files / 37 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **220** matches
@@ -26,6 +26,12 @@ If an agent resumes cold, read these first:
 - 30% milestone at the current function total: **1781 / 5934**; **77** more matches needed
 - 80% target at the current function total: **4748 / 5934**
 - Remaining gap to 80%: **3044 matched functions**
+
+### Batch 279 — three exact ordinary-C scene/global helpers (2026-08-23)
+- Rewrote `func_0806F0A0` and `func_0809E804` with named current-scene/data overlays, and `func_080F2894` with typed byte/halfword global arrays. Nine compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
+- The three selected bodies were instruction-identical in isolation; the only standalone differences were target pool tails or literal-pool width. The `func_0800C9C0` candidate had a real register/order mismatch and remained evidence-only. The integrated clean Docker ROM gate and verifier accepted all three replacements.
+- Clean Docker build, report regeneration, `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **129 → 126 files / 604 → 595 pins**; full strict barrier residue remains **33 files / 37 findings**. Evidence: `.decomp-runs/round-145-isolation.json`, `.decomp-runs/round-145-accepted-source-audit.json`, `.decomp-runs/round-145-full-source-audit.json`, `.decomp-runs/round-145-verify.json`, and `.decomp-runs/round-145-accepted-manifest.json`.
 
 ## Automated matching loop
 

@@ -1,19 +1,23 @@
 #include "global.h"
 
-void func_0806F0A0(void) {
-    register u32 r0 asm("r0") = (u32)&gCurrentSceneVariable;
-    register u32 r1 asm("r1");
-    register u32 r2 asm("r2");
+typedef struct {
+    u8 padding4[4];
+    u32 value4;
+    u8 padding8[4];
+    s16 deltaC;
+} Func0806F0A0Scene;
 
-    r2 = *(u32 *)r0;
-    r0 = 0xC;
-    r1 = *(s16 *)(r2 + r0);
-    r0 = *(u32 *)(r2 + 4);
-    r0 += r1;
-    *(u32 *)(r2 + 4) = r0;
-    r1 = 0xD0;
-    r1 <<= 8;
-    if ((s32)r0 > (s32)r1) {
-        *(u32 *)(r2 + 4) = r1;
+void func_0806F0A0(void) {
+    Func0806F0A0Scene *scene;
+    s32 delta;
+    u32 value;
+
+    scene = (Func0806F0A0Scene *)gCurrentSceneVariable;
+    delta = scene->deltaC;
+    value = scene->value4;
+    value += delta;
+    scene->value4 = value;
+    if ((s32)value > (s32)0xD000) {
+        scene->value4 = 0xD000;
     }
 }

@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 279 — three exact ordinary-C scene/global helpers (2026-08-23)
+- Rewrote `func_0806F0A0` and `func_0809E804` with named current-scene/data overlays, and `func_080F2894` with typed byte/halfword global arrays. Nine compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
+- The three selected bodies were instruction-identical in isolation; the only standalone differences were target pool tails or literal-pool width. The `func_0800C9C0` candidate had a real register/order mismatch and remained evidence-only; alternate `080F2894` pointer-local variants also changed real load/store ordering.
+- Clean Docker build, report regeneration, `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all three were already C-linked. Pin residue drops **129 → 126 files / 604 → 595 pins**; full strict barrier residue remains **33 files / 37 findings**. Receipts: `.decomp-runs/round-145-isolation.json`, `.decomp-runs/round-145-accepted-source-audit.json`, `.decomp-runs/round-145-full-source-audit.json`, `.decomp-runs/round-145-verify.json`, and `.decomp-runs/round-145-accepted-manifest.json`.
+
 ## Batch 278 — four exact ordinary-C table/scene helpers (2026-08-23)
 - Rewrote `func_08003028` with a named fixed-size table cursor, and `func_080B27B8`, `func_080C6898`, and `func_080D28A4` with named current-scene overlays. Fourteen compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
 - The table cursor was an exact isolated match. The three scene candidates were instruction-identical and differed only by the legacy target's trailing zero/pool symbol boundary; the integrated clean Docker ROM gate and verifier confirmed those metadata-only differences do not alter the linked ROM. The strict accepted-source audit passed. The `08002FC0` and `0800247C` typed table-copy candidates remained real near misses because agbcc reused the check value instead of reloading it in the body.
