@@ -6,6 +6,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 149 — indexed packed-record setters and source-only acceptance (2026-08-23)
+- The final six-entry exact screen found strict-clean ordinary-C spellings for `func_080F2374`, `func_080F24A0`, `func_080F24C0`, `func_080F2558`, `func_080F2578`, and `func_080F26BC`. The useful shape was a named 0x20-byte record plus integer base/index arithmetic; the first five needed separate field/mask/result locals, while F26BC needed a distinct `base2` reload local.
+- The old pinned family was useful as a codegen reference but not admissible source. The accepted candidates pass strict source/layout audit with zero instruction asm, barriers, register pins, non-mapped volatile, or opaque scalar-pointer layouts; the full audit now reports **111 pin-bearing files / 536 pins** and **27 barrier-bearing files / 31 findings**.
+- Exploratory isolation generated noisy near-miss provenance in tracked `.nearmiss/` and `tools/attempts.tsv`; that tool-generated churn was restored to the clean baseline. The authoritative exact screen, accepted-source audit, full residue audit, verify receipt, and accepted manifest are retained under `.decomp-runs/round-149-*.json`.
+- The integrated clean Docker gate passed with equal ROM/base ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. No linker or converted-assembly move was required because these were already-linked C TUs.
+
 ## Round 148 — task-record overlays and source-only acceptance (2026-08-23)
 - The screen found strict-clean exact spellings for `func_08005870` and `func_080F1B5C`; for F1B5C, keeping a separate `result` local was decisive because reusing the prior value produced an extra `MOV R0,R2`.
 - `func_080058AC` was instruction-identical, with only a small target function-symbol pool-boundary metadata delta in isolation. The integrated clean ROM gate passed equal ROM hashes; this is a metadata-only exception, not a source-quality relaxation.

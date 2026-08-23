@@ -11,14 +11,14 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 282` — three additional ordinary-C task/arithmetic helpers (`func_08005870`, `func_080058AC`, and `func_080F1B5C`) now emit the same bytes without compiler register pins
+- Verified working tree: `batch 283` — six additional ordinary-C packed-record setters (`func_080F2374`, `func_080F24A0`, `func_080F24C0`, `func_080F2558`, `func_080F2578`, and `func_080F26BC`) now emit the same bytes without compiler register pins or empty barriers
 - `build/report.json`: **1704 / 5934 matched functions** (**28.715876%**) · **7.686549%** matched code (**76392 / 993840**)
 - `tools/gen_objdiff.py`: **1244 linked C TUs / 5443 non-C units** (**6687 total**)
 - `src/decomp/*.c`: **1445 decompiled function files** = **1225 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
-- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–282 additionally removed two hundred twelve compiler register pins across eighty wrappers. Report function/unit metrics are unchanged because these files were already C-linked.
-- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **117 files / 560 pins**
-- Remaining non-volatile empty compiler barriers: **12 files / 12 barriers**; the full strict audit also reports **32 files / 36 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
+- Latest accepted maintenance pass: **35 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–283 additionally removed two hundred thirty-six compiler register pins across eighty-six already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
+- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **111 files / 536 pins**
+- Remaining non-volatile empty compiler barriers: **7 files / 7 barriers**; the full strict audit also reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1484 / 5934**; now exceeded by **220** matches
 - 26% milestone at the current function total: **1543 / 5934**; now exceeded by **161** matches
@@ -26,6 +26,12 @@ If an agent resumes cold, read these first:
 - 30% milestone at the current function total: **1781 / 5934**; **77** more matches needed
 - 80% target at the current function total: **4748 / 5934**
 - Remaining gap to 80%: **3044 matched functions**
+
+### Batch 283 — six exact ordinary-C packed-record setters (2026-08-23)
+- Rewrote `func_080F2374`, `func_080F24A0`, `func_080F24C0`, `func_080F2558`, `func_080F2578`, and `func_080F26BC` with named 0x20-byte indexed records, integer base/offset locals, and ordinary mask/result lifetimes. Twenty-four compiler register pins and five empty compiler barriers were removed without instruction asm, volatile codegen shims, or opaque scalar-pointer layouts.
+- The exact-only screen classified all six strict-clean spellings as exact. The first five preserve the target field/mask register roles through separate locals; `func_080F26BC` needs a distinct `base2` local for the second reload/store.
+- Clean Docker build, report regeneration, `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all six were already C-linked. Pin residue drops **117 → 111 files / 560 → 536 pins**; full strict barrier residue drops **32 → 27 files / 36 → 31 findings**, including non-volatile barriers **12 → 7 files / 12 → 7 findings**. Evidence: `.decomp-runs/round-149-exact-isolation.json`, `.decomp-runs/round-149-accepted-source-audit.json`, `.decomp-runs/round-149-full-source-audit.json`, `.decomp-runs/round-149-verify.json`, and `.decomp-runs/round-149-accepted-manifest.json`.
 
 ### Batch 282 — three exact ordinary-C task/arithmetic helpers (2026-08-23)
 - Rewrote `func_08005870` with a named 0x1C-byte task record and ordinary scan locals, `func_080058AC` with a named active-task record and separate flag/value/task-ID locals, and `func_080F1B5C` with typed nested records for the +0xC pointer/+0x1F scale arithmetic. Eleven compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.

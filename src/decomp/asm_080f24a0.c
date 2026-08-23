@@ -1,23 +1,36 @@
 #include "global.h"
 
-void func_080F24A0(void *arg0, s32 arg1, u8 arg2) {
-    register u32 value asm("r2") = arg2;
-    register u32 base asm("r0");
-    register u32 offset asm("r1") = arg1;
-    register u32 field asm("r3");
+typedef struct {
+    u16 field;
+    u8 padding2[0x1E];
+} Func080F24A0Entry;
 
+typedef struct {
+    u8 padding0[0x18];
+    Func080F24A0Entry *entries;
+} Func080F24A0Context;
+
+void func_080F24A0(Func080F24A0Context *arg0, s32 arg1, u8 arg2) {
+    u32 value;
+    u32 base;
+    u32 offset;
+    u16 mask;
+    u32 field;
+    Func080F24A0Entry *entry;
+
+    value = arg2;
     value <<= 24;
     value >>= 24;
-    asm("" ::: "memory");
-    base = *(u32 *)((u8 *)arg0 + 0x18);
+    base = (u32)arg0->entries;
+    offset = arg1;
     offset <<= 5;
     offset += base;
-    base = 0x7F;
-    value &= base;
+    value &= 0x7F;
     value <<= 2;
-    field = *(u16 *)offset;
-    base = 0xFFFFFE03;
-    base &= field;
-    base |= value;
-    *(u16 *)offset = base;
+    entry = (Func080F24A0Entry *)offset;
+    mask = entry->field;
+    field = 0xFFFFFE03;
+    field &= mask;
+    field |= value;
+    entry->field = field;
 }

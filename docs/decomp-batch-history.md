@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 283 — six exact ordinary-C packed-record setters (2026-08-23)
+- Rewrote `func_080F2374`, `func_080F24A0`, `func_080F24C0`, `func_080F2558`, `func_080F2578`, and `func_080F26BC` with named 0x20-byte indexed records, integer base/offset locals, and ordinary mask/result lifetimes. Twenty-four compiler register pins and five empty compiler barriers were removed without instruction asm, volatile codegen shims, or opaque scalar-pointer layouts.
+- The exact-only screen classified all six strict-clean spellings as exact. The first five preserve the target field/mask register roles through separate locals; `func_080F26BC` needs a distinct `base2` local for the second reload/store.
+- Clean Docker build, report regeneration, `gen_objdiff.py`, and `decomp_cycle.py verify --no-report` passed with `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remained `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Matching report metrics remain **1704 / 5934** functions and **76392 / 993840** code because all six were already C-linked. Pin residue drops **117 → 111 files / 560 → 536 pins**; full strict barrier residue drops **32 → 27 files / 36 → 31 findings**, including non-volatile barriers **12 → 7 files / 12 → 7 findings**. Receipts: `.decomp-runs/round-149-exact-isolation.json`, `.decomp-runs/round-149-accepted-source-audit.json`, `.decomp-runs/round-149-full-source-audit.json`, `.decomp-runs/round-149-verify.json`, and `.decomp-runs/round-149-accepted-manifest.json`.
+
 ## Batch 282 — three exact ordinary-C task/arithmetic helpers (2026-08-23)
 - Rewrote `func_08005870` with a named 0x1C-byte task record and ordinary scan locals, `func_080058AC` with a named active-task record and separate flag/value/task-ID locals, and `func_080F1B5C` with typed nested records for the +0xC pointer/+0x1F scale arithmetic. Eleven compiler register pins were removed without instruction asm, barriers, or volatile codegen shims.
 - The final screen selected exact ordinary-C spellings for `func_08005870` and `func_080F1B5C`; `func_080058AC` was instruction-identical with only target function-symbol trailing pool-boundary metadata differing in isolation. The raw ordinary-C `func_080059E4` spelling was rejected by strict layout, and named variants retained real register-home differences.
