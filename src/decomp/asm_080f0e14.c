@@ -3,10 +3,14 @@
 extern u8 *D_030068E8;
 
 void func_080F0E14(u32 arg0, u8 arg1, u8 arg2) {
-    register u8 **table asm("r4") = &D_030068E8;
-    register u8 *base asm("r3") = *table;
-    register u32 offset asm("r0") = arg0;
-    register u8 *base2 asm("r1");
+    u8 **table;
+    u8 *base;
+    u32 offset;
+    u8 *base2;
+
+    table = &D_030068E8;
+    base = *table;
+    offset = arg0;
     offset <<= 5;
     base[offset + 2] = arg1;
     base2 = *table;
