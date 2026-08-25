@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 295` — `func_0804F464` now emits the complete legacy `.text` bytes through ordinary C with explicit mask-value and loaded-byte lifetimes
-- `build/report.json`: **1714 / 5927 matched functions** (**28.918509%**) · **7.716905%** matched code (**76694 / 993844**)
-- `tools/gen_objdiff.py`: **1254 linked C TUs / 5433 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1455 decompiled function files** = **1235 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 296` — `func_08078F28` and `func_08004E28` now emit their complete legacy bodies through ordinary C with corrected packed-record offsets and field lifetimes
+- `build/report.json`: **1716 / 5927 matched functions** (**28.952253%**) · **7.722741%** matched code (**76752 / 993844**)
+- `tools/gen_objdiff.py`: **1256 linked C TUs / 5431 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1457 decompiled function files** = **1237 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **38 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **106 files / 502 pins**
@@ -22,10 +22,17 @@ If an agent resumes cold, read these first:
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1482 / 5927**; now exceeded by **229** matches
 - 26% milestone at the current function total: **1542 / 5927**; now exceeded by **169** matches
-- 27% active working goal at the current function total: **1601 / 5927**; exceeded by **113** matches
-- 30% milestone at the current function total: **1779 / 5927**; **65** more matches needed
+- 27% active working goal at the current function total: **1601 / 5927**; exceeded by **115** matches
+- 30% milestone at the current function total: **1779 / 5927**; **63** more matches needed
 - 80% target at the current function total: **4742 / 5927**
 - Remaining gap to 80%: **3031 matched functions**
+
+### Batch 296 — two exact ordinary-C standalone packed-record wrappers (2026-08-25)
+- Converted `func_08078F28` from `asm/asm_08078f28.s` to a strict ordinary-C standalone TU with a named packed-record overlay. The explicit gap at +0x8 exposes the target's +0xA halfword, and a separate denominator local preserves the target's divisor load before `0x80000 / denominator`; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Converted `func_08004E28` from `asm/asm_08004e28.s` to a strict ordinary-C standalone TU with a named pointer record. It narrows the third argument before the helper call, reloads the record's old pointer for deallocation instead of caching it across calls, and stores the helper result in target order; the source is strict-clean ordinary C.
+- Docker-compiled complete `.text` sections matched byte-for-byte: `func_08078F28` at 28 bytes with SHA-256 `650f2b671d620221198d0db86813d1f8ea0a7ea6b565c6e2462de54d1eb6de29`, and `func_08004E28` at 32 bytes with SHA-256 `b9a389c3b720996b9ab159839f23dca947d164df98543e8ff6c0c4f1a70bab5d`. Both isolated exact and passed the transactional clean Docker ROM gate.
+- Fresh Docker report is **1716 / 5927** functions and **76752 / 993844** matched code. Unit coverage is **1256 C / 5431 asm-only**; decomp files are **1457** (**1237 standalone_tu / 220 included_stub**). ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-166-isolation-v2.json`, `.decomp-runs/round-166-08078F28-full-text-proof.json`, `.decomp-runs/round-166-08004E28-full-text-proof.json`, `.decomp-runs/round-166-08078F28-apply.json`, `.decomp-runs/round-166-08004E28-apply.json`, both targeted source audits, and `.decomp-runs/round-166-full-source-audit.json`.
 
 ### Batch 295 — one exact ordinary-C standalone mask-order initializer (2026-08-25)
 - Converted `func_0804F464` from `asm/asm_0804f464.s` to a strict ordinary-C standalone TU with a named record overlay. The source keeps the loaded byte, `-0x10` mask value, and final combine as separate ordinary locals, reproducing the target's `MOVS #0; SUBS #0x10; ANDS` sequence without instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.

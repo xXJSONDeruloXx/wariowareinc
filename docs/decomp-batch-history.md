@@ -3,6 +3,13 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 296 — two exact ordinary-C standalone packed-record wrappers (2026-08-25)
+- Converted `func_08078F28` from `asm/asm_08078f28.s` to a strict ordinary-C standalone TU with a named packed-record overlay. The explicit +0x8 gap exposes the target's +0xA halfword, and a separate denominator local preserves the divisor load before `0x80000 / denominator`.
+- Converted `func_08004E28` from `asm/asm_08004e28.s` to a strict ordinary-C standalone TU with a named pointer record. It narrows the third argument before the helper call, reloads the old field for deallocation instead of caching it across calls, and stores the result in target order. Both sources are strict-clean ordinary C with no instruction asm, barriers, pins, non-mapped volatile, or opaque layout.
+- Docker-compiled complete `.text` sections matched byte-for-byte: `func_08078F28` at 28 bytes with SHA-256 `650f2b671d620221198d0db86813d1f8ea0a7ea6b565c6e2462de54d1eb6de29`, and `func_08004E28` at 32 bytes with SHA-256 `b9a389c3b720996b9ab159839f23dca947d164df98543e8ff6c0c4f1a70bab5d`. The clean Docker ROM/report gate passed with equal ROM/base ROM SHA-1.
+- Fresh report is **1716 / 5927** functions and **76752 / 993844** matched code. Unit coverage is **1256 C / 5431 asm-only**; decomp files are **1457** (**1237 standalone_tu / 220 included_stub**). ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-166-isolation-v2.json`, `.decomp-runs/round-166-08078F28-full-text-proof.json`, `.decomp-runs/round-166-08004E28-full-text-proof.json`, `.decomp-runs/round-166-08078F28-apply.json`, `.decomp-runs/round-166-08004E28-apply.json`, the two targeted source audits, and `.decomp-runs/round-166-full-source-audit.json`.
+
 ## Batch 295 — one exact ordinary-C standalone mask-order initializer (2026-08-25)
 - Converted `func_0804F464` from `asm/asm_0804f464.s` to a strict ordinary-C standalone TU with a named record overlay. Separate ordinary locals for the loaded byte, `-0x10` mask, and combine operation reproduce the target's `MOVS #0; SUBS #0x10; ANDS` sequence without instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
 - Docker-compiled target and candidate `.text` sections matched byte-for-byte at 28 bytes with SHA-256 `132cd2024c6abc70cd640ff693bd22cb991ccf3e0d36f447dcf8205f09026486`; normalized isolation was exact and the clean Docker ROM/report gate passed.

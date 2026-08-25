@@ -6,6 +6,11 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 166 — packed-record offset and lifetime corrections (2026-08-25)
+- `func_08078F28` reached exact ordinary C after the candidate's first record model exposed `fieldA` at +0x8 instead of +0xA. Adding the explicit +0x8 gap and loading the divisor into a separate local before materializing `0x80000` preserved the target's `LDRH`, divisor load, and `__divsi3` argument order.
+- `func_08004E28` initially cached the old pointer across both calls and caused an unnecessary R6 save. Passing `state->field0` directly to the helper and reloading it for `mem_heap_dealloc` preserved the target's R4 state pointer, R5 result lifetime, and store order.
+- Both strict-clean candidates passed complete-section Docker proofs: 28-byte SHA-256 `650f2b671d620221198d0db86813d1f8ea0a7ea6b565c6e2462de54d1eb6de29` for `func_08078F28` and 32-byte SHA-256 `b9a389c3b720996b9ab159839f23dca947d164df98543e8ff6c0c4f1a70bab5d` for `func_08004E28`. The full Docker gate advanced the report from **1714 / 5927** to **1716 / 5927**, code from **76694** to **76752**, linked C units from **1254 / 5433** to **1256 / 5431**, and decomp files from **1455** to **1457**.
+
 ## Round 165 — split-local mask materialization (2026-08-25)
 - `func_0804F464`'s direct named-record `field20 &= -0x10` spelling was a real one-instruction near miss: agbcc folded the mask into `MOVS R1, #0xF0`, while the target first loads the byte, then materializes zero and subtracts `0x10`.
 - Reusing the proven ordinary-C ordering from `sprite_handler_create`—`bound = state->field20; mask = -0x10; mask = mask & bound; state->field20 = mask;`—reproduced the target exactly. The strict candidate audit found no asm, barrier, pin, non-mapped volatile, or opaque layout, and the full 28-byte `.text` SHA-256 is `132cd2024c6abc70cd640ff693bd22cb991ccf3e0d36f447dcf8205f09026486`.
