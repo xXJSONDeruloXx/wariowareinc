@@ -11,21 +11,27 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 303` — `func_08007F48` now emits the linked-list cache-entry creator through ordinary C
-- `build/report.json`: **1724 / 5921 matched functions** (**29.116703%**) · **7.763499%** matched code (**77158 / 993856**)
-- `tools/gen_objdiff.py`: **1264 linked C TUs / 5423 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1465 decompiled function files** = **1245 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 304` — `update_scheduled_function_task` now emits the scheduled-task updater through ordinary C
+- `build/report.json`: **1725 / 5920 matched functions** (**29.138514%**) · **7.767121%** matched code (**77194 / 993856**)
+- `tools/gen_objdiff.py`: **1265 linked C TUs / 5422 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1466 decompiled function files** = **1246 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **38 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **106 files / 502 pins**
 - Remaining non-volatile empty compiler barriers: **7 files / 7 barriers**; the full strict audit also reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1481 / 5921**; now exceeded by **243** matches
-- 26% milestone at the current function total: **1540 / 5921**; now exceeded by **184** matches
-- 27% active working goal at the current function total: **1599 / 5921**; exceeded by **125** matches
-- 30% milestone at the current function total: **1777 / 5921**; **53** more matches needed
-- 80% target at the current function total: **4737 / 5921**
-- Remaining gap to 80%: **3013 matched functions**
+- 25% milestone at the current function total: **1480 / 5920**; now exceeded by **245** matches
+- 26% milestone at the current function total: **1540 / 5920**; now exceeded by **185** matches
+- 27% active working goal at the current function total: **1599 / 5920**; exceeded by **126** matches
+- 30% milestone at the current function total: **1776 / 5920**; **51** more matches needed
+- 80% target at the current function total: **4736 / 5920**
+- Remaining gap to 80%: **3011 matched functions**
+
+### Batch 304 — one exact ordinary-C scheduled-task updater (2026-08-25)
+- Converted `update_scheduled_function_task` from `asm/asm_08007dcc.s` to a strict ordinary-C standalone TU with a named task record. The source preserves the delay decrement/zero return, nullable callback check, indirect callback invocation through the record's argument, and final success return without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
+- The complete 36-byte linked `.text` section matched the target instruction-for-instruction; normalized isolation reported only the legacy 18-byte target-symbol boundary. The guarded force path waived that metadata only, and the integrated clean Docker ROM/report gate matched ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh Docker report is **1725 / 5920** functions and **77194 / 993856** matched code. Unit coverage is **1265 C / 5422 asm-only**; decomp files are **1466** (**1246 standalone_tu / 220 included_stub**). The denominator drops by one because the converted legacy local-label boundary is no longer counted as a separate inferred function while total units remain unchanged.
+- Evidence: `.decomp-runs/round-176-isolation.json`, `.decomp-runs/round-176-update_scheduled_function_task-v1-source-audit.json`, `.decomp-runs/round-176-update_scheduled_function_task-apply.json`, `.decomp-runs/round-176-full-source-audit.json`, `.nearmiss/update_scheduled_function_task.json`, and `.nearmiss/update_scheduled_function_task.full.c`.
 
 ### Batch 303 — one exact ordinary-C linked-list cache-entry creator (2026-08-25)
 - Converted `func_08007F48` from `asm/asm_08007f48.s` to a strict ordinary-C standalone TU. Named input, resource, and cache-entry overlays expose the enabled flag, duplicate-key scan, head insertion, size-derived allocation, copied fields, and forward link without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
