@@ -11,21 +11,27 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 305` — `schedule_function_call` now emits the scheduled task wrapper through ordinary C
-- `build/report.json`: **1726 / 5919 matched functions** (**29.160330%**) · **7.771131%** matched code (**77234 / 993858**)
-- `tools/gen_objdiff.py`: **1266 linked C TUs / 5421 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1467 decompiled function files** = **1247 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 306` — `func_08007B98` now emits the decimal formatter through ordinary C
+- `build/report.json`: **1727 / 5918 matched functions** (**29.182158%**) · **7.780387%** matched code (**77326 / 993858**)
+- `tools/gen_objdiff.py`: **1267 linked C TUs / 5420 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1468 decompiled function files** = **1248 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **38 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **106 files / 502 pins**
 - Remaining non-volatile empty compiler barriers: **7 files / 7 barriers**; the full strict audit also reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1480 / 5919**; now exceeded by **246** matches
-- 26% milestone at the current function total: **1539 / 5919**; now exceeded by **187** matches
-- 27% active working goal at the current function total: **1599 / 5919**; exceeded by **127** matches
-- 30% milestone at the current function total: **1776 / 5919**; **50** more matches needed
-- 80% target at the current function total: **4736 / 5919**
-- Remaining gap to 80%: **3010 matched functions**
+- 25% milestone at the current function total: **1480 / 5918**; now exceeded by **247** matches
+- 26% milestone at the current function total: **1539 / 5918**; now exceeded by **188** matches
+- 27% active working goal at the current function total: **1598 / 5918**; exceeded by **129** matches
+- 30% milestone at the current function total: **1776 / 5918**; **49** more matches needed
+- 80% target at the current function total: **4735 / 5918**
+- Remaining gap to 80%: **3008 matched functions**
+
+### Batch 306 — one exact ordinary-C decimal formatter (2026-08-25)
+- Converted `func_08007B98` from `asm/asm_08007b98.s` to a strict ordinary-C standalone TU. Separate locals preserve the original value during the digit-count pass, reverse two-byte table-entry writes through `D_083A4B10`, and the target `__umodsi3`/`__udivsi3` call order without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout. The bounded two-byte `output`/`pair` accesses pass the strict layout audit.
+- The complete 92-byte linked `.text` section emits the target instruction stream and literal pool byte-for-byte; normalized isolation reports only the legacy target symbol stopping at local label `_08007BA6` (14 bytes versus the complete 92-byte candidate). The narrow force path waived that metadata only, the canonical `D_083A4B10 = 0x083A4B10` linker assignment resolved the table literal, and the integrated clean Docker ROM/report gate matched ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh Docker report is **1727 / 5918** functions and **77326 / 993858** matched code. Unit coverage is **1267 C / 5420 asm-only**; decomp files are **1468** (**1248 standalone_tu / 220 included_stub**). The function denominator drops by one because the converted legacy local-label boundary is no longer inferred as a separate function while total code remains unchanged.
+- Evidence: `.decomp-runs/round-181-isolation.json`, `.decomp-runs/round-181-isolation-v2.json`, `.decomp-runs/round-181-isolation-v3.json`, `.decomp-runs/round-181-isolation-v5.json`, `.decomp-runs/round-181-func_08007B98-v5-source-audit.json`, `.decomp-runs/round-181-func_08007B98-apply.json`, `.decomp-runs/round-181-full-source-audit.json`, `.nearmiss/func_08007B98.json`, and `.nearmiss/func_08007B98.full.c`.
 
 ### Batch 305 — one exact ordinary-C scheduled task wrapper (2026-08-25)
 - Converted `schedule_function_call` from `asm/asm_08007df0.s` to a strict ordinary-C standalone TU with a named three-field task-argument record. The source preserves the `u16` ID normalization, three incoming stack stores, zero outgoing stack argument, canonical `D_083A4B38` task literal, five-argument `start_new_task` call, and live return value without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
