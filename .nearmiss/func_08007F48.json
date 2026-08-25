@@ -1,0 +1,1990 @@
+{
+  "func": "func_08007F48",
+  "file": "asm/asm_08007f48.s",
+  "score": 100.0,
+  "score_kind": "isolated_objdiff_gap",
+  "reason": "isolated_mismatch",
+  "c": "#include \"global.h\"\n\nstruct Func08007F48Resource {\n    u8 padding0[4];\n    u16 size;\n};\n\nstruct Func08007F48Input {\n    struct Func08007F48Resource *resource;\n    u32 field4;\n    u16 field8;\n    u16 fieldA;\n    u8 enabled;\n};\n\nstruct Func08007F48Entry {\n    struct Func08007F48Input *input;\n    void *data;\n    u32 field8;\n    u16 fieldC;\n    u16 fieldE;\n    u8 field10;\n    u8 padding11[3];\n    struct Func08007F48Entry *next;\n};\n\nextern struct Func08007F48Entry *D_0300485C;\nextern void *mem_heap_alloc(u32 size);\n\nstruct Func08007F48Entry *func_08007F48(struct Func08007F48Input *arg0) {\n    struct Func08007F48Entry *entry;\n\n    if (arg0->enabled == 0) {\n        return 0;\n    }\n    entry = D_0300485C;\n    while (entry != 0) {\n        if (entry->input == arg0) {\n            return 0;\n        }\n        entry = entry->next;\n    }\n    entry = mem_heap_alloc(0x18);\n    entry->input = arg0;\n    entry->next = D_0300485C;\n    D_0300485C = entry;\n    entry->data = mem_heap_alloc(arg0->resource->size << 1);\n    entry->field8 = arg0->field4;\n    entry->fieldC = arg0->field8;\n    entry->fieldE = arg0->fieldA;\n    entry->field10 = 0;\n    return entry;\n}\n",
+  "evidence": {
+    "timestamp": "2026-08-25T18:33:20+00:00",
+    "branch": "docs/macabeus-tooling-assessment",
+    "commit": "b8813bc0910bb2ebf40e8a41a5e067b5d95417f9",
+    "candidate": ".mizuchi-tmp/round-174-candidates/func_08007F48-v1.c",
+    "candidate_sha1": "cd120683fac0fc35e7a8d8b28c895c4651816666",
+    "candidate_sha256": "4603566b9cab971722ba6c4b7a8a810f1cba712f3704490ddaeb9ab25a394f98",
+    "rom_sha1": "3f556448d290fa5406d6ed367fee16cc02387ad3",
+    "baseline_rom_sha1": "3f556448d290fa5406d6ed367fee16cc02387ad3",
+    "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /var/folders/cq/tj_dgq0d4qsfs1xyx0jx2cp40000gn/T/warioware-cycle-9tg9rg2m:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-174-candidates/func_08007F48-v1.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /workspace/build/asm/asm_08007f48.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08007f48.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08007f48.s.o | awk -v entry=func_08007F48 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08007F48 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08007f48.s.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08007F48 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+    "diff": {
+      "left": {
+        "sections": [
+          {
+            "name": ".text",
+            "kind": "SECTION_CODE",
+            "size": "92",
+            "match_percent": 0.0
+          }
+        ],
+        "symbols": [
+          {
+            "name": "func_08007F48",
+            "size": "10",
+            "flags": {
+              "global": true,
+              "size_inferred": true
+            },
+            "kind": "SYMBOL_FUNCTION",
+            "target_symbol": 3,
+            "match_percent": 0.0,
+            "instructions": [
+              {
+                "instruction": {
+                  "size": 2,
+                  "formatted": "push {r4, r5, lr}",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "push",
+                        "opcode": 59
+                      }
+                    },
+                    {
+                      "basic": "{"
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "lr"
+                      }
+                    },
+                    {
+                      "basic": "}"
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "2",
+                  "size": 2,
+                  "formatted": "mov r5, r0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "4",
+                  "size": 2,
+                  "formatted": "ldrb r0, [r5, #0xc]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldrb",
+                        "opcode": 25
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "12"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "6",
+                  "size": 2,
+                  "formatted": "cmp r0, #0x0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "cmp",
+                        "opcode": 16
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "0"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "instruction": {
+                  "address": "8",
+                  "size": 2,
+                  "formatted": "bne 0xe",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "bne",
+                        "opcode": 4
+                      }
+                    },
+                    {
+                      "arg": {
+                        "branch_dest": "14"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              },
+              {
+                "diff_kind": "DIFF_INSERT"
+              }
+            ]
+          }
+        ]
+      },
+      "right": {
+        "sections": [
+          {
+            "name": ".text",
+            "kind": "SECTION_CODE",
+            "size": "92"
+          }
+        ],
+        "symbols": [
+          {
+            "name": "func_08007F48",
+            "size": "92",
+            "flags": {
+              "global": true,
+              "size_inferred": true
+            },
+            "kind": "SYMBOL_FUNCTION",
+            "target_symbol": 2,
+            "match_percent": 0.0,
+            "instructions": [
+              {
+                "instruction": {
+                  "size": 2,
+                  "formatted": "push {r4, r5, lr}",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "push",
+                        "opcode": 59
+                      }
+                    },
+                    {
+                      "basic": "{"
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "lr"
+                      }
+                    },
+                    {
+                      "basic": "}"
+                    }
+                  ],
+                  "line_number": 1739
+                }
+              },
+              {
+                "instruction": {
+                  "address": "2",
+                  "size": 2,
+                  "formatted": "mov r5, r0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    }
+                  ],
+                  "line_number": 1739
+                }
+              },
+              {
+                "instruction": {
+                  "address": "4",
+                  "size": 2,
+                  "formatted": "ldrb r0, [r5, #0xc]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldrb",
+                        "opcode": 25
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "12"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1741
+                }
+              },
+              {
+                "instruction": {
+                  "address": "6",
+                  "size": 2,
+                  "formatted": "cmp r0, #0x0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "cmp",
+                        "opcode": 16
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "0"
+                      }
+                    }
+                  ],
+                  "line_number": 1741
+                }
+              },
+              {
+                "instruction": {
+                  "address": "8",
+                  "size": 2,
+                  "formatted": "bne 0xe",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "bne",
+                        "opcode": 4
+                      }
+                    },
+                    {
+                      "arg": {
+                        "branch_dest": "14"
+                      }
+                    }
+                  ],
+                  "branch_dest": "14",
+                  "line_number": 1741
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "10",
+                  "size": 2,
+                  "formatted": "mov r0, #0x0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "0"
+                      }
+                    }
+                  ],
+                  "line_number": 1742
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "12",
+                  "size": 2,
+                  "formatted": "b 0x52",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "b",
+                        "opcode": 4
+                      }
+                    },
+                    {
+                      "arg": {
+                        "branch_dest": "82"
+                      }
+                    }
+                  ],
+                  "branch_dest": "82",
+                  "line_number": 1742
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "14",
+                  "size": 2,
+                  "formatted": "ldr r0, [pc, #0x48] (->0x58)",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldr",
+                        "opcode": 24
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "pc"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "72"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    },
+                    {
+                      "basic": " (->"
+                    },
+                    {
+                      "arg": {
+                        "branch_dest": "88"
+                      }
+                    },
+                    {
+                      "basic": ")"
+                    }
+                  ],
+                  "line_number": 1744
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "16",
+                  "size": 2,
+                  "formatted": "ldr r4, [r0, #0x0]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldr",
+                        "opcode": 24
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "0"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1744
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "18",
+                  "size": 2,
+                  "formatted": "cmp r4, #0x0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "cmp",
+                        "opcode": 16
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "0"
+                      }
+                    }
+                  ],
+                  "line_number": 1745
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "20",
+                  "size": 2,
+                  "formatted": "beq 0x22",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "beq",
+                        "opcode": 4
+                      }
+                    },
+                    {
+                      "arg": {
+                        "branch_dest": "34"
+                      }
+                    }
+                  ],
+                  "branch_dest": "34",
+                  "line_number": 1745
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "22",
+                  "size": 2,
+                  "formatted": "ldr r0, [r4, #0x0]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldr",
+                        "opcode": 24
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "0"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1746
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "24",
+                  "size": 2,
+                  "formatted": "cmp r0, r5",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "cmp",
+                        "opcode": 16
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    }
+                  ],
+                  "line_number": 1746
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "26",
+                  "size": 2,
+                  "formatted": "beq 0xa",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "beq",
+                        "opcode": 4
+                      }
+                    },
+                    {
+                      "arg": {
+                        "branch_dest": "10"
+                      }
+                    }
+                  ],
+                  "branch_dest": "10",
+                  "line_number": 1746
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "28",
+                  "size": 2,
+                  "formatted": "ldr r4, [r4, #0x14]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldr",
+                        "opcode": 24
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "20"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1749
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "30",
+                  "size": 2,
+                  "formatted": "cmp r4, #0x0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "cmp",
+                        "opcode": 16
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "0"
+                      }
+                    }
+                  ],
+                  "line_number": 1750
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "32",
+                  "size": 2,
+                  "formatted": "bne 0x16",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "bne",
+                        "opcode": 4
+                      }
+                    },
+                    {
+                      "arg": {
+                        "branch_dest": "22"
+                      }
+                    }
+                  ],
+                  "branch_dest": "22",
+                  "line_number": 1750
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "34",
+                  "size": 2,
+                  "formatted": "mov r0, #0x18",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "24"
+                      }
+                    }
+                  ],
+                  "line_number": 1751
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "36",
+                  "size": 4,
+                  "formatted": "bl 0x0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "bl",
+                        "opcode": 7
+                      }
+                    },
+                    {
+                      "arg": {
+                        "branch_dest": "0"
+                      }
+                    }
+                  ],
+                  "branch_dest": "0",
+                  "line_number": 1751
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "40",
+                  "size": 2,
+                  "formatted": "mov r4, r0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    }
+                  ],
+                  "line_number": 1751
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "42",
+                  "size": 2,
+                  "formatted": "str r5, [r4, #0x0]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "str",
+                        "opcode": 116
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "0"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1752
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "44",
+                  "size": 2,
+                  "formatted": "ldr r1, [pc, #0x28] (->0x58)",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldr",
+                        "opcode": 24
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r1"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "pc"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "40"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    },
+                    {
+                      "basic": " (->"
+                    },
+                    {
+                      "arg": {
+                        "branch_dest": "88"
+                      }
+                    },
+                    {
+                      "basic": ")"
+                    }
+                  ],
+                  "line_number": 1753
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "46",
+                  "size": 2,
+                  "formatted": "ldr r0, [r1, #0x0]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldr",
+                        "opcode": 24
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r1"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "0"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1753
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "48",
+                  "size": 2,
+                  "formatted": "str r0, [r4, #0x14]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "str",
+                        "opcode": 116
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "20"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1753
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "50",
+                  "size": 2,
+                  "formatted": "str r4, [r1, #0x0]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "str",
+                        "opcode": 116
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r1"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "0"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1754
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "52",
+                  "size": 2,
+                  "formatted": "ldr r0, [r5, #0x0]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldr",
+                        "opcode": 24
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "0"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1755
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "54",
+                  "size": 2,
+                  "formatted": "ldrh r0, [r0, #0x4]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldrh",
+                        "opcode": 32
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "4"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1755
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "56",
+                  "size": 2,
+                  "formatted": "lsl r0, #0x1",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "lsl",
+                        "opcode": 36
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "1"
+                      }
+                    }
+                  ],
+                  "line_number": 1755
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "58",
+                  "size": 4,
+                  "formatted": "bl 0x0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "bl",
+                        "opcode": 7
+                      }
+                    },
+                    {
+                      "arg": {
+                        "branch_dest": "0"
+                      }
+                    }
+                  ],
+                  "branch_dest": "0",
+                  "line_number": 1755
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "62",
+                  "size": 2,
+                  "formatted": "str r0, [r4, #0x4]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "str",
+                        "opcode": 116
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "4"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1755
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "64",
+                  "size": 2,
+                  "formatted": "ldr r0, [r5, #0x4]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldr",
+                        "opcode": 24
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "4"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1756
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "66",
+                  "size": 2,
+                  "formatted": "str r0, [r4, #0x8]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "str",
+                        "opcode": 116
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "8"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1756
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "68",
+                  "size": 2,
+                  "formatted": "ldrh r0, [r5, #0x8]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldrh",
+                        "opcode": 32
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "8"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1757
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "70",
+                  "size": 2,
+                  "formatted": "mov r1, #0x0",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r1"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "0"
+                      }
+                    }
+                  ],
+                  "line_number": 1757
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "72",
+                  "size": 2,
+                  "formatted": "strh r0, [r4, #0xc]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "strh",
+                        "opcode": 124
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "12"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1757
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "74",
+                  "size": 2,
+                  "formatted": "ldrh r0, [r5, #0xa]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "ldrh",
+                        "opcode": 32
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "10"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1758
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "76",
+                  "size": 2,
+                  "formatted": "strh r0, [r4, #0xe]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "strh",
+                        "opcode": 124
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "14"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1758
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "78",
+                  "size": 2,
+                  "formatted": "strb r1, [r4, #0x10]",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "strb",
+                        "opcode": 117
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r1"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "["
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "basic": "#"
+                    },
+                    {
+                      "arg": {
+                        "signed": "16"
+                      }
+                    },
+                    {
+                      "basic": "]"
+                    }
+                  ],
+                  "line_number": 1759
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "80",
+                  "size": 2,
+                  "formatted": "mov r0, r4",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "mov",
+                        "opcode": 43
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r0"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    }
+                  ],
+                  "line_number": 1760
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "82",
+                  "size": 2,
+                  "formatted": "pop {r4, r5}",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "pop",
+                        "opcode": 58
+                      }
+                    },
+                    {
+                      "basic": "{"
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r4"
+                      }
+                    },
+                    {
+                      "separator": true
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r5"
+                      }
+                    },
+                    {
+                      "basic": "}"
+                    }
+                  ],
+                  "line_number": 1761
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "84",
+                  "size": 2,
+                  "formatted": "pop {r1}",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "pop",
+                        "opcode": 58
+                      }
+                    },
+                    {
+                      "basic": "{"
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r1"
+                      }
+                    },
+                    {
+                      "basic": "}"
+                    }
+                  ],
+                  "line_number": 1761
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "86",
+                  "size": 2,
+                  "formatted": "bx r1",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": "bx",
+                        "opcode": 9
+                      }
+                    },
+                    {
+                      "arg": {
+                        "opaque": "r1"
+                      }
+                    }
+                  ],
+                  "line_number": 1761
+                }
+              },
+              {
+                "diff_kind": "DIFF_INSERT",
+                "instruction": {
+                  "address": "88",
+                  "size": 4,
+                  "formatted": ".word 0x300485c",
+                  "parts": [
+                    {
+                      "opcode": {
+                        "mnemonic": ".word",
+                        "opcode": 65534
+                      }
+                    },
+                    {
+                      "arg": {
+                        "unsigned": "50350172"
+                      }
+                    }
+                  ],
+                  "line_number": 1761
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "history": [
+    {
+      "timestamp": "2026-08-25T18:33:20+00:00",
+      "score": 100.0,
+      "score_kind": "isolated_objdiff_gap",
+      "reason": "isolated_mismatch",
+      "branch": "docs/macabeus-tooling-assessment",
+      "commit": "b8813bc0910bb2ebf40e8a41a5e067b5d95417f9",
+      "candidate": ".mizuchi-tmp/round-174-candidates/func_08007F48-v1.c",
+      "candidate_sha1": "cd120683fac0fc35e7a8d8b28c895c4651816666",
+      "candidate_sha256": "4603566b9cab971722ba6c4b7a8a810f1cba712f3704490ddaeb9ab25a394f98",
+      "rom_sha1": "3f556448d290fa5406d6ed367fee16cc02387ad3",
+      "baseline_rom_sha1": "3f556448d290fa5406d6ed367fee16cc02387ad3",
+      "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /var/folders/cq/tj_dgq0d4qsfs1xyx0jx2cp40000gn/T/warioware-cycle-9tg9rg2m:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-174-candidates/func_08007F48-v1.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /workspace/build/asm/asm_08007f48.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08007f48.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08007f48.s.o | awk -v entry=func_08007F48 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08007F48 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08007f48.s.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08007F48 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+      "diff": {
+        "truncated": true,
+        "json_prefix": "{\"left\":{\"sections\":[{\"name\":\".text\",\"kind\":\"SECTION_CODE\",\"size\":\"92\",\"match_percent\":0.0}],\"symbols\":[{\"name\":\"func_08007F48\",\"size\":\"10\",\"flags\":{\"global\":true,\"size_inferred\":true},\"kind\":\"SYMBOL_FUNCTION\",\"target_symbol\":3,\"match_percent\":0.0,\"instructions\":[{\"instruction\":{\"size\":2,\"formatted\":\"push {r4, r5, lr}\",\"parts\":[{\"opcode\":{\"mnemonic\":\"push\",\"opcode\":59}},{\"basic\":\"{\"},{\"arg\":{\"opaque\":\"r4\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"r5\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"lr\"}},{\"basic\":\"}\"}]}},{\"instruction\":{\"address\":\"2\",\"size\":2,\"formatted\":\"mov r5, r0\",\"parts\":[{\"opcode\":{\"mnemonic\":\"mov\",\"opcode\":43}},{\"arg\":{\"opaque\":\"r5\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"r0\"}}]}},{\"instruction\":{\"address\":\"4\",\"size\":2,\"formatted\":\"ldrb r0, [r5, #0xc]\",\"parts\":[{\"opcode\":{\"mnemonic\":\"ldrb\",\"opcode\":25}},{\"arg\":{\"opaque\":\"r0\"}},{\"separator\":true},{\"basic\":\"[\"},{\"arg\":{\"opaque\":\"r5\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"signed\":\"12\"}},{\"basic\":\"]\"}]}},{\"instruction\":{\"address\":\"6\",\"size\":2,\"formatted\":\"cmp r0, #0x0\",\"parts\":[{\"opcode\":{\"mnemonic\":\"cmp\",\"opcode\":16}},{\"arg\":{\"opaque\":\"r0\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"unsigned\":\"0\"}}]}},{\"instruction\":{\"address\":\"8\",\"size\":2,\"formatted\":\"bne 0xe\",\"parts\":[{\"opcode\":{\"mnemonic\":\"bne\",\"opcode\":4}},{\"arg\":{\"branch_dest\":\"14\"}}]}},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"},{\"diff_kind\":\"DIFF_INSERT\"}]}]},\"right\":{\"sections\":[{\"name\":\".text\",\"kind\":\"SECTION_CODE\",\"size\":\"92\"}],\"symbols\":[{\"name\":\"func_08007F48\",\"size\":\"92\",\"flags\":{\"global\":true,\"size_inferred\":true},\"kind\":\"SYMBOL_FUNCTION\",\"target_symbol\":2,\"match_percent\":0.0,\"instructions\":[{\"instruction\":{\"size\":2,\"formatted\":\"push {r4, r5, lr}\",\"parts\":[{\"opcode\":{\"mnemonic\":\"push\",\"opcode\":59}},{\"basic\":\"{\"},{\"arg\":{\"opaque\":\"r4\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"r5\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"lr\"}},{\"basic\":\"}\"}],\"line_number\":1739}},{\"instruction\":{\"address\":\"2\",\"size\":2,\"formatted\":\"mov r5, r0\",\"parts\":[{\"opcode\":{\"mnemonic\":\"mov\",\"opcode\":43}},{\"arg\":{\"opaque\":\"r5\"}},{\"separator\":true},{\"arg\":{\"opaque\":\"r0\"}}],\"line_number\":1739}},{\"instruction\":{\"address\":\"4\",\"size\":2,\"formatted\":\"ldrb r0, [r5, #0xc]\",\"parts\":[{\"opcode\":{\"mnemonic\":\"ldrb\",\"opcode\":25}},{\"arg\":{\"opaque\":\"r0\"}},{\"separator\":true},{\"basic\":\"[\"},{\"arg\":{\"opaque\":\"r5\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"signed\":\"12\"}},{\"basic\":\"]\"}],\"line_number\":1741}},{\"instruction\":{\"address\":\"6\",\"size\":2,\"formatted\":\"cmp r0, #0x0\",\"parts\":[{\"opcode\":{\"mnemonic\":\"cmp\",\"opcode\":16}},{\"arg\":{\"opaque\":\"r0\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"unsigned\":\"0\"}}],\"line_number\":1741}},{\"instruction\":{\"address\":\"8\",\"size\":2,\"formatted\":\"bne 0xe\",\"parts\":[{\"opcode\":{\"mnemonic\":\"bne\",\"opcode\":4}},{\"arg\":{\"branch_dest\":\"14\"}}],\"branch_dest\":\"14\",\"line_number\":1741}},{\"diff_kind\":\"DIFF_INSERT\",\"instruction\":{\"address\":\"10\",\"size\":2,\"formatted\":\"mov r0, #0x0\",\"parts\":[{\"opcode\":{\"mnemonic\":\"mov\",\"opcode\":43}},{\"arg\":{\"opaque\":\"r0\"}},{\"separator\":true},{\"basic\":\"#\"},{\"arg\":{\"unsigned\":\"0\"}}],\"line_number\":1742}},{\"diff_kind\":\"DIFF_INSERT\",\"instructio"
+      }
+    }
+  ],
+  "history_limit": 8
+}
