@@ -6,6 +6,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 154 — standalone string-counter boundary proof (2026-08-25)
+- The live report inventory correctly separated genuinely unmatched functions from historical asm files whose bodies are already matched C; the first new target was `func_08004400`, not the already-matched `BX LR`/constant leaves.
+- asmlift supplied a useful ordinary-C skeleton for the two-byte record counter. The strict candidate audit passed with no asm, barriers, pins, non-mapped volatile, or opaque layout; only the visible cursor stride remained as bounded evidence.
+- Normalized linked-ELF isolation was misleading because the legacy target symbol ended at `_08004408` and scored only the first 8 bytes against the candidate's 44-byte symbol. The separate `objcopy` full-section audit proved equal size and SHA-256 before the transaction. This is a metadata-only proof, not permission to waive any instruction or pool-byte mismatch.
+- `decomp_cycle.py apply` correctly refused reuse of the non-exact receipt; rerunning the guarded `--force` transaction performed the full Docker ROM/report gate and accepted the source/linker/assembly move with equal ROM/base SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+
 ## Round 152 — included-stub scene-family screen and host-TU acceptance (2026-08-23)
 - A 19-entry Docker isolation screen was useful for register shaping but not sufficient as the acceptance signal: the selected `080115DC`, `08015590`, and `0801522C` bodies differed only by host-TU literal-pool boundaries and external `BL` relocation metadata, while earlier direct-field variants had real register-home changes.
 - The strict source audit correctly accepted the bounded `+0xDE` byte-pointer evidence for `08015590` and the named-overlay version for `0801522C`, while rejecting the untyped-handle/raw-pointer variants as opaque offset-heavy layouts. This preserved the no-pins/no-barriers rule without hiding codegen shims.
