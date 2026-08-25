@@ -11,21 +11,27 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 290` — `func_08004378` now emits the same complete `.text` bytes as its legacy asm through ordinary C, with a full-section proof for the target's truncated local-label symbol
-- `build/report.json`: **1708 / 5930 matched functions** (**28.802698%**) · **7.702029%** matched code (**76546 / 993842**)
-- `tools/gen_objdiff.py`: **1248 linked C TUs / 5439 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1449 decompiled function files** = **1229 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 291` — `func_08007FA4` now emits the same complete `.text` bytes as its legacy asm through ordinary C, with a full-section proof for the target's truncated local-label symbol
+- `build/report.json`: **1709 / 5929 matched functions** (**28.824420%**) · **7.704846%** matched code (**76574 / 993842**)
+- `tools/gen_objdiff.py`: **1249 linked C TUs / 5438 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1450 decompiled function files** = **1230 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **38 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **106 files / 502 pins**
 - Remaining non-volatile empty compiler barriers: **7 files / 7 barriers**; the full strict audit also reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1483 / 5930**; now exceeded by **225** matches
-- 26% milestone at the current function total: **1542 / 5930**; now exceeded by **166** matches
-- 27% active working goal at the current function total: **1602 / 5930**; exceeded by **106** matches
-- 30% milestone at the current function total: **1779 / 5930**; **71** more matches needed
-- 80% target at the current function total: **4744 / 5930**
-- Remaining gap to 80%: **3036 matched functions**
+- 25% milestone at the current function total: **1483 / 5929**; now exceeded by **226** matches
+- 26% milestone at the current function total: **1542 / 5929**; now exceeded by **167** matches
+- 27% active working goal at the current function total: **1601 / 5929**; exceeded by **108** matches
+- 30% milestone at the current function total: **1779 / 5929**; **70** more matches needed
+- 80% target at the current function total: **4744 / 5929**
+- Remaining gap to 80%: **3035 matched functions**
+
+### Batch 291 — one exact ordinary-C standalone graphics-entry wrapper (2026-08-25)
+- Converted `func_08007FA4` from `asm/asm_08007fa4.s` to a strict ordinary-C standalone TU. It queries the existing graphics-entry list and forwards the input record's ID plus the matched entry field to `func_08007E8C`; the source uses named input/entry records with no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Normalized linked-ELF isolation reported a target symbol of 22 bytes versus a candidate symbol of 28 bytes because the legacy target's internal return label ends the inferred function early. Docker-compiled target and candidate `.text` sections were independently extracted at the complete 28-byte size and matched byte-for-byte with SHA-256 `6ceb9b46801a30727bbe8404dd3929367d9dedc5c17289b1504b4f8590e8f866`; the guarded metadata-only force path waived only that boundary.
+- Fresh Docker report is **1709 / 5929** functions and **76574 / 993842** matched code. Unit coverage is **1249 C / 5438 asm-only**; decomp files are **1450** (**1230 standalone_tu / 220 included_stub**). ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-161-08007FA4-apply.json`, `.decomp-runs/round-161-08007FA4-full-text-proof.json`, `.nearmiss/func_08007FA4.json`, and the strict source audit generated for `src/decomp/asm_08007fa4.c`.
 
 ### Batch 290 — one exact ordinary-C standalone heap cleanup (2026-08-25)
 - Converted `func_08004378` from `asm/asm_08004378.s` to a strict ordinary-C standalone TU with a named 0x1C-byte cleanup record. It frees the three owned pointers in target order and then the record itself; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
