@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 298 — one exact ordinary-C standalone callback/mask wrapper (2026-08-25)
+- Converted `func_08006700` from `asm/asm_08006700.s` to a strict ordinary-C standalone TU with a named state overlay. The unsigned low-12-bit predicate and separate post-callback mask locals reproduce the target's shifts, callback ABI, and `0xFFFFF000` literal-pool AND without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
+- The isolated linked-ELF screen classified only a legacy local-label/function-boundary metadata gap as a near miss. Docker-assembled target and agbcc candidate complete `.text` sections matched byte-for-byte at 52 bytes with SHA-256 `070326b04284a6b44f6cf809ab2ac3226ac1e8b9c78f047cf6bf331f16a4d44c`; the guarded force path waived only that metadata boundary, and the clean Docker ROM/report gate passed with equal ROM/base ROM SHA-1.
+- Fresh report is **1719 / 5926** functions and **76874 / 993854** matched code. Unit coverage is **1259 C / 5428 asm-only**; decomp files are **1460** (**1240 standalone_tu / 220 included_stub**). Total code and total units remain unchanged from Batch 297 while the report's total-function denominator is one lower. ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-168-isolation-v4.json`, `.decomp-runs/round-168-08006700-full-text-proof.json`, `.decomp-runs/round-168-08006700-v4-source-audit.json`, `.decomp-runs/round-168-08006700-apply.json`, and `.decomp-runs/round-168-08006700-full-source-audit.json`.
+
 ## Batch 297 — two exact ordinary-C standalone clamp and scene wrappers (2026-08-25)
 - Converted `func_080B3690` from `asm/asm_080b3690.s` to a strict ordinary-C standalone TU with a named state record. The ordered upper-bound reset and negative-value clamp reproduce the target without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
 - Converted `func_0800E764` from `asm/asm_0800e764.s` to a strict ordinary-C standalone TU with a named scene-data overlay. Loading the sprite handler before the scene base, reading +0x2D0, and calling `sprite_set_visible` in that order is exact and strict-clean.

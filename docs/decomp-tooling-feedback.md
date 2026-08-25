@@ -6,6 +6,13 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 168 — callback mask wrapper screen (2026-08-25)
+- `func_08006700` needed an explicit unsigned `(u32)` shift expression to preserve the target's `LSLS/LSRS #20` predicate. A direct `& 0xFFF` spelling loaded the mask from a pool instead, and a signed shift spelling used `ASRS`; both were honest near misses.
+- The final ordinary-C spelling used a block-local reload plus separate `u32 mask` to preserve the target's `LDRH; LDR = 0xFFFFF000; ANDS; STRH` sequence. The strict source audit passed with no asm, barriers, pins, non-mapped volatile, or opaque layout.
+- The linked-ELF isolation tool still reported a near miss because the legacy target's local labels inferred a shorter function boundary even though the candidate and converted target assembled to identical complete 52-byte `.text` sections. The independent Docker full-text proof and the integrated clean ROM gate were authoritative; the guarded apply force path waived only the symbol-boundary metadata.
+- `func_08004C94` remained a weaker stack-wrapper near miss at score 50.125 and was not applied. Its candidate and receipt remain evidence-only; no linker symbol or source-quality exception was added.
+- The accepted conversion advanced the report from **1718 / 5927** to **1719 / 5926**, matched code from **76822 / 993854** to **76874 / 993854**, linked C units from **1258 / 5429** to **1259 / 5428**, and decomp files from **1459** to **1460**. The clean Docker gate preserved ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+
 ## Round 167 — clamp and scene-data wrapper screen (2026-08-25)
 - `func_080B3690` matched directly with a named +0x4 signed state field and two ordered ordinary-C comparisons, preserving the target's upper reset and negative clamp.
 - `func_0800E764` first failed standalone preprocessing because the scene-data declaration was supplied by `scenes.h`, not `global.h`; adding that canonical header produced an exact candidate. The explicit handler local before the scene overlay preserved the target literal-load order and the +0x2D0 signed halfword call argument.
