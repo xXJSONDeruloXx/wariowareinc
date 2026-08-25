@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 289 — one exact ordinary-C standalone graphics-flag reset (2026-08-25)
+- Converted `func_08006CC8` from `asm/asm_08006cc8.s` to a strict ordinary-C standalone TU using the existing typed `gGraphicsBuffer` bitfields. It clears the two target flags with ordinary C; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Linked isolation reported only the target's local literal-pool boundary: a 24-byte inferred target symbol versus a 30-byte candidate symbol. Target and candidate linked `.text` sections were independently proven identical at 32 bytes with SHA-256 `416cc334dbb73b34471b3b471474b35bd2428d0ed55b1abc970dfd199272eb4f` before the metadata-only force transaction. The clean Docker ROM/report gate passed with equal ROM/base ROM SHA-1.
+- Fresh report is **1707 / 5931** functions and **76508 / 993842** matched code. Unit coverage is **1247 C / 5440 asm-only**; decomp files are **1448** (**1228 standalone_tu / 220 included_stub**). ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/20260825T153337Z-isolation.json`, `.decomp-runs/round-160-accepted-source-audit.json`, `.decomp-runs/round-160-full-source-audit.json`, `.decomp-runs/round-160-apply.json`, and `.nearmiss/func_08006CC8.json`.
+
 ## Batch 288 — one exact ordinary-C standalone linked-list lookup (2026-08-25)
 - Converted `func_08007F20` from `asm/asm_08007f20.s` to a strict ordinary-C standalone TU. It scans the `D_0300485C` linked list, compares node IDs, returns the matching node's data address, and falls back to the input pointer. The named node layout contains the ID, data, padding, and `next` fields; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
 - Added the canonical `D_0300485C = 0x0300485C` standalone linker-map assignment. Linked isolation reported only a target symbol-size boundary (12 inferred bytes versus the complete 40-byte body); target and candidate linked `.text` sections were independently proven identical at 40 bytes with equal SHA-256 before the metadata-only force transaction. The clean Docker ROM/report gate passed with equal ROM/base ROM SHA-1.
