@@ -5,21 +5,27 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 298` — `func_08006700` now emits its complete legacy callback/mask body through ordinary C with a named state overlay
-- `build/report.json`: **1719 / 5926 matched functions** = **29.007763%**
-- `matched_code`: **76874 / 993854** = **7.734939%**
-- `tools/gen_objdiff.py`: **1259 linked C TUs / 5428 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1460 decompiled function files** = **1240 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 299` — `func_08004C94` now emits its complete aligned stack-task wrapper through ordinary C with a canonical ROM symbol map
+- `build/report.json`: **1720 / 5925 matched functions** = **29.029537%**
+- `matched_code`: **76914 / 993856** = **7.738948%**
+- `tools/gen_objdiff.py`: **1260 linked C TUs / 5427 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1461 decompiled function files** = **1241 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining compiler-register-pin files: **106 / 502 pins**; remaining non-volatile empty compiler-barrier files: **7 / 7 barriers**. The full strict audit reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
 - Maintenance state: **35 legacy inline-asm shims removed** from included-stub files, plus two hundred seventy compiler register pins removed across batches 256–286; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, scalar-pointer aliases are counted across later lines, and named overlays are preferred for multi-field records.
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
-- 25% milestone: **1482 / 5926**, now exceeded by **237** matched functions.
-- 26% milestone: **1541 / 5926**; current progress is **1719**, exceeding it by **178** matches.
-- Active 27% working goal: **1600 / 5926**; current progress exceeds it by **119** matches.
-- Next 30% milestone: **1778 / 5926**; **59** additional matched functions are needed.
+- 25% milestone: **1482 / 5925**, now exceeded by **238** matched functions.
+- 26% milestone: **1541 / 5925**; current progress is **1720**, exceeding it by **179** matches.
+- Active 27% working goal: **1600 / 5925**; current progress exceeds it by **120** matches.
+- Next 30% milestone: **1778 / 5925**; **58** additional matched functions are needed.
+
+### Batch 299 — one exact ordinary-C standalone aligned stack-task wrapper (2026-08-25)
+- Converted `func_08004C94` from `asm/asm_08004c94.s` to a strict ordinary-C standalone TU. A natural four-word local record supplies the target's aligned `0x14` frame while only its first three words are forwarded, and a separate `u16 id` local keeps the `LSLS`/`LSRS` normalization before the stack stores; the source contains no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Added the canonical `D_083A49EC = 0x083A49EC` linker-map definition already declared by `include/undefined_syms.inc`. The isolated linked-ELF screen reported only a legacy symbol-boundary metadata gap. After resolving that ROM symbol in Docker, the complete 40-byte linked `.text` sections matched byte-for-byte with SHA-256 `8eb8d7ed27b4832c77715c2a11e49b34df148f72e87e641b0548a2c5d094fa72`; the clean Docker ROM gate accepted the conversion.
+- Fresh Docker report is **1720 / 5925** functions and **76914 / 993856** matched code. Unit coverage is **1260 C / 5427 asm-only**; decomp files are **1461** (**1241 standalone_tu / 220 included_stub**). The report's total-function denominator is one lower than Batch 298 while total units remain unchanged. ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-169-isolation-v2.json`, `.decomp-runs/round-169-08004C94-full-text-proof.json`, `.decomp-runs/round-169-08004C94-v4-source-audit.json`, `.decomp-runs/round-169-08004C94-apply.json`, and `.decomp-runs/round-169-08004C94-full-source-audit.json`.
 
 ### Batch 298 — one exact ordinary-C standalone callback/mask wrapper (2026-08-25)
 - Converted `func_08006700` from `asm/asm_08006700.s` to a strict ordinary-C standalone TU with a named state overlay. The unsigned shift expression preserves the low-12-bit predicate, while separate `value` and `mask` locals preserve the target's `0xFFFFF000` literal-pool AND after the optional callback; the source contains no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.

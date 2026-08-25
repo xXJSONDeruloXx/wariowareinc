@@ -6,6 +6,11 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 169 — aligned stack-task wrapper screen (2026-08-25)
+- `func_08004C94` initially had the right stores but a `0x10` frame. A four-word local array raised the frame to the target's aligned `0x14` while keeping the forwarded words at +4/+8/+C; a separate `u16 id` local made the `LSLS/LSRS` normalization contiguous before those stores. The other tested natural variants remained near misses and were not applied.
+- `D_083A49EC` was already declared in `include/undefined_syms.inc` but absent from `undefined_syms.ld`; adding the canonical linker assignment was required for the full ROM build. Raw standalone object hashes differ only in that unresolved literal relocation, while Docker-linked target and candidate `.text` hashes are identical after resolving the same absolute address.
+- The accepted wrapper advanced the report from **1719 / 5926** to **1720 / 5925**, matched code from **76874 / 993854** to **76914 / 993856**, linked C units from **1259 / 5428** to **1260 / 5427**, and decomp files from **1460** to **1461**. The clean Docker gate preserved ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+
 ## Round 168 — callback mask wrapper screen (2026-08-25)
 - `func_08006700` needed an explicit unsigned `(u32)` shift expression to preserve the target's `LSLS/LSRS #20` predicate. A direct `& 0xFFF` spelling loaded the mask from a pool instead, and a signed shift spelling used `ASRS`; both were honest near misses.
 - The final ordinary-C spelling used a block-local reload plus separate `u32 mask` to preserve the target's `LDRH; LDR = 0xFFFFF000; ANDS; STRH` sequence. The strict source audit passed with no asm, barriers, pins, non-mapped volatile, or opaque layout.
