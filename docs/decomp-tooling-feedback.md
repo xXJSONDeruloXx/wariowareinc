@@ -6,6 +6,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 185 — two-call state wrapper and named high-offset field (2026-08-25)
+- `func_0802FB98` was an exact strict-clean ordinary-C wrapper once its `+0x80` word was modeled as a named field in a small state overlay. The field increment before the two calls naturally preserved the target's `R4` state pointer, `ADDS #0x80`, load/increment/store sequence, and repeated call argument without pins, barriers, volatile, or raw offset aliases.
+- The isolated linked-ELF screen was exact at 100%; a Docker full-text proof independently linked the two external Thumb callees at `0x0802F9CC` and `0x0802F6C0` and matched the complete 32-byte section at SHA-256 `c7d6ec21440ca746d3c9dcc25c427d7c28a7ef785a7282608362bbbeddee51b4`.
+- The clean Docker gate passed with equal ROM/base SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Full strict audit remains at zero instruction asm, **106 files / 502 register pins**, **27 files / 31 barrier findings**, and **7 non-volatile barriers**; the accepted candidate audit is strict-clean.
+- Evidence: `.decomp-runs/round-185-isolation.json`, `.decomp-runs/round-185-func_0802FB98-v1-source-audit.json`, `.decomp-runs/round-185-func_0802FB98-apply.json`, `.decomp-runs/round-185-func_0802FB98-full-text-proof.json`, and `.decomp-runs/round-185-full-source-audit.json`.
+
 ## Round 184 — texture-loader wrapper, canonical ROM literal, and external-call relocation (2026-08-25)
 - `start_new_texture_loader` was a strict-clean ordinary-C five-argument task wrapper: the `u16` ID, texture-list pointer, two zero arguments, and live `start_new_task` result reproduced the target's normalization and `POP {R1}; BX R1` epilogue without source-level code-generation tricks.
 - The standalone apply preflight found `D_083A4B48` declared in `include/undefined_syms.inc` but absent from `undefined_syms.ld`; adding the canonical linker assignment was required for the real ROM link.

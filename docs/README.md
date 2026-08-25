@@ -11,10 +11,10 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 309` — `start_new_texture_loader` now emits the texture-loader task wrapper through ordinary C
-- `build/report.json`: **1730 / 5915 matched functions** (**29.247675%**) · **7.791641%** matched code (**77438 / 993860**)
-- `tools/gen_objdiff.py`: **1270 linked C TUs / 5417 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1471 decompiled function files** = **1251 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 310` — `func_0802FB98` now emits the two-call state-counter wrapper through ordinary C
+- `build/report.json`: **1731 / 5915 matched functions** (**29.264582%**) · **7.794861%** matched code (**77470 / 993860**)
+- `tools/gen_objdiff.py`: **1271 linked C TUs / 5416 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1472 decompiled function files** = **1252 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **38 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **106 files / 502 pins**
@@ -22,10 +22,17 @@ If an agent resumes cold, read these first:
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
 - 25% milestone at the current function total: **1479 / 5915**; now exceeded by **251** matches
 - 26% milestone at the current function total: **1538 / 5915**; now exceeded by **192** matches
-- 27% active working goal at the current function total: **1598 / 5915**; exceeded by **132** matches
-- 30% milestone at the current function total: **1775 / 5915**; **45** more matches needed
+- 27% active working goal at the current function total: **1598 / 5915**; exceeded by **133** matches
+- 30% milestone at the current function total: **1775 / 5915**; **44** more matches needed
 - 80% target at the current function total: **4732 / 5915**
 - Remaining gap to 80%: **3002 matched functions**
+
+### Batch 310 — one exact ordinary-C two-call state-counter wrapper (2026-08-25)
+- Converted `func_0802FB98` from `asm/asm_0802fb98.s` to a strict ordinary-C standalone TU with a named state overlay. The `+0x80` counter field, increment-before-call ordering, and two calls through the same state pointer reproduce the complete wrapper without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
+- The isolated linked-ELF screen was exact at 100%. A Docker full-text proof linked thumb-typed `func_0802F9CC` and `func_0802F6C0` symbols at their ROM addresses and matched the complete 32-byte target/candidate sections at SHA-256 `c7d6ec21440ca746d3c9dcc25c427d7c28a7ef785a7282608362bbbeddee51b4`.
+- Fresh Docker report is **1731 / 5915** functions and **77470 / 993860** matched code. Unit coverage is **1271 C / 5416 asm-only**; decomp files are **1472** (**1252 standalone_tu / 220 included_stub**). Full strict-audit residue remains **0 instruction-asm files**, **106 files / 502 register pins**, **27 files / 31 barrier findings**, and **7 non-volatile barriers**.
+- The clean Docker ROM gate passed with `wariowareinc.gba: OK`; ROM and baseline ROM SHA-1 are both `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-185-isolation.json`, `.decomp-runs/round-185-func_0802FB98-v1-source-audit.json`, `.decomp-runs/round-185-func_0802FB98-apply.json`, `.decomp-runs/round-185-func_0802FB98-full-text-proof.json`, and `.decomp-runs/round-185-full-source-audit.json`.
 
 ### Batch 309 — one exact ordinary-C texture-loader task wrapper (2026-08-25)
 - Converted `start_new_texture_loader` from `asm/asm_08008038.s` to a strict ordinary-C standalone TU. The `u16` memory ID, texture-list pointer, canonical `D_083A4B48` task literal, two zero task arguments, and live five-argument `start_new_task` result preserve the target's normalization and interworking epilogue without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
