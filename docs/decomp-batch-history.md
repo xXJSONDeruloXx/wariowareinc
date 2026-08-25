@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 288 — one exact ordinary-C standalone linked-list lookup (2026-08-25)
+- Converted `func_08007F20` from `asm/asm_08007f20.s` to a strict ordinary-C standalone TU. It scans the `D_0300485C` linked list, compares node IDs, returns the matching node's data address, and falls back to the input pointer. The named node layout contains the ID, data, padding, and `next` fields; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Added the canonical `D_0300485C = 0x0300485C` standalone linker-map assignment. Linked isolation reported only a target symbol-size boundary (12 inferred bytes versus the complete 40-byte body); target and candidate linked `.text` sections were independently proven identical at 40 bytes with equal SHA-256 before the metadata-only force transaction. The clean Docker ROM/report gate passed with equal ROM/base ROM SHA-1.
+- Fresh report is **1706 / 5932** functions and **76476 / 993840** matched code. Unit coverage is **1246 C / 5441 asm-only**; decomp files are **1447** (**1227 standalone_tu / 220 included_stub**). ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/20260825T152105Z-isolation.json`, `.decomp-runs/round-159-accepted-source-audit.json`, `.decomp-runs/round-159-full-source-audit.json`, `.decomp-runs/round-159-apply.json`, and `.nearmiss/func_08007F20.json`.
+
 ## Batch 287 — one exact ordinary-C standalone string-record counter (2026-08-25)
 - Converted `func_08004400` from `asm/asm_08004400.s` to a strict ordinary-C standalone TU. The function walks a two-byte record stream, skips `.` and `:`, calls `func_08004770` for the remaining records, and counts non-special records. The source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout; the only raw evidence is the bounded cursor stride.
 - Normalized linked-ELF isolation reported a false partial match because the legacy target symbol ended at internal label `_08004408` (8 bytes), while the candidate symbol covered the complete 44-byte function. A direct full-section SHA-256 proof matched target and candidate `.text` at 44 bytes; the narrow metadata-only force path waived only symbol coverage, and the clean Docker ROM gate accepted the conversion.

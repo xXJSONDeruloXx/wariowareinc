@@ -6,6 +6,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 159 — linked-list candidate screen and symbol-map boundary proof (2026-08-25)
+- The live report inventory found five useful short ordinary-C probes. `func_08007AF8`, `func_08007204`, `func_0800567C`, and `func_080043D4` all passed the strict source/layout audit but retained real compiler register or induction-variable differences; their near-miss receipts and attempt-ledger rows remain evidence-only rather than being forced.
+- `func_08007F20` used a named linked-list node model and passed the strict audit with zero instruction asm, barriers, register pins, non-mapped volatile, or opaque layout. The candidate needed the canonical `D_0300485C` linker-map assignment because the symbol existed in `include/undefined_syms.inc` but not in `undefined_syms.ld`.
+- Normalized linked-ELF isolation reported a 100% score with a 12-byte inferred target symbol versus the complete 40-byte candidate symbol. A separate link of target and candidate with the same absolute symbol map produced equal 40-byte `.text` sections and SHA-256, proving a metadata-only boundary defect. The guarded force transaction still ran the clean Docker ROM/report gate and accepted only after equal ROM/base ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- The accepted standalone conversion advanced the report from **1705 / 5933** to **1706 / 5932**, code from **76436** to **76476**, linked C units from **1245** to **1246**, and decomp files from **1446** to **1447**. This reinforces that full linked bytes and the ROM gate, not normalized symbol percentages, decide a narrowly documented metadata exception.
+
 ## Round 154 — standalone string-counter boundary proof (2026-08-25)
 - The live report inventory correctly separated genuinely unmatched functions from historical asm files whose bodies are already matched C; the first new target was `func_08004400`, not the already-matched `BX LR`/constant leaves.
 - asmlift supplied a useful ordinary-C skeleton for the two-byte record counter. The strict candidate audit passed with no asm, barriers, pins, non-mapped volatile, or opaque layout; only the visible cursor stride remained as bounded evidence.
