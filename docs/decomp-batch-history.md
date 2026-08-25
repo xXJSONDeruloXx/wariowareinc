@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 301 — one exact ordinary-C bounded byte-copy wrapper (2026-08-25)
+- Converted `func_08007AD4` from `asm/asm_08007ad4.s` to a strict ordinary-C standalone TU. Separate `result`, `count`, and `value` locals preserve the original destination, unsigned limit check, single source-byte load, byte store, pointer increments, and `u8 *` return. No instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout was used.
+- Round55's earlier candidate had a genuine two-byte `R4`/`R5` prologue-order mismatch. The new v1 spelling corrected that source order; isolation then differed only by the legacy 10-byte target-symbol boundary versus the complete 36-byte section. The narrow force path waived metadata only, and the integrated clean Docker ROM/report gate passed with ROM/base SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Report progress advanced **1721 / 5924 → 1722 / 5923** matched functions, **76962 / 993856 → 76998 / 993856** matched code, **1261 / 5426 → 1262 / 5425** linked C/asm-only units, and **1462 → 1463** decomp files. The function denominator dropped by one when the converted legacy local-label boundary stopped being inferred as a separate function.
+- Evidence: `.decomp-runs/round-172-isolation.json`, `.decomp-runs/round-172-08007AD4-v1-source-audit.json`, `.decomp-runs/round-172-08007AD4-apply.json`, `.decomp-runs/round-172-full-source-audit.json`, and `.nearmiss/func_08007AD4.json`. The historical Round55 candidate remains recorded as a real near miss.
+
 ## Batch 300 — one exact ordinary-C linked-list heap teardown (2026-08-25)
 - Converted `func_08007EAC` from `asm/asm_08007eac.s` to a strict ordinary-C standalone TU with a named node overlay: payload at `+4`, successor at `+0x14`, successor saved before freeing payload and node, and `D_0300485C` cleared after the loop. No instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout was used.
 - Isolation reported only the legacy target's truncated 10-byte symbol boundary versus the complete 48-byte candidate section. The narrow force path waived that metadata only; the integrated clean Docker ROM/report gate passed `wariowareinc.gba: OK` with ROM/base SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
