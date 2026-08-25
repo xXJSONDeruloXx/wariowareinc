@@ -6,6 +6,12 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 167 — clamp and scene-data wrapper screen (2026-08-25)
+- `func_080B3690` matched directly with a named +0x4 signed state field and two ordered ordinary-C comparisons, preserving the target's upper reset and negative clamp.
+- `func_0800E764` first failed standalone preprocessing because the scene-data declaration was supplied by `scenes.h`, not `global.h`; adding that canonical header produced an exact candidate. The explicit handler local before the scene overlay preserved the target literal-load order and the +0x2D0 signed halfword call argument.
+- A stack-record candidate for `func_080F5FF4` matched all stores and the helper call but retained the project compiler's interwork-safe `POP {R0}; BX R0` instead of the legacy target's `POP {PC}`. It remains an honest near miss; no asm or compiler shim was added.
+- The accepted pair advanced the report from **1716 / 5927** to **1718 / 5927**, matched code from **76752 / 993844** to **76822 / 993854**, linked C units from **1256 / 5431** to **1258 / 5429**, and decomp files from **1457** to **1459**. The clean Docker gate preserved ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+
 ## Round 166 — packed-record offset and lifetime corrections (2026-08-25)
 - `func_08078F28` reached exact ordinary C after the candidate's first record model exposed `fieldA` at +0x8 instead of +0xA. Adding the explicit +0x8 gap and loading the divisor into a separate local before materializing `0x80000` preserved the target's `LDRH`, divisor load, and `__divsi3` argument order.
 - `func_08004E28` initially cached the old pointer across both calls and caused an unnecessary R6 save. Passing `state->field0` directly to the helper and reloading it for `mem_heap_dealloc` preserved the target's R4 state pointer, R5 result lifetime, and store order.

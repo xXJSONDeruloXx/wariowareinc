@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 296` — `func_08078F28` and `func_08004E28` now emit their complete legacy bodies through ordinary C with corrected packed-record offsets and field lifetimes
-- `build/report.json`: **1716 / 5927 matched functions** = **28.952253%**
-- `matched_code`: **76752 / 993844** = **7.722741%**
-- `tools/gen_objdiff.py`: **1256 linked C TUs / 5431 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1457 decompiled function files** = **1237 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 297` — `func_080B3690` and `func_0800E764` now emit their complete legacy bodies through ordinary C with clamp and scene-data overlay shapes
+- `build/report.json`: **1718 / 5927 matched functions** = **28.985994%**
+- `matched_code`: **76822 / 993854** = **7.729707%**
+- `tools/gen_objdiff.py`: **1258 linked C TUs / 5429 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1459 decompiled function files** = **1239 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining compiler-register-pin files: **106 / 502 pins**; remaining non-volatile empty compiler-barrier files: **7 / 7 barriers**. The full strict audit reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
@@ -18,8 +18,15 @@ Prefer this file + the other docs in `/docs`
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1482 / 5927**, now exceeded by **229** matched functions.
 - 26% milestone: **1542 / 5927**; current progress is **1711**, exceeding it by **169** matches.
-- Active 27% working goal: **1601 / 5927**; current progress exceeds it by **115** matches.
-- Next 30% milestone: **1779 / 5927**; **63** additional matched functions are needed.
+- Active 27% working goal: **1601 / 5927**; current progress exceeds it by **117** matches.
+- Next 30% milestone: **1779 / 5927**; **61** additional matched functions are needed.
+
+### Batch 297 — two exact ordinary-C standalone clamp and scene wrappers (2026-08-25)
+- Converted `func_080B3690` from `asm/asm_080b3690.s` to a strict ordinary-C standalone TU with a named state record. The two ordered comparisons preserve the target's upper-bound reset and negative-value clamp, with no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Converted `func_0800E764` from `asm/asm_0800e764.s` to a strict ordinary-C standalone TU with a named scene-data overlay. It loads the sprite handler before the scene base, reads the +0x2D0 halfword, and calls `sprite_set_visible` in target order; the source is strict-clean ordinary C.
+- Docker-compiled complete `.text` sections matched byte-for-byte: `func_080B3690` at 32 bytes with SHA-256 `6e0c50c5e6d8479d4d915bbb8f9544acb7c9c701583d09210c12ff23bc33d26a`, and `func_0800E764` at 40 bytes with SHA-256 `aeaaf3b98b8d86c44ea4ff75d8b7bf4d2dd518dd65f2508ac351016fe7683a81`. Both isolated exact and passed the transactional clean Docker ROM gate.
+- Fresh Docker report is **1718 / 5927** functions and **76822 / 993854** matched code. Unit coverage is **1258 C / 5429 asm-only**; decomp files are **1459** (**1239 standalone_tu / 220 included_stub**). ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-167-isolation-v2.json`, `.decomp-runs/round-167-080B3690-full-text-proof.json`, `.decomp-runs/round-167-0800E764-full-text-proof.json`, `.decomp-runs/round-167-080B3690-apply.json`, `.decomp-runs/round-167-0800E764-apply.json`, both targeted source audits, and `.decomp-runs/round-167-full-source-audit.json`.
 
 ### Batch 296 — two exact ordinary-C standalone packed-record wrappers (2026-08-25)
 - Converted `func_08078F28` from `asm/asm_08078f28.s` to a strict ordinary-C standalone TU with a named packed-record overlay. The explicit gap at +0x8 exposes the target's +0xA halfword, and a separate denominator local preserves the target's divisor load before `0x80000 / denominator`; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.

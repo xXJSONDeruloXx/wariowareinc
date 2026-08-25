@@ -3,6 +3,13 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 297 — two exact ordinary-C standalone clamp and scene wrappers (2026-08-25)
+- Converted `func_080B3690` from `asm/asm_080b3690.s` to a strict ordinary-C standalone TU with a named state record. The ordered upper-bound reset and negative-value clamp reproduce the target without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
+- Converted `func_0800E764` from `asm/asm_0800e764.s` to a strict ordinary-C standalone TU with a named scene-data overlay. Loading the sprite handler before the scene base, reading +0x2D0, and calling `sprite_set_visible` in that order is exact and strict-clean.
+- Docker-compiled complete `.text` sections matched byte-for-byte: `func_080B3690` at 32 bytes with SHA-256 `6e0c50c5e6d8479d4d915bbb8f9544acb7c9c701583d09210c12ff23bc33d26a`, and `func_0800E764` at 40 bytes with SHA-256 `aeaaf3b98b8d86c44ea4ff75d8b7bf4d2dd518dd65f2508ac351016fe7683a81`. The clean Docker ROM/report gate passed with equal ROM/base ROM SHA-1.
+- Fresh report is **1718 / 5927** functions and **76822 / 993854** matched code. Unit coverage is **1258 C / 5429 asm-only**; decomp files are **1459** (**1239 standalone_tu / 220 included_stub**). ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-167-isolation-v2.json`, `.decomp-runs/round-167-080B3690-full-text-proof.json`, `.decomp-runs/round-167-0800E764-full-text-proof.json`, `.decomp-runs/round-167-080B3690-apply.json`, `.decomp-runs/round-167-0800E764-apply.json`, both targeted source audits, and `.decomp-runs/round-167-full-source-audit.json`.
+
 ## Batch 296 — two exact ordinary-C standalone packed-record wrappers (2026-08-25)
 - Converted `func_08078F28` from `asm/asm_08078f28.s` to a strict ordinary-C standalone TU with a named packed-record overlay. The explicit +0x8 gap exposes the target's +0xA halfword, and a separate denominator local preserves the divisor load before `0x80000 / denominator`.
 - Converted `func_08004E28` from `asm/asm_08004e28.s` to a strict ordinary-C standalone TU with a named pointer record. It narrows the third argument before the helper call, reloads the old field for deallocation instead of caching it across calls, and stores the result in target order. Both sources are strict-clean ordinary C with no instruction asm, barriers, pins, non-mapped volatile, or opaque layout.
