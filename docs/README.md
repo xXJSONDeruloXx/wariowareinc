@@ -11,21 +11,27 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 299` — `func_08004C94` now emits its complete aligned stack-task wrapper through ordinary C with a canonical ROM symbol map
-- `build/report.json`: **1720 / 5925 matched functions** (**29.029537%**) · **7.738948%** matched code (**76914 / 993856**)
-- `tools/gen_objdiff.py`: **1260 linked C TUs / 5427 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1461 decompiled function files** = **1241 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 300` — `func_08007EAC` now emits the linked-list heap teardown through ordinary C
+- `build/report.json`: **1721 / 5924 matched functions** (**29.051315%**) · **7.743778%** matched code (**76962 / 993856**)
+- `tools/gen_objdiff.py`: **1261 linked C TUs / 5426 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1462 decompiled function files** = **1242 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **38 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **106 files / 502 pins**
 - Remaining non-volatile empty compiler barriers: **7 files / 7 barriers**; the full strict audit also reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1482 / 5925**; now exceeded by **238** matches
-- 26% milestone at the current function total: **1541 / 5925**; now exceeded by **179** matches
-- 27% active working goal at the current function total: **1600 / 5925**; exceeded by **120** matches
-- 30% milestone at the current function total: **1778 / 5925**; **58** more matches needed
-- 80% target at the current function total: **4740 / 5925**
-- Remaining gap to 80%: **3020 matched functions**
+- 25% milestone at the current function total: **1481 / 5924**; now exceeded by **240** matches
+- 26% milestone at the current function total: **1541 / 5924**; now exceeded by **180** matches
+- 27% active working goal at the current function total: **1600 / 5924**; exceeded by **121** matches
+- 30% milestone at the current function total: **1778 / 5924**; **57** more matches needed
+- 80% target at the current function total: **4740 / 5924**
+- Remaining gap to 80%: **3019 matched functions**
+
+### Batch 300 — one exact ordinary-C linked-list heap teardown (2026-08-25)
+- Converted `func_08007EAC` from `asm/asm_08007eac.s` to a strict ordinary-C standalone TU. A named node exposes the owned payload at `+4` and the forward link at `+0x14`; the source saves the successor before freeing the payload and node, then clears `D_0300485C`. It contains no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- The isolated linked-ELF screen reported only the legacy target's truncated 10-byte function-symbol boundary versus the complete 48-byte candidate section. The guarded force path waived that metadata only; the integrated clean Docker ROM/report gate matched the baseline ROM exactly at SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh Docker report is **1721 / 5924** functions and **76962 / 993856** matched code. Unit coverage is **1261 C / 5426 asm-only**; decomp files are **1462** (**1242 standalone_tu / 220 included_stub**). The denominator drops by one because the converted legacy local-label boundary is no longer counted as a separate inferred function while total units remain unchanged.
+- Evidence: `.decomp-runs/round-171-isolation.json`, `.decomp-runs/round-171-08007EAC-v1-source-audit.json`, `.decomp-runs/round-171-08007EAC-apply.json`, `.decomp-runs/round-171-full-source-audit.json`, and `.nearmiss/func_08007EAC.json`.
 
 ### Batch 299 — one exact ordinary-C standalone aligned stack-task wrapper (2026-08-25)
 - Converted `func_08004C94` from `asm/asm_08004c94.s` to a strict ordinary-C standalone TU. A natural four-word local record supplies the target's aligned `0x14` frame while only its first three words are forwarded, and a separate `u16 id` local keeps the `LSLS`/`LSRS` normalization before the stack stores; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
