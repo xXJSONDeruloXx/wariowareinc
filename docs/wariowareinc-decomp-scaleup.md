@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 293` — `func_080020FC` now emits the same complete `.text` bytes as its legacy asm through ordinary C, with a full-section proof for the target's truncated internal-label symbol
-- `build/report.json`: **1711 / 5927 matched functions** = **28.867891%**
-- `matched_code`: **76610 / 993844** = **7.708453%**
-- `tools/gen_objdiff.py`: **1251 linked C TUs / 5436 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1452 decompiled function files** = **1232 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 294` — `init_scheduled_function_task` and `func_080D3A60` now emit the complete legacy `.text` bytes through ordinary C, with explicit return-value shaping where the target preserves a live R0 result
+- `build/report.json`: **1713 / 5927 matched functions** = **28.901636%**
+- `matched_code`: **76666 / 993844** = **7.714088%**
+- `tools/gen_objdiff.py`: **1253 linked C TUs / 5434 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1454 decompiled function files** = **1234 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining compiler-register-pin files: **106 / 502 pins**; remaining non-volatile empty compiler-barrier files: **7 / 7 barriers**. The full strict audit reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
@@ -18,8 +18,15 @@ Prefer this file + the other docs in `/docs`
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1482 / 5927**, now exceeded by **229** matched functions.
 - 26% milestone: **1542 / 5927**; current progress is **1711**, exceeding it by **169** matches.
-- Active 27% working goal: **1601 / 5927**; current progress exceeds it by **110** matches.
-- Next 30% milestone: **1779 / 5927**; **68** additional matched functions are needed.
+- Active 27% working goal: **1601 / 5927**; current progress exceeds it by **112** matches.
+- Next 30% milestone: **1779 / 5927**; **66** additional matched functions are needed.
+
+### Batch 294 — two exact ordinary-C standalone return-shaped wrappers (2026-08-25)
+- Converted `init_scheduled_function_task` from `asm/asm_08007db0.s` to a strict ordinary-C standalone TU with a named three-word allocation record. Returning the allocated record preserves the target's live R0 result and its `POP {R1}; BX R1` interworking epilogue; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Converted `func_080D3A60` from `asm/asm_080d3a60.s` to a strict ordinary-C standalone TU with a named scene overlay. The call remains before the scene-variable reload, and returning the address of the written halfword preserves the target's live field pointer and `POP {R1}; BX R1` epilogue; the source is strict-clean ordinary C.
+- Docker-compiled complete `.text` sections matched byte-for-byte: `init_scheduled_function_task` at 28 bytes with SHA-256 `c2fa87380d2a8d57ae6b1ce372816ed3e46f7c509011814b233e106b6e8afd79`, and `func_080D3A60` at 28 linked bytes with SHA-256 `1a2f62a3748d5b94e619e661e633e1f389e4ddb145dfd98b730b54df00116866`. Both isolated as exact ordinary-C candidates and passed the transactional clean Docker ROM gate.
+- Fresh Docker report is **1713 / 5927** functions and **76666 / 993844** matched code. Unit coverage is **1253 C / 5434 asm-only**; decomp files are **1454** (**1234 standalone_tu / 220 included_stub**). ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-164-isolation-v5.json`, `.decomp-runs/round-164-init-full-text-proof.json`, `.decomp-runs/round-164-080D3A60-full-text-proof.json`, `.decomp-runs/round-164-init-apply.json`, `.decomp-runs/round-164-d3-apply.json`, `.decomp-runs/round-164-init-source-audit.json`, `.decomp-runs/round-164-d3-source-audit.json`, and `.decomp-runs/round-164-full-source-audit.json`.
 
 ### Batch 293 — one exact ordinary-C standalone nullable-record lookup (2026-08-25)
 - Converted `func_080020FC` from `asm/asm_080020fc.s` to a strict ordinary-C standalone TU with a named record containing the target's +0xC field. It returns zero for a null record and otherwise returns that field; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
