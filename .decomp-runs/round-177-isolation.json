@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "kind": "isolation",
+  "started": "2026-08-25T18:56:24+00:00",
+  "finished": "2026-08-25T18:56:25+00:00",
+  "branch": "docs/macabeus-tooling-assessment",
+  "commit": "2504b0cadec4f2df3b5ce835e17110f955add761",
+  "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /var/folders/cq/tj_dgq0d4qsfs1xyx0jx2cp40000gn/T/warioware-cycle-9akpujw_:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-177-candidates/schedule_function_call-v1.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /workspace/build/asm/asm_08007df0.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08007df0.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08007df0.s.o | awk -v entry=schedule_function_call '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e schedule_function_call \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08007df0.s.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e schedule_function_call \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+  "docker_image": "devkitpro/devkitarm:latest",
+  "docker_invocations": 1,
+  "candidate_count": 1,
+  "results": [
+    {
+      "function": "schedule_function_call",
+      "file": "asm/asm_08007df0.s",
+      "candidate": ".mizuchi-tmp/round-177-candidates/schedule_function_call-v1.c",
+      "target": "asm/asm_08007df0.s",
+      "target_object": "build/asm/asm_08007df0.s.o",
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 0,
+        "functions": [],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 7,
+            "text": "u32 stackArgs[4];"
+          },
+          {
+            "line": 11,
+            "text": "stackArgs[1] = (u32)function;"
+          },
+          {
+            "line": 12,
+            "text": "stackArgs[2] = (u32)param;"
+          },
+          {
+            "line": 13,
+            "text": "stackArgs[3] = delay;"
+          },
+          {
+            "line": 14,
+            "text": "stackArgs[0] = 0;"
+          },
+          {
+            "line": 15,
+            "text": "start_new_task(id, &D_083A4B38, &stackArgs[1], 0, 0);"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 7,
+            "values": [
+              "4"
+            ],
+            "text": "u32 stackArgs[4];"
+          },
+          {
+            "line": 11,
+            "values": [
+              "1"
+            ],
+            "text": "stackArgs[1] = (u32)function;"
+          },
+          {
+            "line": 12,
+            "values": [
+              "2"
+            ],
+            "text": "stackArgs[2] = (u32)param;"
+          },
+          {
+            "line": 13,
+            "values": [
+              "3"
+            ],
+            "text": "stackArgs[3] = delay;"
+          },
+          {
+            "line": 14,
+            "values": [
+              "0"
+            ],
+            "text": "stackArgs[0] = 0;"
+          },
+          {
+            "line": 15,
+            "values": [
+              "1"
+            ],
+            "text": "start_new_task(id, &D_083A4B38, &stackArgs[1], 0, 0);"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "arg3",
+          "function",
+          "stackArgs",
+          "task"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 6,
+          "numeric_offset_count": 6,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "c74d4e49ede1297eed22385f882a420f1520769be1e2c697187449208bf6b3d6",
+      "target_sha256": "4c231b45bfe1b94b6d34797b688c9deda3f90403e8d423cba6d404b46f2f5cec",
+      "target_object_sha256": "fe9cc0c5190f78fee20a43abeb2d2e71d06383d9802d7165a76eb6f2c4f0283c"
+    }
+  ],
+  "ok": false,
+  "manifest": ".mizuchi-tmp/round-177-candidates.json",
+  "manifest_sha256": "9b4cf7ec75a9501088e20a9f524cdcd79d240d8c0300668575d737a6b13d4a04",
+  "candidate_identities": [
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-177-candidates/schedule_function_call-v1.c",
+      "candidate_sha256": "c74d4e49ede1297eed22385f882a420f1520769be1e2c697187449208bf6b3d6",
+      "target": "asm/asm_08007df0.s",
+      "target_sha256": "4c231b45bfe1b94b6d34797b688c9deda3f90403e8d423cba6d404b46f2f5cec",
+      "target_object": "build/asm/asm_08007df0.s.o",
+      "target_object_sha256": "fe9cc0c5190f78fee20a43abeb2d2e71d06383d9802d7165a76eb6f2c4f0283c"
+    }
+  ]
+}

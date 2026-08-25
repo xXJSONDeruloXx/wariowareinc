@@ -5,21 +5,27 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 304` — `update_scheduled_function_task` now emits the scheduled-task updater through ordinary C
-- `build/report.json`: **1725 / 5920 matched functions** = **29.138514%**
-- `matched_code`: **77194 / 993856** = **7.767121%**
-- `tools/gen_objdiff.py`: **1265 linked C TUs / 5422 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1466 decompiled function files** = **1246 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 305` — `schedule_function_call` now emits the scheduled task wrapper through ordinary C
+- `build/report.json`: **1726 / 5919 matched functions** = **29.160330%**
+- `matched_code`: **77234 / 993858** = **7.771131%**
+- `tools/gen_objdiff.py`: **1266 linked C TUs / 5421 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1467 decompiled function files** = **1247 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining compiler-register-pin files: **106 / 502 pins**; remaining non-volatile empty compiler-barrier files: **7 / 7 barriers**. The full strict audit reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
 - Maintenance state: **35 legacy inline-asm shims removed** from included-stub files, plus two hundred seventy compiler register pins removed across batches 256–286; `src/decomp` contains no instruction-bearing inline asm. `func_080EE61C` is now real C: a target-specific `__builtin_swi_div` lowers through the patched agbcc Thumb backend to the BIOS `SVC #6` instruction.
 - New-candidate admission is now strict real C, following Conker's `no-asm-pin` rule: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks. Bounded raw pointer casts/offsets are reported as evidence, scalar-pointer aliases are counted across later lines, and named overlays are preferred for multi-field records.
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
-- 25% milestone: **1480 / 5920**, now exceeded by **245** matched functions.
-- 26% milestone: **1540 / 5920**; current progress is **1725**, exceeding it by **185** matches.
-- Active 27% working goal: **1599 / 5920**; current progress exceeds it by **126** matches.
-- Next 30% milestone: **1776 / 5920**; **51** additional matched functions are needed.
+- 25% milestone: **1480 / 5919**, now exceeded by **246** matched functions.
+- 26% milestone: **1539 / 5919**; current progress is **1726**, exceeding it by **187** matches.
+- Active 27% working goal: **1599 / 5919**; current progress exceeds it by **127** matches.
+- Next 30% milestone: **1776 / 5919**; **50** additional matched functions are needed.
+
+### Batch 305 — one exact ordinary-C scheduled task wrapper (2026-08-25)
+- Converted `schedule_function_call` from `asm/asm_08007df0.s` to a strict ordinary-C standalone TU with a named three-field task-argument record. The source preserves the `u16` ID normalization, three incoming stack stores, zero outgoing stack argument, canonical `D_083A4B38` task literal, five-argument `start_new_task` call, and live return value without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
+- The complete 40-byte linked `.text` section matched the target instruction-for-instruction; normalized isolation reported only the legacy 34-byte target-symbol boundary. Adding the canonical `D_083A4B38 = 0x083A4B38` linker assignment resolved the ROM literal, and the integrated clean Docker ROM/report gate matched ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh Docker report is **1726 / 5919** functions and **77234 / 993858** matched code. Unit coverage is **1266 C / 5421 asm-only**; decomp files are **1467** (**1247 standalone_tu / 220 included_stub**). The denominator drops by one while total code rises by two because the converted legacy literal-pool boundary is now counted in the report's code/function units.
+- Evidence: `.decomp-runs/round-177-isolation-v4.json`, `.decomp-runs/round-177-schedule_function_call-v4-source-audit.json`, `.decomp-runs/round-177-schedule_function_call-apply.json`, `.decomp-runs/round-177-full-source-audit.json`, `.nearmiss/schedule_function_call.json`, and `.nearmiss/schedule_function_call.full.c`.
 
 ### Batch 304 — one exact ordinary-C scheduled-task updater (2026-08-25)
 - Converted `update_scheduled_function_task` from `asm/asm_08007dcc.s` to a strict ordinary-C standalone TU with a named task record. The source preserves the delay decrement/zero return, nullable callback check, indirect callback invocation through the record's argument, and final success return without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
