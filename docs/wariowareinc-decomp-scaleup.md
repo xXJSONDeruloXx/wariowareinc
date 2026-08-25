@@ -5,11 +5,11 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 294` — `init_scheduled_function_task` and `func_080D3A60` now emit the complete legacy `.text` bytes through ordinary C, with explicit return-value shaping where the target preserves a live R0 result
-- `build/report.json`: **1713 / 5927 matched functions** = **28.901636%**
-- `matched_code`: **76666 / 993844** = **7.714088%**
-- `tools/gen_objdiff.py`: **1253 linked C TUs / 5434 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1454 decompiled function files** = **1234 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 295` — `func_0804F464` now emits the complete legacy `.text` bytes through ordinary C with explicit mask-value and loaded-byte lifetimes
+- `build/report.json`: **1714 / 5927 matched functions** = **28.918509%**
+- `matched_code`: **76694 / 993844** = **7.716905%**
+- `tools/gen_objdiff.py`: **1254 linked C TUs / 5433 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1455 decompiled function files** = **1235 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining compiler-register-pin files: **106 / 502 pins**; remaining non-volatile empty compiler-barrier files: **7 / 7 barriers**. The full strict audit reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
@@ -18,8 +18,14 @@ Prefer this file + the other docs in `/docs`
 - Batch 229's four accepted standalone files each passed that strict audit with zero instruction asm, barriers, or register pins. The only raw-memory evidence is the known scene-data byte/halfword layout in `func_08016798`, `func_08016850`, and `func_08016DB8`; none contains an asm wrapper or compiler-only register trick.
 - 25% milestone: **1482 / 5927**, now exceeded by **229** matched functions.
 - 26% milestone: **1542 / 5927**; current progress is **1711**, exceeding it by **169** matches.
-- Active 27% working goal: **1601 / 5927**; current progress exceeds it by **112** matches.
-- Next 30% milestone: **1779 / 5927**; **66** additional matched functions are needed.
+- Active 27% working goal: **1601 / 5927**; current progress exceeds it by **113** matches.
+- Next 30% milestone: **1779 / 5927**; **65** additional matched functions are needed.
+
+### Batch 295 — one exact ordinary-C standalone mask-order initializer (2026-08-25)
+- Converted `func_0804F464` from `asm/asm_0804f464.s` to a strict ordinary-C standalone TU with a named record overlay. The source keeps the loaded byte, `-0x10` mask value, and final combine as separate ordinary locals, reproducing the target's `MOVS #0; SUBS #0x10; ANDS` sequence without instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Docker-compiled target and candidate `.text` sections matched byte-for-byte at 28 bytes with SHA-256 `132cd2024c6abc70cd640ff693bd22cb991ccf3e0d36f447dcf8205f09026486`; normalized isolation was exact and the transactional clean Docker ROM gate passed.
+- Fresh Docker report is **1714 / 5927** functions and **76694 / 993844** matched code. Unit coverage is **1254 C / 5433 asm-only**; decomp files are **1455** (**1235 standalone_tu / 220 included_stub**). ROM/base ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-165-isolation.json`, `.decomp-runs/round-165-0804F464-full-text-proof.json`, `.decomp-runs/round-165-0804F464-apply.json`, `.decomp-runs/round-165-0804F464-source-audit.json`, and `.decomp-runs/round-165-full-source-audit.json`.
 
 ### Batch 294 — two exact ordinary-C standalone return-shaped wrappers (2026-08-25)
 - Converted `init_scheduled_function_task` from `asm/asm_08007db0.s` to a strict ordinary-C standalone TU with a named three-word allocation record. Returning the allocated record preserves the target's live R0 result and its `POP {R1}; BX R1` interworking epilogue; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.

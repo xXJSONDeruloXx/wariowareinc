@@ -2034,7 +2034,7 @@ SECTIONS {
         build/asm/asm_0804f010.s.o(.text*);
         build/asm/asm_0804f03c.s.o(.text*);
         build/asm/asm_0804f220.s.o(.text*);
-        build/asm/asm_0804f464.s.o(.text*);
+        build/src/decomp/asm_0804f464.c.o(.text*);
         build/asm/asm_0804f480.s.o(.text*);
         build/asm/asm_0804fa28.s.o(.text*);
         build/asm/asm_0804fabc.s.o(.text*);

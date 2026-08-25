@@ -3,6 +3,12 @@
 This is the migrated history from the Ralph task file plus the most recent session log work.
 It is intentionally concise: keep the durable rules in `docs/decomp-pattern-library.md`, and use this file to remember what landed, when, and why it mattered.
 
+## Batch 295 — one exact ordinary-C standalone mask-order initializer (2026-08-25)
+- Converted `func_0804F464` from `asm/asm_0804f464.s` to a strict ordinary-C standalone TU with a named record overlay. Separate ordinary locals for the loaded byte, `-0x10` mask, and combine operation reproduce the target's `MOVS #0; SUBS #0x10; ANDS` sequence without instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Docker-compiled target and candidate `.text` sections matched byte-for-byte at 28 bytes with SHA-256 `132cd2024c6abc70cd640ff693bd22cb991ccf3e0d36f447dcf8205f09026486`; normalized isolation was exact and the clean Docker ROM/report gate passed.
+- Fresh report is **1714 / 5927** functions and **76694 / 993844** matched code. Unit coverage is **1254 C / 5433 asm-only**; decomp files are **1455** (**1235 standalone_tu / 220 included_stub**). ROM SHA-1 remains `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-165-isolation.json`, `.decomp-runs/round-165-0804F464-full-text-proof.json`, `.decomp-runs/round-165-0804F464-apply.json`, `.decomp-runs/round-165-0804F464-source-audit.json`, and `.decomp-runs/round-165-full-source-audit.json`.
+
 ## Batch 294 — two exact ordinary-C standalone return-shaped wrappers (2026-08-25)
 - Converted `init_scheduled_function_task` from `asm/asm_08007db0.s` to a strict ordinary-C standalone TU with a named three-word allocation record. Returning the allocated record preserves the target's live R0 result and its `POP {R1}; BX R1` interworking epilogue; the source has no instruction asm, barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
 - Converted `func_080D3A60` from `asm/asm_080d3a60.s` to a strict ordinary-C standalone TU with a named scene overlay. Keeping the call before the scene-variable reload and returning the written halfword's address preserves the target's live pointer and `POP {R1}; BX R1` epilogue; the source is strict-clean ordinary C.

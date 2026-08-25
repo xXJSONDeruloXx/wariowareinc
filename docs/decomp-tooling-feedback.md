@@ -6,6 +6,11 @@ Use this file to record where the current decomp tools helped, where they missed
 - `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes (added 2025-06-26)
 - `.pi/extensions/warioware-decomp-loop.js` — loop prompt includes a "Documentation discipline" section that instructs the AI to record tooling issues as they're encountered
 
+## Round 165 — split-local mask materialization (2026-08-25)
+- `func_0804F464`'s direct named-record `field20 &= -0x10` spelling was a real one-instruction near miss: agbcc folded the mask into `MOVS R1, #0xF0`, while the target first loads the byte, then materializes zero and subtracts `0x10`.
+- Reusing the proven ordinary-C ordering from `sprite_handler_create`—`bound = state->field20; mask = -0x10; mask = mask & bound; state->field20 = mask;`—reproduced the target exactly. The strict candidate audit found no asm, barrier, pin, non-mapped volatile, or opaque layout, and the full 28-byte `.text` SHA-256 is `132cd2024c6abc70cd640ff693bd22cb991ccf3e0d36f447dcf8205f09026486`.
+- The accepted conversion advanced the report from **1713 / 5927** to **1714 / 5927**, matched code from **76666** to **76694**, linked C units from **1253 / 5434** to **1254 / 5433**, and decomp files from **1454** to **1455**. The clean Docker gate preserved ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+
 ## Round 164 — return-value shaping for short standalone wrappers (2026-08-25)
 - The short-wrapper screen found two exact strict-clean ordinary-C candidates. `init_scheduled_function_task` initially matched every store but emitted `POP {R0}; BX R0` when declared `void`; returning the typed allocated record preserved the target's live R0 and changed the epilogue to `POP {R1}; BX R1` without a pin or barrier.
 - `func_080D3A60` required the same honest return-value deduction. A local scene pointer initialized before the helper call changed the target load order and added a saved register; keeping the call first, writing through the named scene overlay, and returning the written halfword's address reproduced the target's post-call reload and interworking epilogue.
