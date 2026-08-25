@@ -1,0 +1,739 @@
+{
+  "schema": 1,
+  "kind": "apply",
+  "function": "func_080047D4",
+  "branch": "docs/macabeus-tooling-assessment",
+  "commit": "67441077a5926d31b1d5e13d1ac350c19ccff9e0",
+  "status": "accepted",
+  "manifest": ".mizuchi-tmp/round-162-candidates/manifest-v4.json",
+  "manifest_sha256": "9aacf1bb99c15e542f651e92c83867741c74b3289ffb3af7de688b3f7df8e00d",
+  "candidate_identities": [
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/round-162-candidates/func_080047D4_v4.c",
+      "candidate_sha256": "40e66f6b528f506eb4380212f586f40721c90f3fe2464349af2448d54a37388b",
+      "target": "asm/asm_080047d4.s",
+      "target_sha256": null,
+      "target_object": "build/asm/asm_080047d4.s.o",
+      "target_object_sha256": null
+    }
+  ],
+  "source_transform": "none",
+  "isolation_receipt": null,
+  "isolation_reused": false,
+  "isolation": {
+    "schema": 1,
+    "kind": "isolation",
+    "started": "2026-08-25T16:07:26+00:00",
+    "finished": "2026-08-25T16:07:27+00:00",
+    "branch": "docs/macabeus-tooling-assessment",
+    "commit": "67441077a5926d31b1d5e13d1ac350c19ccff9e0",
+    "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /var/folders/cq/tj_dgq0d4qsfs1xyx0jx2cp40000gn/T/warioware-cycle-f48dwnmd:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/round-162-candidates/func_080047D4_v4.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /workspace/build/asm/asm_080047d4.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080047d4.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_080047d4.s.o | awk -v entry=func_080047D4 '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_080047D4 \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_080047d4.s.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_080047D4 \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+    "docker_image": "devkitpro/devkitarm:latest",
+    "docker_invocations": 1,
+    "candidate_count": 1,
+    "results": [
+      {
+        "function": "func_080047D4",
+        "file": "asm/asm_080047d4.s",
+        "candidate": ".mizuchi-tmp/round-162-candidates/func_080047D4_v4.c",
+        "target": "asm/asm_080047d4.s",
+        "target_object": "build/asm/asm_080047d4.s.o",
+        "status": "near_miss",
+        "score": 28.57143,
+        "match_percent": 71.42857,
+        "diff_count": 2,
+        "symbol_found": true,
+        "comparison": "linked_elf",
+        "diff": {
+          "left": {
+            "sections": [
+              {
+                "name": ".text",
+                "kind": "SECTION_CODE",
+                "size": "20",
+                "match_percent": 55.555557
+              }
+            ],
+            "symbols": [
+              {
+                "name": "func_080047D4",
+                "size": "14",
+                "flags": {
+                  "global": true,
+                  "size_inferred": true
+                },
+                "kind": "SYMBOL_FUNCTION",
+                "target_symbol": 3,
+                "match_percent": 71.42857,
+                "instructions": [
+                  {
+                    "instruction": {
+                      "size": 2,
+                      "formatted": "ldr r2, [pc, #0xc] (->0x10)",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "ldr",
+                            "opcode": 24
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r2"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "["
+                        },
+                        {
+                          "arg": {
+                            "opaque": "pc"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "#"
+                        },
+                        {
+                          "arg": {
+                            "signed": "12"
+                          }
+                        },
+                        {
+                          "basic": "]"
+                        },
+                        {
+                          "basic": " (->"
+                        },
+                        {
+                          "arg": {
+                            "branch_dest": "16"
+                          }
+                        },
+                        {
+                          "basic": ")"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "2",
+                      "size": 2,
+                      "formatted": "ldrb r1, [r0, #0x0]",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "ldrb",
+                            "opcode": 25
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r1"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "["
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r0"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "#"
+                        },
+                        {
+                          "arg": {
+                            "signed": "0"
+                          }
+                        },
+                        {
+                          "basic": "]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "4",
+                      "size": 2,
+                      "formatted": "sub r1, #0x61",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "sub",
+                            "opcode": 126
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r1"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "#"
+                        },
+                        {
+                          "arg": {
+                            "unsigned": "97"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "6",
+                      "size": 2,
+                      "formatted": "lsl r1, #0x1",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "lsl",
+                            "opcode": 36
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r1"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "#"
+                        },
+                        {
+                          "arg": {
+                            "unsigned": "1"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "8",
+                      "size": 2,
+                      "formatted": "ldr r0, [r2, #0x0]",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "ldr",
+                            "opcode": 24
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r0"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "["
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r2"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "#"
+                        },
+                        {
+                          "arg": {
+                            "signed": "0"
+                          }
+                        },
+                        {
+                          "basic": "]"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "10",
+                      "size": 2,
+                      "formatted": "add r0, r1",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "add",
+                            "opcode": 1
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r0"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r1"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "12",
+                      "size": 2,
+                      "formatted": "bx lr",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "bx",
+                            "opcode": 9
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "lr"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "diff_kind": "DIFF_INSERT"
+                  },
+                  {
+                    "diff_kind": "DIFF_INSERT"
+                  }
+                ]
+              }
+            ]
+          },
+          "right": {
+            "sections": [
+              {
+                "name": ".text",
+                "kind": "SECTION_CODE",
+                "size": "20"
+              }
+            ],
+            "symbols": [
+              {
+                "name": "func_080047D4",
+                "size": "20",
+                "flags": {
+                  "global": true,
+                  "size_inferred": true
+                },
+                "kind": "SYMBOL_FUNCTION",
+                "target_symbol": 2,
+                "match_percent": 71.42857,
+                "instructions": [
+                  {
+                    "instruction": {
+                      "size": 2,
+                      "formatted": "ldr r2, [pc, #0xc] (->0x10)",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "ldr",
+                            "opcode": 24
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r2"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "["
+                        },
+                        {
+                          "arg": {
+                            "opaque": "pc"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "#"
+                        },
+                        {
+                          "arg": {
+                            "signed": "12"
+                          }
+                        },
+                        {
+                          "basic": "]"
+                        },
+                        {
+                          "basic": " (->"
+                        },
+                        {
+                          "arg": {
+                            "branch_dest": "16"
+                          }
+                        },
+                        {
+                          "basic": ")"
+                        }
+                      ],
+                      "line_number": 1720
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "2",
+                      "size": 2,
+                      "formatted": "ldrb r1, [r0, #0x0]",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "ldrb",
+                            "opcode": 25
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r1"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "["
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r0"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "#"
+                        },
+                        {
+                          "arg": {
+                            "signed": "0"
+                          }
+                        },
+                        {
+                          "basic": "]"
+                        }
+                      ],
+                      "line_number": 1721
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "4",
+                      "size": 2,
+                      "formatted": "sub r1, #0x61",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "sub",
+                            "opcode": 126
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r1"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "#"
+                        },
+                        {
+                          "arg": {
+                            "unsigned": "97"
+                          }
+                        }
+                      ],
+                      "line_number": 1722
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "6",
+                      "size": 2,
+                      "formatted": "lsl r1, #0x1",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "lsl",
+                            "opcode": 36
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r1"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "#"
+                        },
+                        {
+                          "arg": {
+                            "unsigned": "1"
+                          }
+                        }
+                      ],
+                      "line_number": 1723
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "8",
+                      "size": 2,
+                      "formatted": "ldr r0, [r2, #0x0]",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "ldr",
+                            "opcode": 24
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r0"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "["
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r2"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "basic": "#"
+                        },
+                        {
+                          "arg": {
+                            "signed": "0"
+                          }
+                        },
+                        {
+                          "basic": "]"
+                        }
+                      ],
+                      "line_number": 1724
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "10",
+                      "size": 2,
+                      "formatted": "add r0, r1",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "add",
+                            "opcode": 1
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r0"
+                          }
+                        },
+                        {
+                          "separator": true
+                        },
+                        {
+                          "arg": {
+                            "opaque": "r1"
+                          }
+                        }
+                      ],
+                      "line_number": 1724
+                    }
+                  },
+                  {
+                    "instruction": {
+                      "address": "12",
+                      "size": 2,
+                      "formatted": "bx lr",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": "bx",
+                            "opcode": 9
+                          }
+                        },
+                        {
+                          "arg": {
+                            "opaque": "lr"
+                          }
+                        }
+                      ],
+                      "line_number": 1725
+                    }
+                  },
+                  {
+                    "diff_kind": "DIFF_INSERT",
+                    "instruction": {
+                      "address": "14",
+                      "size": 2,
+                      "formatted": ".hword 0x0",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": ".hword",
+                            "opcode": 65534
+                          }
+                        },
+                        {
+                          "arg": {
+                            "unsigned": "0"
+                          }
+                        }
+                      ],
+                      "line_number": 1725
+                    }
+                  },
+                  {
+                    "diff_kind": "DIFF_INSERT",
+                    "instruction": {
+                      "address": "16",
+                      "size": 4,
+                      "formatted": ".word 0x83a49e8",
+                      "parts": [
+                        {
+                          "opcode": {
+                            "mnemonic": ".word",
+                            "opcode": 65534
+                          }
+                        },
+                        {
+                          "arg": {
+                            "unsigned": "138037736"
+                          }
+                        }
+                      ],
+                      "line_number": 1725
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "near_miss_record": "{\"recorded\": true, \"kept_best\": false, \"existing_score\": 28.57143, \"existing_score_kind\": \"isolated_objdiff_gap\", \"history_entries\": 8}",
+        "mode": "standalone_tu",
+        "candidate_sha256": "40e66f6b528f506eb4380212f586f40721c90f3fe2464349af2448d54a37388b",
+        "target_sha256": "bebf398751c25106739e9a2abe32d40b565f578afba77f6d9b4c9b1d312afb41",
+        "target_object_sha256": "f23266b94cd74176a5160912d1ee6e558262c6b24fe2ea9613bb460bd5a718d9",
+        "source_audit": {
+          "function_count": 1,
+          "functions": [
+            "func_080047D4"
+          ],
+          "asm": {
+            "instruction": [],
+            "register_pin": [],
+            "barrier": []
+          },
+          "raw_pointer_accesses": [
+            {
+              "line": 13,
+              "text": "return (u16 *)((u8 *)(*table) + index);"
+            }
+          ],
+          "numeric_pointer_offsets": [],
+          "raw_pointer_aliases": [
+            "D_083A49E8",
+            "arg0"
+          ],
+          "volatile_accesses": [],
+          "layout": {
+            "classification": "bounded_layout_evidence",
+            "layout_quality_ok": true,
+            "raw_access_count": 1,
+            "numeric_offset_count": 0,
+            "named_structs": [],
+            "named_field_accesses": [],
+            "threshold": {
+              "max_bounded_raw_accesses": 2,
+              "max_bounded_numeric_lines": 2
+            }
+          },
+          "strict_real_c": true,
+          "source_quality_ok": true,
+          "semantic_quality_ok": true,
+          "layout_quality_ok": true
+        }
+      }
+    ],
+    "ok": false
+  },
+  "full_verify": {
+    "started": "2026-08-25T16:07:27+00:00",
+    "finished": "2026-08-25T16:08:49+00:00",
+    "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace -w /workspace devkitpro/devkitarm:latest bash -lc 'set -euo pipefail; rm -rf build; make -j4 2>&1 | tee /tmp/warioware-full-build.log; grep -Fq '\"'\"'wariowareinc.gba: OK'\"'\"' /tmp/warioware-full-build.log; make report 2>&1 | tee -a /tmp/warioware-full-build.log'",
+    "docker_ok": true,
+    "rom_exact": true,
+    "ok": true,
+    "rom_sha1": "3f556448d290fa5406d6ed367fee16cc02387ad3",
+    "baseline_rom_sha1": "3f556448d290fa5406d6ed367fee16cc02387ad3",
+    "report_requested": true,
+    "report_ok": true,
+    "output_tail": "\u2026\nAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_639.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_639.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_640.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_640.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_641.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_641.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_642.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_642.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_643.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_643.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_644.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_644.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_645.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_645.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_646.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_646.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_647.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_647.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_648.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_648.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_649.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_649.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_650.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_650.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_651.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_651.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_652.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_652.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_653.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_653.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_654.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_654.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_655.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_655.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_656.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_656.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_657.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_657.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_658.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_658.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_659.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_659.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_660.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_660.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_661.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_661.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_662.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_662.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_663.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_663.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_664.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_664.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_665.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_665.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_666.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_666.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_667.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_667.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_668.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_668.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_669.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_669.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_670.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_670.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_671.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_671.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_672.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_672.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_673.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_673.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_674.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_674.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_675.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_675.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_676.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_676.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_677.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_677.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_678.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_678.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_679.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_679.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_680.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_680.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_681.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_681.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_682.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_682.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_683.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_683.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_684.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_684.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_685.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_685.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_686.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_686.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_687.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_687.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_688.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_688.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_689.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_689.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_690.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_690.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_691.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_691.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_692.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_692.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_693.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_693.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_694.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_694.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_695.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_695.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_696.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_696.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_697.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_697.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_698.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_698.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_699.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_699.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_700.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_700.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_701.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_701.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_702.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_702.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_703.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_703.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_704.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_704.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_705.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_705.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_706.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_706.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_708.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_708.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_707.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_707.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_709.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_709.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_710.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_710.pcm\u001b[0m\n\u001b[0;32mConverting WAV file to raw PCM audio: \u001b[0;33maudio/samples/sample_711.wav\u001b[0;32m -> \u001b[0;34mbuild/audio/samples/sample_711.pcm\u001b[0m\n\u001b[0;32mCompressing graphics: \u001b[0;33mgraphics/title/title_bg_tiles.4bpp\u001b[0;32m -> \u001b[0;34mbuild/graphics/title/title_bg_tiles.4bpp.s\u001b[0m\n\u001b[0;32mCompressing graphics: \u001b[0;33mgraphics/title/title_obj.4bpp\u001b[0;32m -> \u001b[0;34mbuild/graphics/title/title_obj.4bpp.s\u001b[0m\n\u001b[0;32mCompressing tilemap: \u001b[0;33mgraphics/title/title_bg_map_border.tilemap\u001b[0;32m -> \u001b[0;34mbuild/graphics/title/title_bg_map_border.tilemap.s\u001b[0m\n\u001b[0;32mCompressing tilemap: \u001b[0;33mgraphics/title/title_bg_map_logo.tilemap\u001b[0;32m -> \u001b[0;34mbuild/graphics/title/title_bg_map_logo.tilemap.s\u001b[0m\n\u001b[0;32mCompressing tilemap: \u001b[0;33mgraphics/title/title_bg_map.tilemap\u001b[0;32m -> \u001b[0;34mbuild/graphics/title/title_bg_map.tilemap.s\u001b[0m\n\u001b[0;32mGenerating data table from JSON: \u001b[0;33maudio/sample_table.json\u001b[0;32m -> \u001b[0;34mbuild/audio/sample_table.json.s\u001b[0m\n\u001b[0;32mAssembling: \u001b[0;33mbuild/graphics/title/title_bg_tiles.4bpp.s\u001b[0;32m -> \u001b[0;34mbuild/graphics/title/title_bg_tiles.4bpp.s.o\u001b[0m\n\u001b[0;32mAssembling: \u001b[0;33mbuild/graphics/title/title_obj.4bpp.s\u001b[0;32m -> \u001b[0;34mbuild/graphics/title/title_obj.4bpp.s.o\u001b[0m\n\u001b[0;32mAssembling: \u001b[0;33mbuild/graphics/title/title_bg_map_border.tilemap.s\u001b[0;32m -> \u001b[0;34mbuild/graphics/title/title_bg_map_border.tilemap.s.o\u001b[0m\n\u001b[0;32mAssembling: \u001b[0;33mbuild/graphics/title/title_bg_map_logo.tilemap.s\u001b[0;32m -> \u001b[0;34mbuild/graphics/title/title_bg_map_logo.tilemap.s.o\u001b[0m\n\u001b[0;32mAssembling: \u001b[0;33mbuild/graphics/title/title_bg_map.tilemap.s\u001b[0;32m -> \u001b[0;34mbuild/graphics/title/title_bg_map.tilemap.s.o\u001b[0m\n\u001b[0;32mAssembling: \u001b[0;33mbuild/audio/sample_table.json.s\u001b[0;32m -> \u001b[0;34mbuild/audio/sample_table.json.s.o\u001b[0m\nLinking...\nROM assembled!\nwariowareinc.gba: OK\npython3 tools/gen_objdiff.py\nFound 6687 total units: 1250 C (decompiled), 5437 asm-only stubs\nWritten objdiff.json  (6687 units)\ntools/objdiff-cli-linux-aarch64 report generate -o build/report.json\n INFO Loading project .\n INFO Generating report for 6687 units (using 8 threads)\n INFO Report generated in 3.240s\n INFO Writing to build/report.json\n",
+    "report_output": "build/report.json present"
+  },
+  "objdiff_metrics": {
+    "ok": true,
+    "output_tail": "Found 6687 total units: 1250 C (decompiled), 5437 asm-only stubs\nWritten objdiff.json  (6687 units)\n"
+  },
+  "changed_paths": [
+    "src/decomp/asm_080047d4.c",
+    "asm/converted/asm_080047d4.s",
+    "wariowareinc.ld",
+    "asm/asm_080047d4.s"
+  ],
+  "note": "Matching source/linker/assembly changes intentionally remain in the worktree for review and commit."
+}
