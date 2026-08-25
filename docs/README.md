@@ -11,21 +11,27 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 307` — `func_08002090` now emits the sound-player scan through ordinary C
-- `build/report.json`: **1728 / 5917 matched functions** (**29.203987%**) · **7.786021%** matched code (**77382 / 993858**)
-- `tools/gen_objdiff.py`: **1268 linked C TUs / 5419 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1469 decompiled function files** = **1249 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 308` — `func_08003FB8` now emits the byte-mask helper through ordinary C
+- `build/report.json`: **1729 / 5916 matched functions** (**29.225830%**) · **7.788437%** matched code (**77406 / 993858**)
+- `tools/gen_objdiff.py`: **1269 linked C TUs / 5418 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1470 decompiled function files** = **1250 standalone_tu** + **220 included_stub**
 - ROM: **`wariowareinc.gba: OK`**
 - Latest accepted maintenance pass: **38 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **106 files / 502 pins**
 - Remaining non-volatile empty compiler barriers: **7 files / 7 barriers**; the full strict audit also reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1480 / 5917**; now exceeded by **248** matches
-- 26% milestone at the current function total: **1539 / 5917**; now exceeded by **189** matches
-- 27% active working goal at the current function total: **1598 / 5917**; exceeded by **130** matches
-- 30% milestone at the current function total: **1776 / 5917**; **48** more matches needed
-- 80% target at the current function total: **4734 / 5917**
-- Remaining gap to 80%: **3006 matched functions**
+- 25% milestone at the current function total: **1479 / 5916**; now exceeded by **250** matches
+- 26% milestone at the current function total: **1539 / 5916**; now exceeded by **190** matches
+- 27% active working goal at the current function total: **1598 / 5916**; exceeded by **131** matches
+- 30% milestone at the current function total: **1775 / 5916**; **46** more matches needed
+- 80% target at the current function total: **4733 / 5916**
+- Remaining gap to 80%: **3004 matched functions**
+
+### Batch 308 — one exact ordinary-C byte-mask helper (2026-08-25)
+- Converted `func_08003FB8` from `asm/asm_08003fb8.s` to a strict ordinary-C standalone TU. A named `u8 *` base, an 8-bit loaded value, a `u32` first mask, and a separate `u32` second mask preserve the target's `LDRB`, two `MOVS`/`RSBS` mask materializations, `AND` destination orientation, and byte store without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
+- Added the canonical `D_03000528 = 0x03000528` linker assignment already declared in `include/undefined_syms.inc`. The v9 isolated screen matched all ten target instructions; its only reported gap was the legacy target symbol ending at 20 bytes while the candidate includes the 24-byte literal-pool section. The complete-section Docker proof matched at SHA-256 `0088ecc7f086adfa14e43fef9d2490c0909a14a76ec0958607372ac7d784b539`, and the narrow force path waived metadata only.
+- Fresh Docker report is **1729 / 5916** functions and **77406 / 993858** matched code. Unit coverage is **1269 C / 5418 asm-only**; decomp files are **1470** (**1250 standalone_tu / 220 included_stub**). The function denominator drops by one because the converted legacy literal-pool boundary is no longer inferred as a separate function while total code remains unchanged. Full strict-audit residue remains **0 instruction-asm files**, **106 files / 502 register pins**, **27 files / 31 barrier findings**, and **7 non-volatile barriers**.
+- Evidence: `.decomp-runs/round-183-isolation-v1.json` through `round-183-isolation-v9.json`, `.decomp-runs/round-183-func_08003FB8-v9-source-audit.json`, `.decomp-runs/round-183-func_08003FB8-apply.json`, `.decomp-runs/round-183-func_08003FB8-full-text-proof.json`, `.decomp-runs/round-183-full-source-audit.json`, and `.nearmiss/func_08003FB8.json`.
 
 ### Batch 307 — one exact ordinary-C sound-player scan (2026-08-25)
 - Converted `func_08002090` from `asm/asm_08002090.s` to a strict ordinary-C standalone TU with a named 0xC-byte sound-player table entry. Separate `value`, count-pointer, and table-pointer locals preserve the target's fixed-point normalization, early count check, 0xC-byte table stride, reload of `sound_player_count`, and `func_080F30E0` call order without instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
