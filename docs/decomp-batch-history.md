@@ -1221,3 +1221,10 @@ This period built the reusable base library of patterns:
 - The current totals also include the immediately preceding exact `func_08035FEC` conversion in commit `b910cff7` (**1279 C / 5408 asm-only** immediately after that commit). Evidence for this ten-function batch: `.decomp-runs/20260920T195252Z-isolation.json`, `.decomp-runs/20260920T195301Z-isolation.json`, `.decomp-runs/20260920T195314Z-isolation.json`, and `.decomp-runs/20260920T195439Z-apply_batch.json`.
 - The rejected first spelling of `func_0809E4AC` remains in `.nearmiss/` and `tools/attempts.tsv` as durable compiler-shaping evidence.
 
+
+## Batch 317 — eleven additional exact scene-phase wrappers (2026-09-20)
+- Converted func_0803B5FC, func_080454D8, func_080464DC, func_08054B98, func_0805E6C4, func_0807952C, func_08082EEC, func_080A0D20, func_0804B120, func_08053E0C, func_0806980C from standalone assembly to strict ordinary-C TUs using the established named ScenePhaseState overlay at gCurrentSceneData + 0x173.
+- One shared isolation pass reported **11 exact / 0 rejected**. The transactional batch apply passed the clean Docker ROM/report gate with wariowareinc.gba: OK, rom_exact: true, and unchanged ROM/base-ROM SHA-1 3f556448d290fa5406d6ed367fee16cc02387ad3.
+- Fresh metrics are **1760 / 5914** matched functions (**29.759893%**) and **78536 / 993904** matched code (**7.901769%**); unit coverage is **1300 C / 5387 asm-only**, with **1501** decomp files (**1281 standalone_tu / 220 included_stub**).
+- Evidence: .decomp-runs/20260920T201410Z-isolation.json and .decomp-runs/20260920T201539Z-apply_batch.json.
+

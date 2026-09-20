@@ -4,22 +4,22 @@ This is the live operational status file for autonomous work in this repo.
 Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
-- Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 316` — ten additional scene-phase wrappers now compile as exact strict ordinary C; current totals also include the immediately preceding `func_08035FEC` conversion from commit `b910cff7`
-- `build/report.json`: **1749 / 5914 matched functions** (**29.573895%**) · **7.8560634%** matched code (**78080 / 993882**)
-- `tools/gen_objdiff.py`: **1289 linked C TUs / 5398 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1490 decompiled function files** = **1270 standalone_tu** + **220 included_stub**
-- ROM: **`wariowareinc.gba: OK`**, SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`
-- Latest accepted maintenance pass: **38 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
-- Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **106 files / 502 pins**
-- Remaining non-volatile empty compiler barriers: **7 files / 7 barriers**; the full strict audit also reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
-- `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1479 / 5914**; now exceeded by **270** matches
-- 26% milestone at the current function total: **1538 / 5914**; now exceeded by **211** matches
-- 27% active working goal at the current function total: **1597 / 5914**; exceeded by **152** matches
-- 30% milestone at the current function total: **1775 / 5914**; **26** more matches needed
-- 80% target at the current function total: **4732 / 5914**
-- Remaining gap to 80%: **2983 matched functions**
+- Verified on branch: docs/macabeus-tooling-assessment
+- Verified working tree: batch 317 — eleven more exact scene-phase wrappers converted
+- build/report.json: **1760 / 5914 matched functions** (**29.759893%**) · **7.901769%** matched code (**78536 / 993904**)
+- tools/gen_objdiff.py: **1300 linked C TUs / 5387 non-C units** (**6687 total**)
+- src/decomp/*.c: **1501 decompiled function files** = **1281 standalone_tu** + **220 included_stub**
+- ROM: **wariowareinc.gba: OK**, SHA-1 3f556448d290fa5406d6ed367fee16cc02387ad3
+- 25% milestone: **1479 / 5914**, exceeded by **281** matches.
+- 26% milestone: **1538 / 5914**, exceeded by **222** matches.
+- 27% milestone: **1597 / 5914**, exceeded by **163** matches.
+- Next 30% milestone: **1775 / 5914**; **15** additional matched functions are needed.
+
+### Batch 317 — eleven additional exact scene-phase wrappers (2026-09-20)
+- Converted func_0803B5FC, func_080454D8, func_080464DC, func_08054B98, func_0805E6C4, func_0807952C, func_08082EEC, func_080A0D20, func_0804B120, func_08053E0C, func_0806980C from standalone assembly to strict ordinary-C TUs using the established named ScenePhaseState overlay at gCurrentSceneData + 0x173.
+- One shared isolation pass reported **11 exact / 0 rejected**. The transactional batch apply passed the clean Docker ROM/report gate with wariowareinc.gba: OK, rom_exact: true, and unchanged ROM/base-ROM SHA-1 3f556448d290fa5406d6ed367fee16cc02387ad3.
+- Fresh metrics are **1760 / 5914** matched functions (**29.759893%**) and **78536 / 993904** matched code (**7.901769%**); unit coverage is **1300 C / 5387 asm-only**, with **1501** decomp files (**1281 standalone_tu / 220 included_stub**).
+- Evidence: .decomp-runs/20260920T201410Z-isolation.json and .decomp-runs/20260920T201539Z-apply_batch.json.
 
 ### Batch 316 — ten exact scene-phase wrappers (2026-09-20)
 - Converted `func_08048EB4`, `func_08049924`, `func_08055324`, `func_08055F74`, `func_0806100C`, `func_0809A88C`, `func_0809E4AC`, `func_080A2F7C`, `func_080A42E8`, `func_080B4684` from standalone assembly to strict ordinary-C TUs. All ten share the same scene-phase pattern around byte `gCurrentSceneData + 0x173`: equality/unsigned-range checks plus one or two scene-local calls, with a named `ScenePhaseState` overlay instead of opaque raw byte-pointer arithmetic.
