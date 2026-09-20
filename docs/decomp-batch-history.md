@@ -1236,3 +1236,10 @@ This period built the reusable base library of patterns:
 - This batch crosses the 30% function milestone by **5 matched functions**.
 - Evidence: .decomp-runs/20260920T202036Z-isolation.json and .decomp-runs/20260920T202201Z-apply_batch.json.
 
+
+## Batch 319 — fifteen exact helpers push beyond 30.35% (2026-09-20)
+- Converted `func_08016A60`, `func_08016A7C`, `func_080F0E9C`, `func_080F0EBC`, `func_080F3C7C`, `func_080F2F04`, `func_080F2F34`, `func_080F2FD0`, `func_080F2708`, `func_080F26D8`, `func_080F28C4`, `func_080F273C`, `func_080F2F88`, `func_080102E0`, and `func_0801CBB0` from standalone assembly to strict ordinary-C translation units. The batch combines exact bitfield setters with compact audio-table loops, byte comparison, per-entry update loops, arithmetic clamping, and small scene/input wrappers.
+- Every accepted candidate passed exact isolated object comparison before application. The work was admitted through transactional apply/apply-batch gates; the final gate emitted `wariowareinc.gba: OK`, `rom_exact: true`, and unchanged ROM/base-ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Fresh metrics are **1795 / 5914** matched functions (**30.351707%**) and **80188 / 993930** matched code (**8.067771%**); unit coverage is **1335 C / 5352 asm-only**, with **1536** decomp files (**1316 standalone_tu / 220 included_stub**).
+- This run started from **1780 / 5914 (30.098072%)**, gaining **15 matched functions / +0.253635 percentage points**. The next whole-percent milestone is **31%**, requiring **1834 / 5914**, so **39** additional exact functions remain.
+- Accepted evidence is recorded in `.decomp-runs/20260920T213837Z-apply-func_08016A60.json`, `.decomp-runs/20260920T214059Z-apply-func_08016A7C.json`, `.decomp-runs/20260920T214354Z-apply_batch.json`, `.decomp-runs/20260920T214750Z-apply_batch.json`, and `.decomp-runs/20260920T215131Z-apply_batch.json`.
