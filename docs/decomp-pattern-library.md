@@ -818,3 +818,8 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - `func_08019ADC` is the reference: model the `+0xD0` resource pointer as a named struct field, assign the casted scene pointer before each call, and let agbcc retain the global-address literal in the saved register while reloading the scene pointer around calls.
 - Avoid repeating raw `(u8 *)base + 0xD0` dereferences: the strict layout gate correctly classifies that spelling as opaque offset-heavy access even when the generated instructions are otherwise plausible.
 
+## Shared scene-phase byte wrapper family (`gCurrentSceneData + 0x173`)
+- A large family of scene wrappers tests the byte at `gCurrentSceneData + 0x173` against `1` (or `<= 1`) and then dispatches one or two local helpers. New strict-source conversions should model this with a named overlay such as `struct ScenePhaseState { u8 padding[0x173]; u8 phase; };` rather than raw `((u8 *)gCurrentSceneData)[0x173]`.
+- For wrappers with a leading call before the phase test, bind the typed scene pointer **after** that call if the target assembly also loads `gCurrentSceneData` after the call. `func_0809E4AC` is the reference: binding it before the call was a real isolated near miss; moving the assignment after `func_0809E1A8()` produced an exact match.
+- Batch 316 proved ten siblings at once with a single exact isolation fan-in and one transactional ROM gate.
+

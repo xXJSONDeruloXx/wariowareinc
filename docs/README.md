@@ -11,21 +11,28 @@ If an agent resumes cold, read these first:
 6. `docs/windows-tooling-notes.md` — Windows/MSYS2/Docker path issues and fixes
 
 ## Current verified baseline
-- Verified working tree: `batch 315` — `func_0808A898` now uses a strict named state overlay for its scene-threshold wrapper
-- `build/report.json`: **1738 / 5914 matched functions** (**29.387894%**) · **7.8181877%** matched code (**77702 / 993862**)
-- `tools/gen_objdiff.py`: **1278 linked C TUs / 5409 non-C units** (**6687 total**)
-- `src/decomp/*.c`: **1479 decompiled function files** = **1259 standalone_tu** + **220 included_stub**
-- ROM: **`wariowareinc.gba: OK`**
+- Verified working tree: `batch 316` — ten additional scene-phase wrappers now compile as exact strict ordinary C; current totals also include the immediately preceding `func_08035FEC` conversion from commit `b910cff7`
+- `build/report.json`: **1749 / 5914 matched functions** (**29.573895%**) · **7.8560634%** matched code (**78080 / 993882**)
+- `tools/gen_objdiff.py`: **1289 linked C TUs / 5398 non-C units** (**6687 total**)
+- `src/decomp/*.c`: **1490 decompiled function files** = **1270 standalone_tu** + **220 included_stub**
+- ROM: **`wariowareinc.gba: OK`**, SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`
 - Latest accepted maintenance pass: **38 legacy included-stub files** use real C and ABI/register shaping instead of non-empty inline-asm call/load shims; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. Report function/unit metrics are unchanged because these files were already C-linked.
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**; remaining compiler-register-pin files: **106 files / 502 pins**
 - Remaining non-volatile empty compiler barriers: **7 files / 7 barriers**; the full strict audit also reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included. Remaining instruction-bearing inline-asm decomp files: **0**
 - `func_080EE61C` is now an ordinary C TU using the target-specific `__builtin_swi_div`; `tools/agbcc-swi.patch` makes the lowering reproducible in local/CI compiler builds
-- 25% milestone at the current function total: **1479 / 5914**; now exceeded by **259** matches
-- 26% milestone at the current function total: **1538 / 5914**; now exceeded by **200** matches
-- 27% active working goal at the current function total: **1597 / 5914**; exceeded by **141** matches
-- 30% milestone at the current function total: **1775 / 5914**; **37** more matches needed
+- 25% milestone at the current function total: **1479 / 5914**; now exceeded by **270** matches
+- 26% milestone at the current function total: **1538 / 5914**; now exceeded by **211** matches
+- 27% active working goal at the current function total: **1597 / 5914**; exceeded by **152** matches
+- 30% milestone at the current function total: **1775 / 5914**; **26** more matches needed
 - 80% target at the current function total: **4732 / 5914**
-- Remaining gap to 80%: **2994 matched functions**
+- Remaining gap to 80%: **2983 matched functions**
+
+### Batch 316 — ten exact scene-phase wrappers (2026-09-20)
+- Converted `func_08048EB4`, `func_08049924`, `func_08055324`, `func_08055F74`, `func_0806100C`, `func_0809A88C`, `func_0809E4AC`, `func_080A2F7C`, `func_080A42E8`, `func_080B4684` from standalone assembly to strict ordinary-C TUs. All ten share the same scene-phase pattern around byte `gCurrentSceneData + 0x173`: equality/unsigned-range checks plus one or two scene-local calls, with a named `ScenePhaseState` overlay instead of opaque raw byte-pointer arithmetic.
+- The first ten-entry isolation screen produced **9 exact / 1 near miss**. `func_0809E4AC` initially bound the scene pointer before its leading `func_0809E1A8` call, which changed register/literal timing; moving the typed scene-pointer assignment after that call made it **100% exact**. A fresh full-family screen then reported **10 exact / 0 rejected**.
+- The transactional ten-function apply passed the clean Docker ROM/report gate with `wariowareinc.gba: OK`, `rom_exact: true`, and unchanged ROM/base-ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh metrics are **1749 / 5914** matched functions, **78080 / 993882** matched code, **1289 C / 5398 asm-only** units, and **1490** decomp files (**1270 standalone_tu / 220 included_stub**).
+- The current totals also include the immediately preceding exact `func_08035FEC` conversion in commit `b910cff7` (**1279 C / 5408 asm-only** immediately after that commit). Evidence for this ten-function batch: `.decomp-runs/20260920T195252Z-isolation.json`, `.decomp-runs/20260920T195301Z-isolation.json`, `.decomp-runs/20260920T195314Z-isolation.json`, and `.decomp-runs/20260920T195439Z-apply_batch.json`.
+- The rejected first spelling of `func_0809E4AC` remains in `.nearmiss/` and `tools/attempts.tsv` as durable compiler-shaping evidence.
 
 ### Batch 315 — exact ordinary-C scene-threshold wrapper (2026-09-20)
 - Converted `func_0808A898` from `asm/asm_0808a898.s` to a strict ordinary-C standalone TU. A named `Func0808A898State` overlay models the halfwords at `+0x40` and `+0x42`; the natural unsigned `state->value < state->threshold` predicate preserves the target load/compare order and conditional call to `func_0808A7E4`.

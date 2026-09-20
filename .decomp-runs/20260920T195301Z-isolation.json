@@ -1,0 +1,1018 @@
+{
+  "schema": 1,
+  "kind": "isolation",
+  "started": "2026-09-20T19:53:00+00:00",
+  "finished": "2026-09-20T19:53:01+00:00",
+  "branch": "docs/macabeus-tooling-assessment",
+  "commit": "b910cff7d952d694f739ee701ce04b8f37c14f98",
+  "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /tmp/warioware-cycle-8c7y0_k4:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/chatgpt-run-316/func_0809E4AC-v2.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /workspace/build/asm/asm_0809e4ac.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0809e4ac.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_0809e4ac.s.o | awk -v entry=func_0809E4AC '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_0809E4AC \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_0809e4ac.s.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_0809E4AC \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+  "docker_image": "devkitpro/devkitarm:latest",
+  "docker_invocations": 1,
+  "candidate_count": 1,
+  "results": [
+    {
+      "function": "func_0809E4AC",
+      "file": "asm/asm_0809e4ac.s",
+      "candidate": ".mizuchi-tmp/chatgpt-run-316/func_0809E4AC-v2.c",
+      "target": "asm/asm_0809e4ac.s",
+      "target_object": "build/asm/asm_0809e4ac.s.o",
+      "status": "exact",
+      "score": 0.0,
+      "match_percent": 100.0,
+      "diff_count": 0,
+      "symbol_found": true,
+      "comparison": "linked_elf",
+      "diff": {
+        "left": {
+          "sections": [
+            {
+              "name": ".text",
+              "kind": "SECTION_CODE",
+              "size": "36",
+              "match_percent": 100.0
+            }
+          ],
+          "symbols": [
+            {
+              "name": "func_0809E4AC",
+              "size": "34",
+              "flags": {
+                "global": true,
+                "size_inferred": true
+              },
+              "kind": "SYMBOL_FUNCTION",
+              "target_symbol": 3,
+              "match_percent": 100.0,
+              "instructions": [
+                {
+                  "instruction": {
+                    "size": 2,
+                    "formatted": "push {lr}",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "push",
+                          "opcode": 59
+                        }
+                      },
+                      {
+                        "basic": "{"
+                      },
+                      {
+                        "arg": {
+                          "opaque": "lr"
+                        }
+                      },
+                      {
+                        "basic": "}"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "2",
+                    "size": 4,
+                    "formatted": "bl 0x0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "bl",
+                          "opcode": 7
+                        }
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "0"
+                        }
+                      }
+                    ],
+                    "branch_dest": "0"
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "6",
+                    "size": 2,
+                    "formatted": "ldr r0, [pc, #0x14] (->0x1c)",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldr",
+                          "opcode": 24
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "pc"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "20"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      },
+                      {
+                        "basic": " (->"
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "28"
+                        }
+                      },
+                      {
+                        "basic": ")"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "8",
+                    "size": 2,
+                    "formatted": "ldr r0, [r0, #0x0]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldr",
+                          "opcode": 24
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "0"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "10",
+                    "size": 2,
+                    "formatted": "ldr r1, [pc, #0x14] (->0x20)",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldr",
+                          "opcode": 24
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "pc"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "20"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      },
+                      {
+                        "basic": " (->"
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "32"
+                        }
+                      },
+                      {
+                        "basic": ")"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "12",
+                    "size": 2,
+                    "formatted": "add r0, r1",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "add",
+                          "opcode": 1
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "14",
+                    "size": 2,
+                    "formatted": "ldrb r0, [r0, #0x0]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldrb",
+                          "opcode": 25
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "0"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "16",
+                    "size": 2,
+                    "formatted": "cmp r0, #0x1",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "cmp",
+                          "opcode": 16
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "1"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "18",
+                    "size": 2,
+                    "formatted": "bhi 0x18",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "bhi",
+                          "opcode": 4
+                        }
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "24"
+                        }
+                      }
+                    ],
+                    "branch_dest": "24"
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "20",
+                    "size": 4,
+                    "formatted": "bl 0x0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "bl",
+                          "opcode": 7
+                        }
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "0"
+                        }
+                      }
+                    ],
+                    "branch_dest": "0"
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "24",
+                    "size": 2,
+                    "formatted": "pop {r0}",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "pop",
+                          "opcode": 58
+                        }
+                      },
+                      {
+                        "basic": "{"
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "basic": "}"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "26",
+                    "size": 2,
+                    "formatted": "bx r0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "bx",
+                          "opcode": 9
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "28",
+                    "size": 4,
+                    "formatted": ".word 0x0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": ".word",
+                          "opcode": 65534
+                        }
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "0"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "32",
+                    "size": 2,
+                    "formatted": ".hword 0x173",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": ".hword",
+                          "opcode": 65534
+                        }
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "371"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "right": {
+          "sections": [
+            {
+              "name": ".text",
+              "kind": "SECTION_CODE",
+              "size": "36"
+            }
+          ],
+          "symbols": [
+            {
+              "name": "func_0809E4AC",
+              "size": "34",
+              "flags": {
+                "global": true,
+                "size_inferred": true
+              },
+              "kind": "SYMBOL_FUNCTION",
+              "target_symbol": 2,
+              "match_percent": 100.0,
+              "instructions": [
+                {
+                  "instruction": {
+                    "size": 2,
+                    "formatted": "push {lr}",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "push",
+                          "opcode": 59
+                        }
+                      },
+                      {
+                        "basic": "{"
+                      },
+                      {
+                        "arg": {
+                          "opaque": "lr"
+                        }
+                      },
+                      {
+                        "basic": "}"
+                      }
+                    ],
+                    "line_number": 1738
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "2",
+                    "size": 4,
+                    "formatted": "bl 0x0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "bl",
+                          "opcode": 7
+                        }
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "0"
+                        }
+                      }
+                    ],
+                    "branch_dest": "0",
+                    "line_number": 1740
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "6",
+                    "size": 2,
+                    "formatted": "ldr r0, [pc, #0x14] (->0x1c)",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldr",
+                          "opcode": 24
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "pc"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "20"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      },
+                      {
+                        "basic": " (->"
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "28"
+                        }
+                      },
+                      {
+                        "basic": ")"
+                      }
+                    ],
+                    "line_number": 1741
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "8",
+                    "size": 2,
+                    "formatted": "ldr r0, [r0, #0x0]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldr",
+                          "opcode": 24
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "0"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ],
+                    "line_number": 1741
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "10",
+                    "size": 2,
+                    "formatted": "ldr r1, [pc, #0x14] (->0x20)",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldr",
+                          "opcode": 24
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "pc"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "20"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      },
+                      {
+                        "basic": " (->"
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "32"
+                        }
+                      },
+                      {
+                        "basic": ")"
+                      }
+                    ],
+                    "line_number": 1742
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "12",
+                    "size": 2,
+                    "formatted": "add r0, r1",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "add",
+                          "opcode": 1
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r1"
+                        }
+                      }
+                    ],
+                    "line_number": 1742
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "14",
+                    "size": 2,
+                    "formatted": "ldrb r0, [r0, #0x0]",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "ldrb",
+                          "opcode": 25
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "["
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "signed": "0"
+                        }
+                      },
+                      {
+                        "basic": "]"
+                      }
+                    ],
+                    "line_number": 1742
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "16",
+                    "size": 2,
+                    "formatted": "cmp r0, #0x1",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "cmp",
+                          "opcode": 16
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "separator": true
+                      },
+                      {
+                        "basic": "#"
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "1"
+                        }
+                      }
+                    ],
+                    "line_number": 1742
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "18",
+                    "size": 2,
+                    "formatted": "bhi 0x18",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "bhi",
+                          "opcode": 4
+                        }
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "24"
+                        }
+                      }
+                    ],
+                    "branch_dest": "24",
+                    "line_number": 1742
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "20",
+                    "size": 4,
+                    "formatted": "bl 0x0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "bl",
+                          "opcode": 7
+                        }
+                      },
+                      {
+                        "arg": {
+                          "branch_dest": "0"
+                        }
+                      }
+                    ],
+                    "branch_dest": "0",
+                    "line_number": 1743
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "24",
+                    "size": 2,
+                    "formatted": "pop {r0}",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "pop",
+                          "opcode": 58
+                        }
+                      },
+                      {
+                        "basic": "{"
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      },
+                      {
+                        "basic": "}"
+                      }
+                    ],
+                    "line_number": 1745
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "26",
+                    "size": 2,
+                    "formatted": "bx r0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": "bx",
+                          "opcode": 9
+                        }
+                      },
+                      {
+                        "arg": {
+                          "opaque": "r0"
+                        }
+                      }
+                    ],
+                    "line_number": 1745
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "28",
+                    "size": 4,
+                    "formatted": ".word 0x0",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": ".word",
+                          "opcode": 65534
+                        }
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "0"
+                        }
+                      }
+                    ],
+                    "line_number": 1745
+                  }
+                },
+                {
+                  "instruction": {
+                    "address": "32",
+                    "size": 2,
+                    "formatted": ".hword 0x173",
+                    "parts": [
+                      {
+                        "opcode": {
+                          "mnemonic": ".hword",
+                          "opcode": 65534
+                        }
+                      },
+                      {
+                        "arg": {
+                          "unsigned": "371"
+                        }
+                      }
+                    ],
+                    "line_number": 1745
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "fac9da55aa325b1ddc4a600bd631c42ee366487c334520fa9704817a6c33a036",
+      "target_sha256": "5e368088a055f7fea77a1d3348f7ad386c84f99787e3dc0c011dd42d4cbb03f5",
+      "target_object_sha256": "b5b8a4f7a212c0cfaa81ea91fc4733e107541be2a13660e019dded8019a259dc",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_0809E4AC"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [],
+        "numeric_pointer_offsets": [],
+        "raw_pointer_aliases": [],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "typed_or_direct",
+          "layout_quality_ok": true,
+          "raw_access_count": 0,
+          "numeric_offset_count": 0,
+          "named_structs": [
+            "ScenePhaseState"
+          ],
+          "named_field_accesses": [
+            {
+              "base": "state",
+              "field": "phase"
+            }
+          ],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": true,
+        "layout_quality_ok": true
+      }
+    }
+  ],
+  "ok": true,
+  "manifest": ".mizuchi-tmp/chatgpt-run-316/manifest-9e4-v2.json",
+  "manifest_sha256": "bb4472de7a8ed6180af54befd18a509b8a861b97f0d745398f0b1eb4c1dbedd5",
+  "candidate_identities": [
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/chatgpt-run-316/func_0809E4AC-v2.c",
+      "candidate_sha256": "fac9da55aa325b1ddc4a600bd631c42ee366487c334520fa9704817a6c33a036",
+      "target": "asm/asm_0809e4ac.s",
+      "target_sha256": "5e368088a055f7fea77a1d3348f7ad386c84f99787e3dc0c011dd42d4cbb03f5",
+      "target_object": "build/asm/asm_0809e4ac.s.o",
+      "target_object_sha256": "b5b8a4f7a212c0cfaa81ea91fc4733e107541be2a13660e019dded8019a259dc"
+    }
+  ]
+}
