@@ -1206,3 +1206,10 @@ This period built the reusable base library of patterns:
 - Transactional Docker apply emitted `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remain `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report is **1737 / 5914** matched functions (**29.370985%**) and **77670 / 993862** matched code (**7.8149686%**); unit coverage is **1277 C / 5410 asm-only**, with **1478** decomp files (**1258 standalone_tu / 220 included_stub**).
 - Evidence: `.decomp-runs/20260920T185419Z-isolation.json` and `.decomp-runs/20260920T185844Z-apply-func_08075EA4.json`.
 
+
+## Batch 315 — exact ordinary-C scene-threshold wrapper (2026-09-20)
+- Converted `func_0808A898` from `asm/asm_0808a898.s` to a strict ordinary-C standalone TU. A named `Func0808A898State` overlay models the halfwords at `+0x40` and `+0x42`; the natural unsigned `state->value < state->threshold` predicate preserves the target load/compare order and conditional call to `func_0808A7E4`.
+- The candidate passed the strict real-C/layout audit and isolated at **100% exact** with no instruction asm, empty barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Transactional Docker apply emitted `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remain `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report is **1738 / 5914** matched functions (**29.387894%**) and **77702 / 993862** matched code (**7.8181877%**); unit coverage is **1278 C / 5409 asm-only**, with **1479** decomp files (**1259 standalone_tu / 220 included_stub**).
+- Evidence: `.decomp-runs/20260920T185948Z-isolation.json` and `.decomp-runs/20260920T190442Z-apply-func_0808A898.json`.
+

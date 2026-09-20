@@ -5,20 +5,26 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 314` — `func_08075EA4` is now an exact strict ordinary-C standalone TU
-- `build/report.json`: **1737 / 5914 matched functions** = **29.370985%**
-- `matched_code`: **77670 / 993862** = **7.8149686%**
-- `tools/gen_objdiff.py`: **1277 linked C TUs / 5410 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1478 decompiled function files** = **1258 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 315` — `func_0808A898` is now an exact strict ordinary-C standalone TU
+- `build/report.json`: **1738 / 5914 matched functions** = **29.387894%**
+- `matched_code`: **77702 / 993862** = **7.8181877%**
+- `tools/gen_objdiff.py`: **1278 linked C TUs / 5409 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1479 decompiled function files** = **1259 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**, SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining compiler-register-pin files: **106 / 502 pins**; remaining non-volatile empty compiler-barrier files: **7 / 7 barriers**. The full strict audit reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
 - Maintenance state: **38 legacy included-stub inline-asm shims removed**; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. `src/decomp` contains no instruction-bearing inline asm.
 - New-candidate admission remains strict real C: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks.
-- 25% milestone: **1479 / 5914**, exceeded by **258** matched functions.
-- 26% milestone: **1538 / 5914**, exceeded by **199** matched functions.
-- Active 27% working goal: **1597 / 5914**, exceeded by **140** matched functions.
-- Next 30% milestone: **1775 / 5914**; **38** additional matched functions are needed.
+- 25% milestone: **1479 / 5914**, exceeded by **259** matched functions.
+- 26% milestone: **1538 / 5914**, exceeded by **200** matched functions.
+- Active 27% working goal: **1597 / 5914**, exceeded by **141** matched functions.
+- Next 30% milestone: **1775 / 5914**; **37** additional matched functions are needed.
+
+### Batch 315 — exact ordinary-C scene-threshold wrapper (2026-09-20)
+- Converted `func_0808A898` from `asm/asm_0808a898.s` to a strict ordinary-C standalone TU. A named `Func0808A898State` overlay models the halfwords at `+0x40` and `+0x42`; the natural unsigned `state->value < state->threshold` predicate preserves the target load/compare order and conditional call to `func_0808A7E4`.
+- The candidate passed the strict real-C/layout audit and isolated at **100% exact** with no instruction asm, empty barriers, register pins, non-mapped volatile, or opaque offset-heavy layout.
+- Transactional Docker apply emitted `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remain `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report is **1738 / 5914** matched functions (**29.387894%**) and **77702 / 993862** matched code (**7.8181877%**); unit coverage is **1278 C / 5409 asm-only**, with **1479** decomp files (**1259 standalone_tu / 220 included_stub**).
+- Evidence: `.decomp-runs/20260920T185948Z-isolation.json` and `.decomp-runs/20260920T190442Z-apply-func_0808A898.json`.
 
 ### Batch 314 — exact ordinary-C conditional sound-player update wrapper (2026-09-20)
 - Converted `func_08075EA4` from `asm/asm_08075ea4.s` to a strict ordinary-C standalone TU. A named `Func08075EA4State` overlay models the sound-player pointer at `+0x7C`, the pitch halfword at `+0x80`, and the enable byte at `+0x82`; the natural `if (state->enabled != 0)` form preserves the target's pointer lifetime and passes `state->player` / `&state->pitch` directly to `func_080DF2C4`.
