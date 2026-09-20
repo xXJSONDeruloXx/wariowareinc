@@ -1228,3 +1228,11 @@ This period built the reusable base library of patterns:
 - Fresh metrics are **1760 / 5914** matched functions (**29.759893%**) and **78536 / 993904** matched code (**7.901769%**); unit coverage is **1300 C / 5387 asm-only**, with **1501** decomp files (**1281 standalone_tu / 220 included_stub**).
 - Evidence: .decomp-runs/20260920T201410Z-isolation.json and .decomp-runs/20260920T201539Z-apply_batch.json.
 
+
+## Batch 318 — twenty exact wrappers cross the 30% milestone (2026-09-20)
+- Converted func_0805172C, func_080C4114, func_080E5F54, func_08046FB4, func_080BA8A8, func_08031C24, func_08034288, func_08038F20, func_0806F36C, func_08081F94, func_080A60F8, func_0806A8E4, func_0808844C, func_0802940C, func_0801AD6C, func_08023F00, func_080307A4, func_0809A720, func_080D9EE8, func_080EC960 from standalone assembly to strict ordinary-C translation units. The batch combines additional scene-phase wrappers with small state/counter, key-dispatch, sound, and repeated-call wrappers selected for exact compiler shape.
+- A fresh exact-only isolation screen reported **20 exact / 0 rejected**. The transactional batch apply passed the clean Docker ROM/report gate with wariowareinc.gba: OK, rom_exact: true, and unchanged ROM/base-ROM SHA-1 3f556448d290fa5406d6ed367fee16cc02387ad3.
+- Fresh metrics are **1780 / 5914** matched functions (**30.098072%**) and **79530 / 993918** matched code (**8.001666%**); unit coverage is **1320 C / 5367 asm-only**, with **1521** decomp files (**1301 standalone_tu / 220 included_stub**).
+- This batch crosses the 30% function milestone by **5 matched functions**.
+- Evidence: .decomp-runs/20260920T202036Z-isolation.json and .decomp-runs/20260920T202201Z-apply_batch.json.
+

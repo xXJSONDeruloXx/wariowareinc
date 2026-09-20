@@ -5,15 +5,24 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: docs/macabeus-tooling-assessment
-- Verified working tree: batch 317 — eleven more exact scene-phase wrappers converted
-- build/report.json: **1760 / 5914 matched functions** (**29.759893%**) · **7.901769%** matched code (**78536 / 993904**)
-- tools/gen_objdiff.py: **1300 linked C TUs / 5387 non-C units** (**6687 total**)
-- src/decomp/*.c: **1501 decompiled function files** = **1281 standalone_tu** + **220 included_stub**
+- Verified working tree: batch 318 — the repository has crossed 30% matched functions
+- build/report.json: **1780 / 5914 matched functions** (**30.098072%**) · **8.001666%** matched code (**79530 / 993918**)
+- tools/gen_objdiff.py: **1320 linked C TUs / 5367 non-C units** (**6687 total**)
+- src/decomp/*.c: **1521 decompiled function files** = **1301 standalone_tu** + **220 included_stub**
 - ROM: **wariowareinc.gba: OK**, SHA-1 3f556448d290fa5406d6ed367fee16cc02387ad3
-- 25% milestone: **1479 / 5914**, exceeded by **281** matches.
-- 26% milestone: **1538 / 5914**, exceeded by **222** matches.
-- 27% milestone: **1597 / 5914**, exceeded by **163** matches.
-- Next 30% milestone: **1775 / 5914**; **15** additional matched functions are needed.
+- 25% milestone: **1479 / 5914**, exceeded by **301** matches.
+- 26% milestone: **1538 / 5914**, exceeded by **242** matches.
+- 27% milestone: **1597 / 5914**, exceeded by **183** matches.
+- 30% milestone: **1775 / 5914**, exceeded by **5** matches.
+- 80% target: **4732 / 5914**; remaining gap **2952** matched functions.
+
+
+### Batch 318 — twenty exact wrappers cross the 30% milestone (2026-09-20)
+- Converted func_0805172C, func_080C4114, func_080E5F54, func_08046FB4, func_080BA8A8, func_08031C24, func_08034288, func_08038F20, func_0806F36C, func_08081F94, func_080A60F8, func_0806A8E4, func_0808844C, func_0802940C, func_0801AD6C, func_08023F00, func_080307A4, func_0809A720, func_080D9EE8, func_080EC960 from standalone assembly to strict ordinary-C translation units. The batch combines additional scene-phase wrappers with small state/counter, key-dispatch, sound, and repeated-call wrappers selected for exact compiler shape.
+- A fresh exact-only isolation screen reported **20 exact / 0 rejected**. The transactional batch apply passed the clean Docker ROM/report gate with wariowareinc.gba: OK, rom_exact: true, and unchanged ROM/base-ROM SHA-1 3f556448d290fa5406d6ed367fee16cc02387ad3.
+- Fresh metrics are **1780 / 5914** matched functions (**30.098072%**) and **79530 / 993918** matched code (**8.001666%**); unit coverage is **1320 C / 5367 asm-only**, with **1521** decomp files (**1301 standalone_tu / 220 included_stub**).
+- This batch crosses the 30% function milestone by **5 matched functions**.
+- Evidence: .decomp-runs/20260920T202036Z-isolation.json and .decomp-runs/20260920T202201Z-apply_batch.json.
 
 ### Batch 317 — eleven additional exact scene-phase wrappers (2026-09-20)
 - Converted func_0803B5FC, func_080454D8, func_080464DC, func_08054B98, func_0805E6C4, func_0807952C, func_08082EEC, func_080A0D20, func_0804B120, func_08053E0C, func_0806980C from standalone assembly to strict ordinary-C TUs using the established named ScenePhaseState overlay at gCurrentSceneData + 0x173.
