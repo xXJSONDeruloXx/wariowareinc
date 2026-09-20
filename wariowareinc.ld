@@ -603,7 +603,7 @@ SECTIONS {
         build/src/decomp/asm_08019a8c.c.o(.text*);
         build/src/decomp/asm_08019aa4.c.o(.text*);
         build/src/decomp/asm_08019ac0.c.o(.text*);
-        build/asm/asm_08019adc.s.o(.text*);
+        build/src/decomp/asm_08019adc.c.o(.text*);
         build/asm/asm_08019b00.s.o(.text*);
         build/asm/asm_08019b94.s.o(.text*);
         build/asm/asm_08019c28.s.o(.text*);

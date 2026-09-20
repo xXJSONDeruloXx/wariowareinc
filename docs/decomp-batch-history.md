@@ -1184,3 +1184,18 @@ This period built the reusable base library of patterns:
 - Rewrote `func_08001B04`, `func_08019644`, and `func_080F1574` with ordinary local declarations. This removes one saved-argument `R4` pin from the included `code_08001a70` host TU, one `R2` value pin from the sprite-visibility wrapper, and the `R1`/`R0` pair from the indexed flag helper.
 - The three-entry strict screen was **3 exact / 0 rejected**. A clean Docker rebuild/report and the repo's full verify receipt both passed with `wariowareinc.gba: OK` and unchanged ROM/base ROM SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`.
 - Report matching remains **1704 / 5934** functions and **76392 / 993840** code because these units were already C-linked. Pin residue drops from **194 to 191** files and **769 to 765** pins. Evidence: `.decomp-runs/round-109-isolation.json` and `.decomp-runs/round-109-verify.json`.
+
+## Batch 312 — three exact ordinary-C signed-byte sibling wrappers (2026-08-25)
+- Converted `func_08027720`, `func_08032958`, and `func_080367A8` from their standalone assembly files to strict ordinary-C TUs with named, padded state overlays. The overlays expose the two signed byte fields used by each wrapper at offsets `0x68/0x69`, `0x5C/0x5D`, and `0x94/0x95`; call order preserves each target's byte-read order and natural signed extension shape.
+- The first raw `u8 *` candidate was rejected by the strict layout gate as an opaque offset-heavy byte-pointer stand-in. Replacing it with the named overlay produced strict-clean source and exact 100% isolation for all three functions, with no instruction asm, barriers, register pins, non-mapped volatile, or opaque layout.
+- Fresh Docker report is **1735 / 5914** functions and **77602 / 993862** matched code. Unit coverage is **1275 C / 5412 asm-only**; decomp files are **1476** (**1256 standalone_tu / 220 included_stub**). Full strict-audit residue remains **0 instruction-asm files**, **106 files / 502 register pins**, **27 files / 31 barrier findings**, and **7 non-volatile barriers**.
+- The clean Docker ROM gate passed with `wariowareinc.gba: OK`; ROM and baseline ROM SHA-1 are both `3f556448d290fa5406d6ed367fee16cc02387ad3`.
+- Evidence: `.decomp-runs/round-187-isolation.json`, `.decomp-runs/round-187-apply.json`, `.decomp-runs/round-187-func_08027720-v1-source-audit.json`, `.decomp-runs/round-187-func_08027720-v2-source-audit.json`, `.decomp-runs/round-187-func_08032958-v1-source-audit.json`, `.decomp-runs/round-187-func_080367A8-v1-source-audit.json`, and `.decomp-runs/round-187-full-source-audit.json`.
+
+
+## Batch 313 — exact ordinary-C two-call scene-resource wrapper (2026-09-20)
+- Converted `func_08019ADC` from `asm/asm_08019adc.s` to a strict ordinary-C standalone TU. A named `Func08019ADCState` overlay exposes the resource pointer at offset `0xD0`; reloading `gCurrentSceneVariable` between the two calls preserves the target's global-base/register lifetime across `func_0800CF3C` and `func_0800CF5C`.
+- The first raw-pointer spelling was rejected by the strict layout gate as opaque offset-heavy memory access. The named overlay passed `--strict --strict-layout` and isolated at **100% exact** with no instruction asm, empty barriers, register pins, non-mapped volatile, or opaque layout.
+- The transactional Docker apply emitted `wariowareinc.gba: OK`; ROM/base ROM SHA-1 are both `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report is **1736 / 5914** matched functions and **77638 / 993862** matched code; unit coverage is **1276 C / 5411 asm-only**, with **1477** decomp files (**1257 standalone_tu / 220 included_stub**).
+- Evidence: `.decomp-runs/20260920T185145Z-isolation.json` and `.decomp-runs/20260920T185324Z-apply-func_08019ADC.json`.
+

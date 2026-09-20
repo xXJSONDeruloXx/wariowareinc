@@ -1166,3 +1166,8 @@ Use this file to record where the current decomp tools helped, where they missed
 - The focused screen found three instruction-identical ordinary-C candidates: a named graphics mask/flag overlay (`func_0801F1A0`), a two-store indexed table helper (`func_080F0E14`), and a reloaded current-scene byte overlay (`func_0801C2D4`). Their isolated differences were limited to literal-pool width or target trailing metadata, and the integrated host/object ROM gate accepted them.
 - `func_0800CA5C` supplied a useful negative result: a strict-clean named overlay still let agbcc fold `MOV #0x21; NEG` into `SUB #0x31` because it reused the preceding `0x10` constant. The candidate remains rejected evidence rather than a reason to restore compiler shaping.
 - The accepted source audit is clean for all three files. Full audit residue is now **123 pin-bearing files / 584 pins**, **32 barrier-bearing files / 36 findings**, and **0 instruction-bearing asm**. The report remains **1704 / 5934** functions, **76392 / 993840** code, and **1244 C / 5443 asm-only** units. Docker build, report refresh, local `gen_objdiff.py`, and serialized verifier all passed.
+
+## 2026-09-20 — keep autonomous-run locks outside the Git worktree
+- A repo-local `.chatgpt-decomp.lock/` directory correctly prevented overlap but `tools/decomp_cycle.py apply` also correctly rejected it as an unrelated dirty path.
+- For scheduled/remote automation, use an equivalent external mutex such as `/tmp/wariowareinc-chatgpt-decomp.lock` (or a user-cache lock path), while still checking it before touching the repo. This preserves mutual exclusion without tripping the transaction's clean-worktree gate.
+

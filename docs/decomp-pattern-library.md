@@ -812,3 +812,9 @@ For unrolled four-byte readers/writers, use a byte pointer with sequential post-
 - **Preserve a shifted first address while naming the second field**: `func_080152A0` needs the first `gCurrentSceneData + (0xC2 << 1)` halfword access to remain an explicit `offset` accumulator; a named `fieldC4` overlay folds the shift into `ADDS #0xC4` and is a real instruction mismatch. A small named overlay for the post-call `+0xDD` byte keeps the source layout bounded and preserves the target reload/store sequence.
 - **Address-of-global lifetime across a call**: keep `void **base = &gCurrentSceneData`, reload `*base` after `func_08014E88`, and use separate `byte`/`mask` locals. This preserves the target `R4` global-address, `R1` scene pointer, `R2` loaded byte, and `R0` mask roles without compiler pins.
 - **Task-pool negative result**: strict-clean named `D_030006A0` slot records for `func_080058DC`, `func_080059A8`, and `func_08005A54` retained real constant/register-home differences in Round 151. Keep their screen receipt as evidence; do not restore pins or accept a layout exception merely because the slot stride and fields match.
+
+## Named scene-root overlay with reload across calls
+- When assembly loads the address of `gCurrentSceneVariable` once into a callee-saved register, then reloads the pointed scene object before each call, a strict named overlay can preserve both source quality and exact codegen without register pins.
+- `func_08019ADC` is the reference: model the `+0xD0` resource pointer as a named struct field, assign the casted scene pointer before each call, and let agbcc retain the global-address literal in the saved register while reloading the scene pointer around calls.
+- Avoid repeating raw `(u8 *)base + 0xD0` dereferences: the strict layout gate correctly classifies that spelling as opaque offset-heavy access even when the generated instructions are otherwise plausible.
+

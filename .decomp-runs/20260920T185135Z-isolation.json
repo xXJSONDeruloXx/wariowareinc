@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "kind": "isolation",
+  "started": "2026-09-20T18:51:34+00:00",
+  "finished": "2026-09-20T18:51:35+00:00",
+  "branch": "docs/macabeus-tooling-assessment",
+  "commit": "c134faf466b17b01fd1d3173a1ea550a4af8190f",
+  "command": "docker run --rm -v /Users/danhimebauch/Developer/wariowareinc:/workspace:ro -v /tmp/warioware-cycle-2c06pmu7:/run -w /workspace devkitpro/devkitarm:latest bash -lc 'set +e\nexport PATH=\"/opt/devkitpro/devkitARM/bin:/opt/devkitpro/tools/bin:$PATH\"\nmkdir -p /run\nrm -f /run/candidate-0.o /run/candidate-0.status /run/candidate-0.stderr /run/candidate-0.i /run/candidate-0.s\nif arm-none-eabi-gcc -E -P -I tools/agbcc -I tools/agbcc/include -I . -iquote include -nostdinc -undef /workspace/.mizuchi-tmp/chatgpt-run-313/func_08019ADC-v1.c -o /run/candidate-0.i >/run/candidate-0.stderr 2>&1; then\n  if tools/agbcc/bin/agbcc /run/candidate-0.i -o /run/candidate-0.s -mthumb-interwork -Wimplicit -Wparentheses -Werror -O2 -g -fhex-asm >>/run/candidate-0.stderr 2>&1; then\n    sed '\"'\"'/\\.size/d'\"'\"' /run/candidate-0.s > /run/candidate-0.s.stripped && printf '\"'\"'.text\\n\\t.align\\t2, 0\\n'\"'\"' >> /run/candidate-0.s.stripped && printf '\"'\"'.section .note.GNU-stack,\"\",%%progbits\\n'\"'\"' >> /run/candidate-0.s.stripped && mv /run/candidate-0.s.stripped /run/candidate-0.s\n    if arm-none-eabi-as -march=armv4t -o /run/candidate-0.o /run/candidate-0.s >>/run/candidate-0.stderr 2>&1; then\n      echo ok > /run/candidate-0.status\n    else\n      echo compile_error > /run/candidate-0.status\n    fi\n  else\n    echo compile_error > /run/candidate-0.status\n  fi\nelse\n  echo compile_error > /run/candidate-0.status\nfi\nrm -f /run/candidate-0.elf /run/target-0.elf /run/link-0.stderr /run/target-0.defsym /run/target-0.unit-defsym\nif [ -f /run/candidate-0.o ] && [ -f /workspace/build/asm/asm_08019adc.s.o ]; then\n  if arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08019adc.s.o | awk '\"'\"'NF >= 3 && $2 == \"a\" && $3 !~ /^\\./ {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.defsym; then\n    arm-none-eabi-nm -a --defined-only /workspace/build/asm/asm_08019adc.s.o | awk -v entry=func_08019ADC '\"'\"'NF >= 3 && $2 ~ /^[TtRrDdBb]$/ && $3 !~ /^\\./ && $3 != entry {printf \"--defsym=%s=0x%s\\n\", $3, $1}'\"'\"' > /run/target-0.unit-defsym\n    defsym_args=()\n    while read -r defsym_arg; do defsym_args+=(\"$defsym_arg\"); done < /run/target-0.defsym\n    unit_defsym_args=()\n    while read -r unit_defsym_arg; do unit_defsym_args+=(\"$unit_defsym_arg\"); done < /run/target-0.unit-defsym\n    if arm-none-eabi-ld -Ttext=0 -e func_08019ADC \"${defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /workspace/build/asm/asm_08019adc.s.o -o /run/target-0.elf >>/run/link-0.stderr 2>&1; then\n      arm-none-eabi-ld -Ttext=0 -e func_08019ADC \"${defsym_args[@]}\" \"${unit_defsym_args[@]}\" --unresolved-symbols=ignore-all --noinhibit-exec /run/candidate-0.o -o /run/candidate-0.elf >>/run/link-0.stderr 2>&1\n    fi\n  fi\nfi\nexit 0\n'",
+  "docker_image": "devkitpro/devkitarm:latest",
+  "docker_invocations": 1,
+  "candidate_count": 1,
+  "results": [
+    {
+      "function": "func_08019ADC",
+      "file": "asm/asm_08019adc.s",
+      "candidate": ".mizuchi-tmp/chatgpt-run-313/func_08019ADC-v1.c",
+      "target": "asm/asm_08019adc.s",
+      "target_object": "build/asm/asm_08019adc.s.o",
+      "status": "policy_rejected",
+      "score": null,
+      "reason": "candidate uses an opaque offset-heavy byte-pointer layout",
+      "source_audit": {
+        "function_count": 1,
+        "functions": [
+          "func_08019ADC"
+        ],
+        "asm": {
+          "instruction": [],
+          "register_pin": [],
+          "barrier": []
+        },
+        "raw_pointer_accesses": [
+          {
+            "line": 4,
+            "text": "extern void func_0800CF3C(const void *);"
+          },
+          {
+            "line": 5,
+            "text": "extern void func_0800CF5C(const void *);"
+          },
+          {
+            "line": 11,
+            "text": "ptr = *(void **)((u8 *)gCurrentSceneVariable + 0xD0);"
+          },
+          {
+            "line": 13,
+            "text": "ptr = *(void **)((u8 *)gCurrentSceneVariable + 0xD0);"
+          }
+        ],
+        "numeric_pointer_offsets": [
+          {
+            "line": 11,
+            "values": [
+              "0xD0"
+            ],
+            "text": "ptr = *(void **)((u8 *)gCurrentSceneVariable + 0xD0);"
+          },
+          {
+            "line": 13,
+            "values": [
+              "0xD0"
+            ],
+            "text": "ptr = *(void **)((u8 *)gCurrentSceneVariable + 0xD0);"
+          }
+        ],
+        "raw_pointer_aliases": [
+          "ptr"
+        ],
+        "volatile_accesses": [],
+        "layout": {
+          "classification": "opaque_offset_heavy",
+          "layout_quality_ok": false,
+          "raw_access_count": 4,
+          "numeric_offset_count": 2,
+          "named_structs": [],
+          "named_field_accesses": [],
+          "threshold": {
+            "max_bounded_raw_accesses": 2,
+            "max_bounded_numeric_lines": 2
+          }
+        },
+        "strict_real_c": true,
+        "source_quality_ok": true,
+        "semantic_quality_ok": false,
+        "layout_quality_ok": false
+      },
+      "mode": "standalone_tu",
+      "candidate_sha256": "a75d7408ff2f49497d9ada90a0604469cf5e7408f6d1d68f017d999c2dc3693f",
+      "target_sha256": "6feeea6bc18a66a1aaac69835e8efdedd1eb82fa2652d68e00f383a0c98b6803",
+      "target_object_sha256": "cbed8356bb13deb30d2c1ee7cbb9ce3b7a57f3bc9da2b60d0574bd4db1afe3d0"
+    }
+  ],
+  "ok": false,
+  "manifest": ".mizuchi-tmp/chatgpt-run-313/manifest-v1.json",
+  "manifest_sha256": "929ee26eeecb9b846feecf8806ce1b8a38756c530ef963de6a319bd215adf7e6",
+  "candidate_identities": [
+    {
+      "mode": "standalone_tu",
+      "candidate": ".mizuchi-tmp/chatgpt-run-313/func_08019ADC-v1.c",
+      "candidate_sha256": "a75d7408ff2f49497d9ada90a0604469cf5e7408f6d1d68f017d999c2dc3693f",
+      "target": "asm/asm_08019adc.s",
+      "target_sha256": "6feeea6bc18a66a1aaac69835e8efdedd1eb82fa2652d68e00f383a0c98b6803",
+      "target_object": "build/asm/asm_08019adc.s.o",
+      "target_object_sha256": "cbed8356bb13deb30d2c1ee7cbb9ce3b7a57f3bc9da2b60d0574bd4db1afe3d0"
+    }
+  ]
+}
