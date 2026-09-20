@@ -1199,3 +1199,10 @@ This period built the reusable base library of patterns:
 - The transactional Docker apply emitted `wariowareinc.gba: OK`; ROM/base ROM SHA-1 are both `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report is **1736 / 5914** matched functions and **77638 / 993862** matched code; unit coverage is **1276 C / 5411 asm-only**, with **1477** decomp files (**1257 standalone_tu / 220 included_stub**).
 - Evidence: `.decomp-runs/20260920T185145Z-isolation.json` and `.decomp-runs/20260920T185324Z-apply-func_08019ADC.json`.
 
+
+## Batch 314 — exact ordinary-C conditional sound-player update wrapper (2026-09-20)
+- Converted `func_08075EA4` from `asm/asm_08075ea4.s` to a strict ordinary-C standalone TU. A named `Func08075EA4State` overlay models the sound-player pointer at `+0x7C`, the pitch halfword at `+0x80`, and the enable byte at `+0x82`; the natural `if (state->enabled != 0)` form preserves the target's pointer lifetime and passes `state->player` / `&state->pitch` directly to `func_080DF2C4`.
+- The candidate passed the strict real-C/layout audit and isolated at **100% exact** with no instruction asm, barriers, register pins, non-mapped volatile, or raw offset-heavy layout.
+- Transactional Docker apply emitted `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remain `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report is **1737 / 5914** matched functions (**29.370985%**) and **77670 / 993862** matched code (**7.8149686%**); unit coverage is **1277 C / 5410 asm-only**, with **1478** decomp files (**1258 standalone_tu / 220 included_stub**).
+- Evidence: `.decomp-runs/20260920T185419Z-isolation.json` and `.decomp-runs/20260920T185844Z-apply-func_08075EA4.json`.
+

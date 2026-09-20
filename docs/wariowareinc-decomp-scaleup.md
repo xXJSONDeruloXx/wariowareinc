@@ -5,20 +5,26 @@ Prefer this file + the other docs in `/docs`
 
 ## Current verified baseline
 - Verified on branch: `docs/macabeus-tooling-assessment`
-- Verified working tree: `batch 313` — `func_08019ADC` is now an exact strict ordinary-C standalone TU
-- `build/report.json`: **1736 / 5914 matched functions** = **29.354074%**
-- `matched_code`: **77638 / 993862** = **7.811748%**
-- `tools/gen_objdiff.py`: **1276 linked C TUs / 5411 asm-only units** (**6687 total**)
-- `src/decomp/*.c`: **1477 decompiled function files** = **1257 standalone_tu** + **220 included_stub**
+- Verified working tree: `batch 314` — `func_08075EA4` is now an exact strict ordinary-C standalone TU
+- `build/report.json`: **1737 / 5914 matched functions** = **29.370985%**
+- `matched_code`: **77670 / 993862** = **7.8149686%**
+- `tools/gen_objdiff.py`: **1277 linked C TUs / 5410 asm-only units** (**6687 total**)
+- `src/decomp/*.c`: **1478 decompiled function files** = **1258 standalone_tu** + **220 included_stub**
 - ROM status: **`wariowareinc.gba: OK`**, SHA-1 `3f556448d290fa5406d6ed367fee16cc02387ad3`
 - Remaining naked/original asm wrapper files in `src/decomp`: **0**
 - Remaining compiler-register-pin files: **106 / 502 pins**; remaining non-volatile empty compiler-barrier files: **7 / 7 barriers**. The full strict audit reports **27 files / 31 empty barrier findings** when volatile barriers coexisting with legacy pins are included.
 - Maintenance state: **38 legacy included-stub inline-asm shims removed**; batches 256–286 additionally removed two hundred seventy compiler register pins across ninety-one already-linked functions. `src/decomp` contains no instruction-bearing inline asm.
 - New-candidate admission remains strict real C: wrappers, instruction asm, empty barriers, compiler register pins, non-mapped `volatile`, and opaque offset-heavy byte-pointer stand-ins are rejected by the source audit, cycle, and Git hooks.
-- 25% milestone: **1479 / 5914**, exceeded by **257** matched functions.
-- 26% milestone: **1538 / 5914**, exceeded by **198** matched functions.
-- Active 27% working goal: **1597 / 5914**, exceeded by **139** matched functions.
-- Next 30% milestone: **1775 / 5914**; **39** additional matched functions are needed.
+- 25% milestone: **1479 / 5914**, exceeded by **258** matched functions.
+- 26% milestone: **1538 / 5914**, exceeded by **199** matched functions.
+- Active 27% working goal: **1597 / 5914**, exceeded by **140** matched functions.
+- Next 30% milestone: **1775 / 5914**; **38** additional matched functions are needed.
+
+### Batch 314 — exact ordinary-C conditional sound-player update wrapper (2026-09-20)
+- Converted `func_08075EA4` from `asm/asm_08075ea4.s` to a strict ordinary-C standalone TU. A named `Func08075EA4State` overlay models the sound-player pointer at `+0x7C`, the pitch halfword at `+0x80`, and the enable byte at `+0x82`; the natural `if (state->enabled != 0)` form preserves the target's pointer lifetime and passes `state->player` / `&state->pitch` directly to `func_080DF2C4`.
+- The candidate passed the strict real-C/layout audit and isolated at **100% exact** with no instruction asm, barriers, register pins, non-mapped volatile, or raw offset-heavy layout.
+- Transactional Docker apply emitted `wariowareinc.gba: OK`; ROM/base ROM SHA-1 remain `3f556448d290fa5406d6ed367fee16cc02387ad3`. Fresh report is **1737 / 5914** matched functions (**29.370985%**) and **77670 / 993862** matched code (**7.8149686%**); unit coverage is **1277 C / 5410 asm-only**, with **1478** decomp files (**1258 standalone_tu / 220 included_stub**).
+- Evidence: `.decomp-runs/20260920T185419Z-isolation.json` and `.decomp-runs/20260920T185844Z-apply-func_08075EA4.json`.
 
 ### Batch 313 — exact ordinary-C two-call scene-resource wrapper (2026-09-20)
 - Converted `func_08019ADC` from `asm/asm_08019adc.s` to a strict ordinary-C standalone TU. A named `Func08019ADCState` overlay exposes the resource pointer at offset `0xD0`; reloading `gCurrentSceneVariable` between the two calls preserves the target's global-base/register lifetime across `func_0800CF3C` and `func_0800CF5C`.
