@@ -1975,7 +1975,7 @@ SECTIONS {
         build/asm/asm_0804c5e8.s.o(.text*);
         build/asm/asm_0804c824.s.o(.text*);
         build/asm/asm_0804cb6c.s.o(.text*);
-        build/asm/asm_0804cba8.s.o(.text*);
+        build/src/decomp/asm_0804cba8.c.o(.text*);
         build/asm/asm_0804cbc8.s.o(.text*);
         build/asm/asm_0804cc3c.s.o(.text*);
         build/asm/asm_0804ce48.s.o(.text*);
