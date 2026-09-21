@@ -654,7 +654,7 @@ def full_verify(root: Path, *, report: bool) -> dict[str, Any]:
     log_path = "/tmp/warioware-full-build.log"
     shell = (
         "set -euo pipefail; "
-        f"rm -rf build; mkdir -p build; make -j4 2>&1 | tee {log_path}; "
+        f"rm -rf build; mkdir -p build; make -j1 2>&1 | tee {log_path}; "
         f"grep -Fq 'wariowareinc.gba: OK' {log_path}"
     )
     if report:
