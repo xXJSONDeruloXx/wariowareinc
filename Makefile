@@ -158,6 +158,7 @@ rebuild: clean default
 #---------------------------------------------------------------------------------
 
 $(BUILD_DIRS):
+	$(V)mkdir -p $(dir $@)
 	$(V)echo -e "$(GREEN)Creating build directory: $(YELLOW)$@$(NO_COL)"
 	$(V)mkdir -p $@
 
