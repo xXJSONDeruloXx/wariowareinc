@@ -53,6 +53,9 @@ POINTER_OFFSET_CONTEXT_RE = re.compile(r"\b(?:offset|base|store|scene|ptr|data)\
 STRUCT_DECL_RE = re.compile(r"\bstruct\s+([A-Za-z_]\w*)\s*\{")
 STRUCT_FIELD_ACCESS_RE = re.compile(r"\b([A-Za-z_]\w*)\s*->\s*([A-Za-z_]\w*)")
 VOLATILE_RE = re.compile(r"\bvolatile\b")
+VOID_POINTER_RE = re.compile(r"\bvoid\s*\*")
+PLACEHOLDER_STRUCT_RE = re.compile(r"\bstruct\s+(?:S|T|Tmp|Temp|Unknown|Unk|Anon)(?:\d*)\b")
+PLACEHOLDER_FIELD_RE = re.compile(r"\b(?:pad|padding|unk|unknown|field)(?:_|[0-9A-Fa-f])*\b", re.IGNORECASE)
 RAW_POINTER_ALIAS_DECL_RE = re.compile(
     r"\b(?:const\s+)?(?:u8|u16|u32|u64|s8|s16|s32|s64|void)\s*\*\s*"
     r"([A-Za-z_]\w*)\s*(?==|;|,|\))"
@@ -323,7 +326,25 @@ def source_audit(text: str) -> dict[str, Any]:
     layout = layout_quality(text, pointer_lines, numeric_offsets)
     strict_real_c = not bool(NAKED_RE.search(text) or findings)
     source_quality_ok = strict_real_c and not volatile_accesses
-    semantic_quality_ok = source_quality_ok and layout["layout_quality_ok"]
+    # Matching C is not automatically a genuine decompilation.  Reject the
+    # common "compiler-shaped C" escape hatches that erase recovered types or
+    # invent throwaway layouts solely to make agbcc emit the target bytes.
+    void_pointer_count = len(VOID_POINTER_RE.findall(text))
+    placeholder_structs = sorted(set(PLACEHOLDER_STRUCT_RE.findall(text)))
+    placeholder_fields = sorted(set(PLACEHOLDER_FIELD_RE.findall(text)))
+    semantic_standins = {
+        "void_pointer_count": void_pointer_count,
+        "placeholder_structs": placeholder_structs,
+        "placeholder_fields": placeholder_fields,
+    }
+    genuine_decomp_ok = (
+        source_quality_ok
+        and layout["layout_quality_ok"]
+        and void_pointer_count == 0
+        and not placeholder_structs
+        and not placeholder_fields
+    )
+    semantic_quality_ok = genuine_decomp_ok
     return {
         "function_count": len(functions),
         "functions": functions,
@@ -341,6 +362,8 @@ def source_audit(text: str) -> dict[str, Any]:
         "source_quality_ok": source_quality_ok,
         "semantic_quality_ok": semantic_quality_ok,
         "layout_quality_ok": layout["layout_quality_ok"],
+        "semantic_standins": semantic_standins,
+        "genuine_decomp_ok": genuine_decomp_ok,
     }
 
 
@@ -364,6 +387,19 @@ def policy_violations(root: Path, files: list[str], *, staged: bool) -> list[str
             if audit["volatile_accesses"]:
                 violations.append(
                     f"{rel}: non-mapped volatile access; recover the source operation instead of forcing code generation"
+                )
+            standins = audit["semantic_standins"]
+            if standins["void_pointer_count"]:
+                violations.append(
+                    f"{rel}: untyped void pointer(s); recover a concrete object/data type before committing"
+                )
+            if standins["placeholder_structs"]:
+                violations.append(
+                    f"{rel}: placeholder struct name(s) {standins['placeholder_structs']}; use a defensible shared/domain type"
+                )
+            if standins["placeholder_fields"]:
+                violations.append(
+                    f"{rel}: placeholder layout field(s) {standins['placeholder_fields']}; recover meaningful fields or document a bounded unknown region"
                 )
 
     if staged:
