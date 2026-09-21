@@ -55,7 +55,7 @@ STRUCT_FIELD_ACCESS_RE = re.compile(r"\b([A-Za-z_]\w*)\s*->\s*([A-Za-z_]\w*)")
 VOLATILE_RE = re.compile(r"\bvolatile\b")
 VOID_POINTER_RE = re.compile(r"\bvoid\s*\*")
 PLACEHOLDER_STRUCT_RE = re.compile(r"\bstruct\s+(?:S|T|Tmp|Temp|Unknown|Unk|Anon)(?:\d*)\b")
-PLACEHOLDER_FIELD_RE = re.compile(r"\b(?:pad|padding|unk|unknown|field)(?:_|[0-9A-Fa-f])*\b", re.IGNORECASE)
+PLACEHOLDER_FIELD_DECL_RE = re.compile(r"\b(?:u8|u16|u32|u64|s8|s16|s32|s64|void\s*\*)\s+(?:pad|padding|unk|unknown|field)(?:_|[0-9A-Fa-f])*\b", re.IGNORECASE)
 RAW_POINTER_ALIAS_DECL_RE = re.compile(
     r"\b(?:const\s+)?(?:u8|u16|u32|u64|s8|s16|s32|s64|void)\s*\*\s*"
     r"([A-Za-z_]\w*)\s*(?==|;|,|\))"
@@ -331,7 +331,7 @@ def source_audit(text: str) -> dict[str, Any]:
     # invent throwaway layouts solely to make agbcc emit the target bytes.
     void_pointer_count = len(VOID_POINTER_RE.findall(text))
     placeholder_structs = sorted(set(PLACEHOLDER_STRUCT_RE.findall(text)))
-    placeholder_fields = sorted(set(PLACEHOLDER_FIELD_RE.findall(text)))
+    placeholder_fields = sorted(set(PLACEHOLDER_FIELD_DECL_RE.findall(text)))
     semantic_standins = {
         "void_pointer_count": void_pointer_count,
         "placeholder_structs": placeholder_structs,
