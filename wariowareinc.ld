@@ -4662,7 +4662,7 @@ SECTIONS {
         build/src/decomp/asm_080d6c30.c.o(.text*);
         build/asm/asm_080d6c54.s.o(.text*);
         build/asm/asm_080d6ca4.s.o(.text*);
-        build/asm/asm_080d6d08.s.o(.text*);
+        build/src/decomp/asm_080d6d08.c.o(.text*);
         build/src/decomp/asm_080d6d28.c.o(.text*);
         build/asm/asm_080d6d40.s.o(.text*);
         build/asm/asm_080d6ee4.s.o(.text*);
