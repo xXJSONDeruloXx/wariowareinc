@@ -270,6 +270,8 @@ struct MidiTrackStream {
     const u8 *loopStartPos; // Loop Start position.
     u32 unused;             // Unused value.
     u32 clocksPassed;       // Clocks passed in total.
+    u32 unk1C;              // Unknown loop-state value.
+    u32 unk20;              // Unknown trailing track state; track stride is 0x24 bytes.
 };
 
 // MIDI Player
