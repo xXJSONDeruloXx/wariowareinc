@@ -216,8 +216,9 @@ struct MidiChannel {
     u32 modType:2;      // Modulation target (defaults to PITCH).
     u32 unk4_b30:2;     // Unused
     u32 pitchWheel:14;  // 14-bit signed pitch envelope.
-    u32 volumeWheel:8;  // 8-bit unsigned volume envelope.
-    u32 priority:10;    // Priority.
+    u32 volumeWheel:7;  // 7-bit unsigned volume envelope.
+    u32 priority:8;     // Priority.
+    u32 unk8_b29:3;     // Unknown trailing channel flags.
     u8  modRange;       // Modulation range.
     s8  modResult;      // Modulation value.
     u8  unkE;           // Unused
